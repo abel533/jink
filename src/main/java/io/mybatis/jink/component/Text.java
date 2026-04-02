@@ -27,7 +27,7 @@ public class Text implements Renderable {
     private Text() {}
 
     /**
-     * 创建文本组件，支持混合内容（字符串和嵌套 Text）
+     * 创建文本组件，支持混合内容（字符串、嵌套 Text、其他 Renderable）
      */
     public static Text of(Object... contents) {
         Text text = new Text();
@@ -36,6 +36,9 @@ public class Text implements Renderable {
                 text.children.add(s);
             } else if (content instanceof Text t) {
                 text.children.add(t);
+            } else if (content instanceof Renderable r) {
+                // 其他 Renderable（如 Newline）直接作为子元素
+                text.children.add(r);
             } else {
                 text.children.add(String.valueOf(content));
             }
@@ -115,6 +118,8 @@ public class Text implements Renderable {
                 node.appendChild(new TextNode(s));
             } else if (child instanceof Text text) {
                 node.appendChild(text.toNode(true));
+            } else if (child instanceof Renderable r) {
+                node.appendChild(r.toNode());
             }
         }
         return node;

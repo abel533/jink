@@ -1,6 +1,8 @@
 package io.mybatis.jink;
 
 import io.mybatis.jink.component.Component;
+import io.mybatis.jink.component.Focusable;
+import io.mybatis.jink.component.FocusManager;
 import io.mybatis.jink.component.Renderable;
 import io.mybatis.jink.dom.ElementNode;
 import io.mybatis.jink.input.Key;
@@ -124,6 +126,9 @@ public class Ink {
         private String lastOutput = "";
         private int lastLineCount = 0;
 
+        // 焦点管理
+        private final FocusManager focusManager = new FocusManager();
+
         /**
          * 构造实例
          *
@@ -146,6 +151,11 @@ public class Ink {
             if (renderable instanceof Component<?> component) {
                 component.setOnStateChange(this::markDirty);
                 component.onMount();
+            }
+
+            // 注册可聚焦组件
+            if (renderable instanceof Focusable focusable) {
+                focusManager.register(focusable);
             }
 
             // 首次渲染
@@ -417,6 +427,17 @@ public class Ink {
                 return;
             }
 
+            // 内置处理：Tab 焦点导航
+            if ("tab".equals(result.name())) {
+                if (key.shift()) {
+                    focusManager.focusPrevious();
+                } else {
+                    focusManager.focusNext();
+                }
+                markDirty();
+                return;
+            }
+
             // 分发到组件
             if (rootRenderable instanceof Component<?> component) {
                 component.onInput(input, key);
@@ -471,6 +492,13 @@ public class Ink {
 
         public int getHeight() {
             return height;
+        }
+
+        /**
+         * 获取焦点管理器
+         */
+        public FocusManager getFocusManager() {
+            return focusManager;
         }
     }
 }

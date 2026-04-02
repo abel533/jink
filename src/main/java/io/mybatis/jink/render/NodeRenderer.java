@@ -11,6 +11,8 @@ import io.mybatis.jink.style.Color;
 import io.mybatis.jink.style.Display;
 import io.mybatis.jink.style.Style;
 
+import java.util.function.BiFunction;
+
 /**
  * 节点渲染器，对应 ink 的 render-node-to-output.ts。
  * 将已布局的 DOM 树通过 DFS 渲染到 VirtualScreen。
@@ -70,10 +72,19 @@ public class NodeRenderer {
             screen.pushClip(clipX, clipY, clipW, clipH);
         }
 
-        // 递归渲染子节点
-        for (Node child : node.getChildNodes()) {
-            if (child instanceof ElementNode childElem) {
-                renderNode(childElem, screen, x, y);
+        // Transform 支持：渲染子节点到临时屏幕，再逐行变换后写回
+        @SuppressWarnings("unchecked")
+        BiFunction<String, Integer, String> transformFn =
+                (BiFunction<String, Integer, String>) node.getAttribute("internal_transform");
+
+        if (transformFn != null) {
+            renderWithTransform(node, screen, x, y, w, h, transformFn);
+        } else {
+            // 递归渲染子节点
+            for (Node child : node.getChildNodes()) {
+                if (child instanceof ElementNode childElem) {
+                    renderNode(childElem, screen, x, y);
+                }
             }
         }
 
@@ -205,6 +216,32 @@ public class NodeRenderer {
         if (style.overflowX() == io.mybatis.jink.style.Overflow.HIDDEN) return true;
         if (style.overflowY() == io.mybatis.jink.style.Overflow.HIDDEN) return true;
         return false;
+    }
+
+    /**
+     * Transform 渲染：先将子节点渲染到临时屏幕，逐行调用 transform 函数后写回主屏幕
+     */
+    @SuppressWarnings("unchecked")
+    private static void renderWithTransform(ElementNode node, VirtualScreen screen,
+                                            int x, int y, int w, int h,
+                                            BiFunction<String, Integer, String> transformFn) {
+        // 创建临时屏幕渲染子节点
+        VirtualScreen tempScreen = new VirtualScreen(w, h);
+        for (Node child : node.getChildNodes()) {
+            if (child instanceof ElementNode childElem) {
+                renderNode(childElem, tempScreen, 0, 0);
+            }
+        }
+
+        // 对临时屏幕的每一行应用 transform
+        String tempOutput = tempScreen.render();
+        String[] lines = tempOutput.split("\n", -1);
+        for (int i = 0; i < lines.length; i++) {
+            String transformed = transformFn.apply(lines[i], i);
+            if (transformed != null && !transformed.isEmpty()) {
+                screen.write(x, y + i, transformed, null);
+            }
+        }
     }
 
 }

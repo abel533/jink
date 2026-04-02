@@ -60,6 +60,9 @@ public class KeyParser {
         ESC_SEQUENCES.put("[1;2B", "down");
         ESC_SEQUENCES.put("[1;2C", "right");
         ESC_SEQUENCES.put("[1;2D", "left");
+
+        // Shift+Tab (backtab)
+        ESC_SEQUENCES.put("[Z", "tab");
     }
 
     /** Shift 修饰的序列 */
@@ -70,6 +73,7 @@ public class KeyParser {
         SHIFT_SEQUENCES.put("[1;2B", true);
         SHIFT_SEQUENCES.put("[1;2C", true);
         SHIFT_SEQUENCES.put("[1;2D", true);
+        SHIFT_SEQUENCES.put("[Z", true);
     }
 
     /**

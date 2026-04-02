@@ -108,10 +108,21 @@ public class FlexLayout {
 
         int gap = resolveGap(style, isColumn);
 
+        // 计算内容区可用高度：优先使用节点自身 height，否则用外部 availableHeight
+        int contentHeight = Style.AUTO;
+        int resolvedHeight = resolveSize(style.height(), availableHeight);
+        if (resolvedHeight != Style.AUTO) {
+            contentHeight = resolvedHeight - innerBoxOffsetV;
+            if (contentHeight < 0) contentHeight = 0;
+        } else if (availableHeight != Style.AUTO) {
+            contentHeight = availableHeight - innerBoxOffsetV;
+            if (contentHeight < 0) contentHeight = 0;
+        }
+
         if (isColumn) {
-            layoutColumn(node, children, contentWidth, availableHeight, gap);
+            layoutColumn(node, children, contentWidth, contentHeight, gap);
         } else {
-            layoutRow(node, children, contentWidth, availableHeight, gap);
+            layoutRow(node, children, contentWidth, contentHeight, gap);
         }
 
         // 计算节点自身高度
@@ -196,18 +207,18 @@ public class FlexLayout {
             int childMarginH = cs.horizontalMargin();
 
             if (childWidth == Style.AUTO) {
-                // 文本节点使用固有宽度（基于内容测量）
-                if (child.getNodeType() == io.mybatis.jink.dom.NodeType.INK_TEXT
-                        || child.getNodeType() == io.mybatis.jink.dom.NodeType.INK_VIRTUAL_TEXT) {
-                    int intrinsicWidth = measureIntrinsicWidth(child);
-                    int maxChildWidth = contentWidth - childMarginH;
+                // 使用固有宽度（基于内容测量）
+                int intrinsicWidth = measureIntrinsicWidth(child);
+                int maxChildWidth = contentWidth - childMarginH;
+                if (intrinsicWidth > 0 || cs.flexGrow() > 0) {
+                    // 有内容或有 flexGrow：使用内容自然宽度（flexGrow 后续会分配额外空间）
                     childWidth = Math.min(intrinsicWidth, maxChildWidth);
-                    child.setComputedWidth(childWidth);
-                    layoutNode(child, childWidth, availableHeight);
                 } else {
-                    // Box 节点使用可用宽度（默认填充行为）
-                    layoutNode(child, contentWidth - childMarginH, availableHeight);
+                    // 无内容且无 flexGrow 的节点（如空 Box 容器）：默认占满可用宽度
+                    childWidth = maxChildWidth;
                 }
+                child.setComputedWidth(childWidth);
+                layoutNode(child, childWidth, availableHeight);
             } else {
                 child.setComputedWidth(childWidth);
                 layoutNode(child, childWidth, availableHeight);
