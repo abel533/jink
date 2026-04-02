@@ -94,6 +94,14 @@ public class KeyParser {
                     suffix, false, false, true);
         }
 
+        // ESC + 控制字符 = Meta+控制键
+        if (suffix.length() == 1) {
+            char c = suffix.charAt(0);
+            if (c == '\r' || c == '\n') {
+                return new ParseResult("return", "", false, false, true);
+            }
+        }
+
         // 未知序列，返回 escape
         return new ParseResult("escape", "", false, false, false);
     }

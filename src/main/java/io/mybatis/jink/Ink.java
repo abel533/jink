@@ -282,6 +282,22 @@ public class Ink {
                 }
                 lastOutput = newOutput;
             }
+
+            // 光标定位（每次渲染后都需要更新，即使输出没变）
+            if (interactive && termWriter != null && rootRenderable instanceof Component<?> comp) {
+                int cRow = comp.getCursorRow();
+                int cCol = comp.getCursorCol();
+                if (cRow >= 0 && cCol >= 0) {
+                    // ANSI 光标定位是 1-indexed
+                    termWriter.print("\u001B[" + (cRow + 1) + ";" + (cCol + 1) + "H");
+                    termWriter.print("\u001B[?25h"); // 显示光标
+                    termWriter.flush();
+                } else {
+                    termWriter.print("\u001B[?25l"); // 隐藏光标
+                    termWriter.flush();
+                }
+            }
+
             renderDirty = false;
         }
 

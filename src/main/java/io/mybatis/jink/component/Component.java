@@ -32,6 +32,8 @@ public abstract class Component<S> implements Renderable {
     private Runnable onStateChange;
     private int columns = 80;
     private int rows = 24;
+    private int cursorRow = -1;
+    private int cursorCol = -1;
 
     protected Component(S initialState) {
         this.state = initialState;
@@ -104,6 +106,29 @@ public abstract class Component<S> implements Renderable {
     public void setTerminalSize(int columns, int rows) {
         this.columns = columns;
         this.rows = rows;
+    }
+
+    /**
+     * 设置光标位置（0-indexed）。-1 表示隐藏光标。
+     * 组件在 render() 中调用此方法告知框架光标应显示的位置。
+     */
+    protected void setCursorPosition(int row, int col) {
+        this.cursorRow = row;
+        this.cursorCol = col;
+    }
+
+    /**
+     * 获取光标行位置（0-indexed，-1=隐藏）
+     */
+    public int getCursorRow() {
+        return cursorRow;
+    }
+
+    /**
+     * 获取光标列位置（0-indexed，-1=隐藏）
+     */
+    public int getCursorCol() {
+        return cursorCol;
     }
 
     @Override

@@ -27,12 +27,24 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
     public Renderable render() {
         State s = getState();
         int w = getColumns();
+        int h = getRows();
+
+        // 计算光标位置：输入区在倒数第3行，列 = padding(1) + prompt("❯ "=2) + 输入文本长度
+        int inputRow = h - 3; // shortcutBar(-1), separator(-2), inputArea(-3)
+        int inputCol = 1 + 2 + s.inputText.length();
+        setCursorPosition(inputRow, inputCol);
+
+        // 计算消息区可用行数：总高度 - 标题框(7) - 底部栏(5: statusBar+sep+input+sep+shortcut) - paddingTop(1)
+        int headerHeight = 7;
+        int bottomHeight = 5;
+        int messagePaddingTop = 1;
+        int maxMessageLines = h - headerHeight - bottomHeight - messagePaddingTop;
 
         return Box.of(
                 // === 顶部标题框（圆角洋红色边框）===
                 headerBox(w),
                 // === 状态消息列表 ===
-                statusMessages(s),
+                statusMessages(s, maxMessageLines),
                 // === 弹性空白区 ===
                 Spacer.create(),
                 // === 状态栏（路径 + 模型信息）===
@@ -45,7 +57,7 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
                 separator(w),
                 // === 底部快捷键栏 ===
                 shortcutBar(w)
-        ).flexDirection(FlexDirection.COLUMN).width(w).height(getRows());
+        ).flexDirection(FlexDirection.COLUMN).width(w).height(h);
     }
 
     /**
@@ -82,25 +94,33 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
     }
 
     /**
-     * 状态消息列表
+     * 状态消息列表（带虚拟滚动：消息超出可用空间时只显示最近的）
      */
-    private Renderable statusMessages(State s) {
-        List<Renderable> items = new ArrayList<>();
+    private Renderable statusMessages(State s, int maxLines) {
+        List<Renderable> allItems = new ArrayList<>();
 
         // 固定的启动消息
-        items.add(statusLine(Color.BRIGHT_YELLOW,
+        allItems.add(statusLine(Color.BRIGHT_YELLOW,
                 "No configuration found. Run /init to generate a jink-config.md file."));
-        items.add(statusLine(Color.BRIGHT_BLUE,
+        allItems.add(statusLine(Color.BRIGHT_BLUE,
                 "Project loaded from current directory."));
-        items.add(statusLine(Color.BRIGHT_BLUE,
+        allItems.add(statusLine(Color.BRIGHT_BLUE,
                 "Environment loaded: Java 21, Maven, 102 tests passing."));
 
         // 用户发送的消息
         for (String msg : s.messages) {
-            items.add(statusLine(Color.BRIGHT_GREEN, msg));
+            allItems.add(statusLine(Color.BRIGHT_GREEN, msg));
         }
 
-        return Box.of(items.toArray(new Renderable[0]))
+        // 如果消息超出可用行数，只保留最近的
+        List<Renderable> visibleItems;
+        if (maxLines > 0 && allItems.size() > maxLines) {
+            visibleItems = allItems.subList(allItems.size() - maxLines, allItems.size());
+        } else {
+            visibleItems = allItems;
+        }
+
+        return Box.of(visibleItems.toArray(new Renderable[0]))
                 .flexDirection(FlexDirection.COLUMN)
                 .paddingTop(1)
                 .paddingX(1);
@@ -179,11 +199,14 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
     public void onInput(String input, Key key) {
         State s = getState();
 
-        if (key.return_()) {
+        if (key.return_() && key.meta()) {
+            // Alt+Enter: 多行输入换行
+            setState(new State(s.inputText + "\n", s.messages));
+        } else if (key.return_()) {
             // Enter: 发送消息
             if (!s.inputText.isEmpty()) {
                 List<String> newMessages = new ArrayList<>(s.messages);
-                newMessages.add("You: " + s.inputText);
+                newMessages.add("You: " + s.inputText.replace("\n", " "));
                 setState(new State("", newMessages));
             }
         } else if (key.backspace()) {
