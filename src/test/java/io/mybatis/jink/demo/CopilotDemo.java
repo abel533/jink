@@ -30,14 +30,27 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
         int w = getColumns();
         int h = getRows();
 
-        // 计算光标位置：输入区在倒数第3行，列 = padding(1) + prompt("❯ "=2) + 输入文本长度
-        int inputRow = h - 3; // shortcutBar(-1), separator(-2), inputArea(-3)
-        int inputCol = 1 + 2 + s.inputText.length();
-        setCursorPosition(inputRow, inputCol);
+        // 计算输入区行数（支持多行输入）
+        int inputLineCount = 1;
+        String lastLine = s.inputText;
+        if (!s.inputText.isEmpty()) {
+            String[] inputLines = s.inputText.split("\n", -1);
+            inputLineCount = inputLines.length;
+            lastLine = inputLines[inputLines.length - 1];
+        }
 
-        // 计算消息区可用行数：总高度 - 标题框(7) - 底部栏(5: statusBar+sep+input+sep+shortcut) - paddingTop(1)
+        // 光标位置：考虑多行输入
+        // 底部结构：statusBar(1) + separator(1) + input(N行) + separator(1) + shortcutBar(1)
+        int inputRow = h - 1 - 1 - 1 + (inputLineCount - 1) - inputLineCount; // = h - 3 - (inputLineCount - 1) 从最后一行开始往上
+        // 简化：输入区最后一行 = h - 3, 第一行 = h - 3 - (inputLineCount-1)
+        // 光标在最后一行
+        int cursorRow = h - 3;
+        int cursorCol = 1 + 2 + lastLine.length(); // padding(1) + prompt("❯ "=2) + 最后一行文本长度
+        setCursorPosition(cursorRow, cursorCol);
+
+        // 计算消息区可用行数
         int headerHeight = 7;
-        int bottomHeight = 5;
+        int bottomHeight = 3 + inputLineCount + 1; // statusBar + sep + input(N) + sep + shortcut
         int messagePaddingTop = 1;
         int maxMessageLines = h - headerHeight - bottomHeight - messagePaddingTop;
 
@@ -212,7 +225,14 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
             // Enter: 发送消息
             if (!s.inputText.isEmpty()) {
                 List<String> newMessages = new ArrayList<>(s.messages);
-                newMessages.add("You: " + s.inputText.replace("\n", " "));
+                // 多行输入：每行作为一条单独消息
+                String[] lines = s.inputText.split("\n");
+                for (int i = 0; i < lines.length; i++) {
+                    String line = lines[i].trim();
+                    if (!line.isEmpty()) {
+                        newMessages.add(i == 0 ? "You: " + line : "     " + line);
+                    }
+                }
                 setState(new State("", newMessages, 0));
             }
         } else if (key.backspace()) {

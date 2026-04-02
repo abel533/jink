@@ -402,25 +402,37 @@ public class Ink {
         }
 
         /**
-         * 读取 ESC 转义序列
+         * 读取 ESC 转义序列。
+         * Windows 终端上鼠标滚轮发送 ESC[A/ESC[B，字节间可能有较大延迟，
+         * 需要足够长的超时来确保完整读取序列，避免拆分成单独字符。
          */
         private KeyParser.ParseResult readEscapeSequence() throws IOException {
-            // 等待短暂时间看是否有后续字符
-            int next = reader.read(50);
+            // 第一步：等待 ESC 后的第一个字符（区分独立 ESC 键和序列开始）
+            int next = reader.read(150);
             if (next < 0) {
-                // 单独的 ESC 键
                 return KeyParser.parseControlChar(0x1b);
             }
 
+            // Meta+Enter (ESC + CR/LF)
+            if (next == '\r' || next == '\n') {
+                return KeyParser.parseEscapeSequence(String.valueOf((char) next));
+            }
+
+            // 非 CSI/SS3 开头：Meta+字符，立即返回
+            if (next != '[' && next != 'O') {
+                return KeyParser.parseEscapeSequence(String.valueOf((char) next));
+            }
+
+            // CSI (ESC[) 或 SS3 (ESCO) 序列开始，后续字节应该紧随其后
             StringBuilder seq = new StringBuilder();
             seq.append((char) next);
 
-            // 继续读取直到序列完成（使用较长超时避免快速输入序列被截断）
             while (!KeyParser.isCompleteSequence(seq.toString())) {
-                int more = reader.read(50);
+                // CSI 序列已确认，使用较长超时读取剩余字节
+                int more = reader.read(300);
                 if (more < 0) break;
                 seq.append((char) more);
-                if (seq.length() > 10) break; // 防止无限读取
+                if (seq.length() > 20) break;
             }
 
             return KeyParser.parseEscapeSequence(seq.toString());
