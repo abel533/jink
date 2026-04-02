@@ -14,11 +14,21 @@ import java.util.List;
  */
 public class CopilotDemo extends Component<CopilotDemo.State> {
 
+    /** 提示符宽度（"❯ " = 2 字符），续行缩进用 */
+    private static final int PROMPT_WIDTH = 2;
+
     record State(
             String inputText,
             List<String> messages,
             int scrollOffset
     ) {}
+
+    /** 输入历史记录 */
+    private final List<String> inputHistory = new ArrayList<>();
+    /** 当前浏览的历史索引，-1 表示不在历史模式 */
+    private int historyIndex = -1;
+    /** 进入历史浏览前保存的当前输入 */
+    private String savedInput = "";
 
     public CopilotDemo() {
         super(new State("", List.of(), 0));
@@ -171,7 +181,7 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
     }
 
     /**
-     * 输入区（提示符 + 输入文本/placeholder）
+     * 输入区（提示符 + 输入文本/placeholder，多行时续行缩进对齐）
      */
     private Renderable inputArea(State s, int w) {
         Text prompt = Text.of("\u276F ").color(Color.BRIGHT_GREEN).bold();
@@ -179,7 +189,10 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
         if (s.inputText.isEmpty()) {
             content = Text.of("Type @ to mention files, / for commands, or ? for help").dimmed();
         } else {
-            content = Text.of(s.inputText).color(Color.WHITE);
+            // 多行输入：续行加缩进，使文字和第一行对齐
+            String indent = " ".repeat(PROMPT_WIDTH);
+            String displayText = s.inputText.replace("\n", "\n" + indent);
+            content = Text.of(displayText).color(Color.WHITE);
         }
 
         return Box.of(
@@ -216,16 +229,15 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
     @Override
     public void onInput(String input, Key key) {
         State s = getState();
-        int totalMessages = 3 + s.messages.size(); // 3 固定消息 + 用户消息
+        int totalMessages = 3 + s.messages.size();
 
         if (key.return_() && key.meta()) {
-            // Shift+Enter: 多行输入换行（终端上 Shift+Enter 发送 ESC+CR）
+            // Shift+Enter: 多行输入换行
             setState(new State(s.inputText + "\n", s.messages, 0));
         } else if (key.return_()) {
             // Enter: 发送消息
             if (!s.inputText.isEmpty()) {
                 List<String> newMessages = new ArrayList<>(s.messages);
-                // 多行输入：每行作为一条单独消息
                 String[] lines = s.inputText.split("\n");
                 for (int i = 0; i < lines.length; i++) {
                     String line = lines[i].trim();
@@ -233,22 +245,46 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
                         newMessages.add(i == 0 ? "You: " + line : "     " + line);
                     }
                 }
+                // 记录输入历史
+                inputHistory.add(s.inputText);
+                historyIndex = -1;
+                savedInput = "";
                 setState(new State("", newMessages, 0));
             }
         } else if (key.backspace()) {
-            // Backspace: 删除输入
             if (!s.inputText.isEmpty()) {
                 String newText = s.inputText.substring(0, s.inputText.length() - 1);
                 setState(new State(newText, s.messages, s.scrollOffset));
             }
-        } else if (key.pageUp() || key.upArrow()) {
-            // PageUp / ↑: 向上滚动查看历史
-            int newOffset = Math.min(s.scrollOffset + (key.pageUp() ? 5 : 1),
-                    Math.max(0, totalMessages - 1));
+        } else if (key.upArrow()) {
+            // ↑: 浏览输入历史（上一条）
+            if (!inputHistory.isEmpty()) {
+                if (historyIndex == -1) {
+                    savedInput = s.inputText;
+                    historyIndex = inputHistory.size() - 1;
+                } else if (historyIndex > 0) {
+                    historyIndex--;
+                }
+                setState(new State(inputHistory.get(historyIndex), s.messages, s.scrollOffset));
+            }
+        } else if (key.downArrow()) {
+            // ↓: 浏览输入历史（下一条）
+            if (historyIndex >= 0) {
+                historyIndex++;
+                if (historyIndex >= inputHistory.size()) {
+                    historyIndex = -1;
+                    setState(new State(savedInput, s.messages, s.scrollOffset));
+                } else {
+                    setState(new State(inputHistory.get(historyIndex), s.messages, s.scrollOffset));
+                }
+            }
+        } else if (key.pageUp()) {
+            // PageUp: 向上滚动查看消息历史
+            int newOffset = Math.min(s.scrollOffset + 5, Math.max(0, totalMessages - 1));
             setState(new State(s.inputText, s.messages, newOffset));
-        } else if (key.pageDown() || key.downArrow()) {
-            // PageDown / ↓: 向下滚动
-            int newOffset = Math.max(0, s.scrollOffset - (key.pageDown() ? 5 : 1));
+        } else if (key.pageDown()) {
+            // PageDown: 向下滚动消息
+            int newOffset = Math.max(0, s.scrollOffset - 5);
             setState(new State(s.inputText, s.messages, newOffset));
         } else if (!input.isEmpty() && isPrintableInput(input, key)) {
             // 普通文本输入（过滤导航键残余字符）
