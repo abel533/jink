@@ -415,9 +415,9 @@ public class Ink {
             StringBuilder seq = new StringBuilder();
             seq.append((char) next);
 
-            // 继续读取直到序列完成
+            // 继续读取直到序列完成（使用较长超时避免快速输入序列被截断）
             while (!KeyParser.isCompleteSequence(seq.toString())) {
-                int more = reader.read(10);
+                int more = reader.read(50);
                 if (more < 0) break;
                 seq.append((char) more);
                 if (seq.length() > 10) break; // 防止无限读取

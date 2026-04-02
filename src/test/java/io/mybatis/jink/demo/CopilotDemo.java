@@ -16,11 +16,12 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
 
     record State(
             String inputText,
-            List<String> messages
+            List<String> messages,
+            int scrollOffset
     ) {}
 
     public CopilotDemo() {
-        super(new State("", List.of()));
+        super(new State("", List.of(), 0));
     }
 
     @Override
@@ -94,7 +95,7 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
     }
 
     /**
-     * 状态消息列表（带虚拟滚动：消息超出可用空间时只显示最近的）
+     * 状态消息列表（带虚拟滚动 + PageUp/PageDown 滚动支持）
      */
     private Renderable statusMessages(State s, int maxLines) {
         List<Renderable> allItems = new ArrayList<>();
@@ -112,10 +113,14 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
             allItems.add(statusLine(Color.BRIGHT_GREEN, msg));
         }
 
-        // 如果消息超出可用行数，只保留最近的
+        // 计算可见窗口
         List<Renderable> visibleItems;
         if (maxLines > 0 && allItems.size() > maxLines) {
-            visibleItems = allItems.subList(allItems.size() - maxLines, allItems.size());
+            // 默认显示最新的消息，scrollOffset 向上偏移
+            int endIdx = allItems.size() - s.scrollOffset;
+            int startIdx = Math.max(0, endIdx - maxLines);
+            endIdx = Math.min(allItems.size(), startIdx + maxLines);
+            visibleItems = allItems.subList(startIdx, endIdx);
         } else {
             visibleItems = allItems;
         }
@@ -198,27 +203,49 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
     @Override
     public void onInput(String input, Key key) {
         State s = getState();
+        int totalMessages = 3 + s.messages.size(); // 3 固定消息 + 用户消息
 
         if (key.return_() && key.meta()) {
             // Alt+Enter: 多行输入换行
-            setState(new State(s.inputText + "\n", s.messages));
+            setState(new State(s.inputText + "\n", s.messages, 0));
         } else if (key.return_()) {
             // Enter: 发送消息
             if (!s.inputText.isEmpty()) {
                 List<String> newMessages = new ArrayList<>(s.messages);
                 newMessages.add("You: " + s.inputText.replace("\n", " "));
-                setState(new State("", newMessages));
+                setState(new State("", newMessages, 0));
             }
         } else if (key.backspace()) {
             // Backspace: 删除输入
             if (!s.inputText.isEmpty()) {
                 String newText = s.inputText.substring(0, s.inputText.length() - 1);
-                setState(new State(newText, s.messages));
+                setState(new State(newText, s.messages, s.scrollOffset));
             }
-        } else if (!input.isEmpty()) {
-            // 普通文本输入
-            setState(new State(s.inputText + input, s.messages));
+        } else if (key.pageUp() || key.upArrow()) {
+            // PageUp / ↑: 向上滚动查看历史
+            int newOffset = Math.min(s.scrollOffset + (key.pageUp() ? 5 : 1),
+                    Math.max(0, totalMessages - 1));
+            setState(new State(s.inputText, s.messages, newOffset));
+        } else if (key.pageDown() || key.downArrow()) {
+            // PageDown / ↓: 向下滚动
+            int newOffset = Math.max(0, s.scrollOffset - (key.pageDown() ? 5 : 1));
+            setState(new State(s.inputText, s.messages, newOffset));
+        } else if (!input.isEmpty() && isPrintableInput(input, key)) {
+            // 普通文本输入（过滤导航键残余字符）
+            setState(new State(s.inputText + input, s.messages, s.scrollOffset));
         }
+    }
+
+    /**
+     * 判断输入是否为可打印文本（排除导航键和控制字符残余）
+     */
+    private boolean isPrintableInput(String input, Key key) {
+        if (key.upArrow() || key.downArrow() || key.leftArrow() || key.rightArrow()) return false;
+        if (key.pageUp() || key.pageDown() || key.home() || key.end()) return false;
+        if (key.escape() || key.tab() || key.delete()) return false;
+        // 排除单个控制字符
+        if (input.length() == 1 && input.charAt(0) < 0x20) return false;
+        return true;
     }
 
     public static void main(String[] args) {

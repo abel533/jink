@@ -11,6 +11,8 @@ import io.mybatis.jink.style.Color;
 import io.mybatis.jink.style.Display;
 import io.mybatis.jink.style.Style;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiFunction;
 
 /**
@@ -130,13 +132,10 @@ public class NodeRenderer {
     }
 
     /**
-     * 渲染文本内容
+     * 渲染文本内容（支持嵌套 Text 的独立样式）
      */
     private static void renderText(ElementNode textNode, VirtualScreen screen,
                                    int x, int y, int w, int h, Style style) {
-        String text = FlexLayout.squashTextContent(textNode);
-        if (text.isEmpty()) return;
-
         int borderLeft = style.hasBorder() ? 1 : 0;
         int borderTop = style.hasBorder() ? 1 : 0;
         int contentX = x + borderLeft + style.paddingLeft();
@@ -144,72 +143,83 @@ public class NodeRenderer {
         int contentW = w - style.horizontalBorderWidth() - style.horizontalPadding();
         if (contentW <= 0) return;
 
-        // 构建文本样式
-        Style textStyle = buildTextStyle(textNode);
+        // 收集所有带样式的文本片段
+        List<StyledSpan> spans = new ArrayList<>();
+        collectStyledSpans(textNode, textNode.getStyle(), spans);
+        if (spans.isEmpty()) return;
 
-        // 按行渲染文本
-        String[] lines = text.split("\n", -1);
-        int lineY = contentY;
-        for (String line : lines) {
-            if (lineY >= y + h) break;
+        // 逐字符渲染，支持换行和自动折行
+        int curX = contentX;
+        int curY = contentY;
 
-            // 宽度超限时换行
-            if (AnsiStringUtils.visibleWidth(line) > contentW) {
-                java.util.List<String> wrappedLines = wrapText(line, contentW);
-                for (String wl : wrappedLines) {
-                    if (lineY >= y + h) break;
-                    screen.write(contentX, lineY, wl, textStyle);
-                    lineY++;
+        for (StyledSpan span : spans) {
+            String text = span.text;
+            Style spanStyle = span.style;
+
+            for (int i = 0; i < text.length(); ) {
+                if (curY >= y + h) break;
+
+                int cp = text.codePointAt(i);
+                if (cp == '\n') {
+                    curY++;
+                    curX = contentX;
+                    i += Character.charCount(cp);
+                    continue;
                 }
-            } else {
-                screen.write(contentX, lineY, line, textStyle);
-                lineY++;
+
+                int charWidth = AnsiStringUtils.isWideChar(cp) ? 2 : 1;
+                if (curX + charWidth - contentX > contentW) {
+                    curY++;
+                    curX = contentX;
+                    if (curY >= y + h) break;
+                }
+
+                screen.write(curX, curY, new String(Character.toChars(cp)), spanStyle);
+                curX += charWidth;
+                i += Character.charCount(cp);
             }
         }
     }
 
     /**
-     * 构建文本样式（合并节点树上的样式链）
+     * 递归收集文本节点树中所有带样式的文本片段
      */
-    private static Style buildTextStyle(ElementNode textNode) {
-        Style style = textNode.getStyle();
-        return style;
+    private static void collectStyledSpans(Node node, Style inheritedStyle,
+                                           List<StyledSpan> spans) {
+        if (node instanceof TextNode tn) {
+            String text = tn.getNodeValue();
+            if (text != null && !text.isEmpty()) {
+                spans.add(new StyledSpan(text, inheritedStyle));
+            }
+        } else if (node instanceof ElementNode en) {
+            Style merged = mergeTextStyles(inheritedStyle, en.getStyle());
+            for (Node child : en.getChildNodes()) {
+                collectStyledSpans(child, merged, spans);
+            }
+        }
     }
 
     /**
-     * 文本换行（按可见宽度）
+     * 合并文本样式：子节点的非默认值覆盖父节点
      */
-    private static java.util.List<String> wrapText(String text, int maxWidth) {
-        java.util.List<String> lines = new java.util.ArrayList<String>();
-        if (maxWidth <= 0) {
-            lines.add(text);
-            return lines;
-        }
-
-        StringBuilder current = new StringBuilder();
-        int currentWidth = 0;
-
-        for (int i = 0; i < text.length(); ) {
-            int cp = text.codePointAt(i);
-            int charWidth = AnsiStringUtils.isWideChar(cp) ? 2 : 1;
-
-            if (currentWidth + charWidth > maxWidth) {
-                lines.add(current.toString());
-                current = new StringBuilder();
-                currentWidth = 0;
-            }
-
-            current.appendCodePoint(cp);
-            currentWidth += charWidth;
-            i += Character.charCount(cp);
-        }
-
-        if (!current.isEmpty()) {
-            lines.add(current.toString());
-        }
-
-        return lines;
+    private static Style mergeTextStyles(Style parent, Style child) {
+        return Style.builder()
+                .color(child.color() != null ? child.color() : parent.color())
+                .backgroundColor(child.backgroundColor() != null
+                        ? child.backgroundColor() : parent.backgroundColor())
+                .bold(child.bold() || parent.bold())
+                .italic(child.italic() || parent.italic())
+                .underline(child.underline() || parent.underline())
+                .strikethrough(child.strikethrough() || parent.strikethrough())
+                .inverse(child.inverse() || parent.inverse())
+                .dimmed(child.dimmed() || parent.dimmed())
+                .build();
     }
+
+    /**
+     * 文本片段（带样式信息）
+     */
+    private record StyledSpan(String text, Style style) {}
 
     private static boolean isOverflowHidden(Style style) {
         if (style.overflow() == io.mybatis.jink.style.Overflow.HIDDEN) return true;
