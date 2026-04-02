@@ -200,6 +200,9 @@ public class Ink {
 
                 // 进入备用屏幕缓冲区（退出后不留渲染痕迹）
                 termWriter.print("\u001B[?1049h");
+                // 清屏 + 光标归位（确保备用缓冲区干净，防止首次渲染滚动）
+                termWriter.print("\u001B[2J");
+                termWriter.print("\u001B[H");
                 // 隐藏光标
                 termWriter.print("\u001B[?25l");
                 termWriter.flush();
@@ -313,15 +316,17 @@ public class Ink {
 
             // 写入新输出（将 \n 替换为 \r\n 以确保 raw mode 下换行正确）
             String[] lines = output.split("\n", -1);
-            for (int i = 0; i < lines.length; i++) {
+            // 安全限制：不超过终端高度，防止滚动
+            int maxLines = Math.min(lines.length, height);
+            for (int i = 0; i < maxLines; i++) {
                 sb.append("\u001B[2K"); // 清除整行
                 sb.append(lines[i]);
-                if (i < lines.length - 1) sb.append("\r\n");
+                if (i < maxLines - 1) sb.append("\r\n");
             }
 
             // 清除剩余旧内容（当新输出比旧输出少行时）
-            if (lines.length < lastLineCount) {
-                for (int i = lines.length; i < lastLineCount; i++) {
+            if (maxLines < lastLineCount) {
+                for (int i = maxLines; i < lastLineCount; i++) {
                     sb.append("\r\n\u001B[2K");
                 }
             }
@@ -330,7 +335,7 @@ public class Ink {
             termWriter.flush();
 
             // 记录行数
-            lastLineCount = lines.length;
+            lastLineCount = maxLines;
         }
 
         /**
