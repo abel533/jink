@@ -96,6 +96,9 @@ public class Ink {
      * 对应 ink 的 Ink 类。
      */
     public static class Instance {
+        private static final int DEFAULT_WIDTH = 80;
+        private static final int DEFAULT_HEIGHT = 24;
+
         private final Renderable rootRenderable;
         private volatile boolean running = true;
         private volatile boolean renderDirty = false;
@@ -150,18 +153,34 @@ public class Ink {
         }
 
         /**
-         * 初始化 JLine 3 终端
+         * 初始化 JLine 3 终端。
+         * 尝试获取系统终端（raw mode），失败时回退到 dumb 终端模式。
          */
         private void initTerminal() {
             try {
                 terminal = TerminalBuilder.builder()
                         .system(true)
-                        .jansi(true)
                         .build();
 
+                String termType = terminal.getType();
+                boolean isDumb = "dumb".equals(termType) || "dumb-color".equals(termType);
+
                 Size size = terminal.getSize();
-                this.width = size.getColumns();
-                this.height = size.getRows();
+                this.width = size.getColumns() > 0 ? size.getColumns() : DEFAULT_WIDTH;
+                this.height = size.getRows() > 0 ? size.getRows() : DEFAULT_HEIGHT;
+
+                if (isDumb) {
+                    // dumb 终端：无法 raw mode，回退到简单输出 + 行缓冲输入
+                    System.err.println("[jink] 警告: 终端不支持 raw mode（类型: " + termType
+                            + "），使用简单输出模式。");
+                    System.err.println("[jink] 提示: 请在真实终端中运行，并添加 JVM 参数: "
+                            + "--enable-native-access=ALL-UNNAMED");
+                    this.interactive = false;
+                    this.simpleOutput = System.out;
+                    this.simpleWriter = new TerminalWriter(simpleOutput);
+                    return;
+                }
+
                 this.interactive = true;
 
                 // 进入 raw mode
@@ -176,12 +195,19 @@ public class Ink {
                 // 监听终端尺寸变化
                 terminal.handle(Terminal.Signal.WINCH, signal -> {
                     Size newSize = terminal.getSize();
-                    this.width = newSize.getColumns();
-                    this.height = newSize.getRows();
+                    this.width = newSize.getColumns() > 0 ? newSize.getColumns() : this.width;
+                    this.height = newSize.getRows() > 0 ? newSize.getRows() : this.height;
                     markDirty();
                 });
             } catch (IOException e) {
-                throw new RuntimeException("无法初始化终端: " + e.getMessage(), e);
+                // 终端初始化完全失败：回退到纯 PrintStream 模式
+                System.err.println("[jink] 终端初始化失败: " + e.getMessage()
+                        + "，回退到简单输出模式。");
+                this.width = DEFAULT_WIDTH;
+                this.height = DEFAULT_HEIGHT;
+                this.interactive = false;
+                this.simpleOutput = System.out;
+                this.simpleWriter = new TerminalWriter(simpleOutput);
             }
         }
 
@@ -243,32 +269,46 @@ public class Ink {
         }
 
         /**
-         * 写入终端（差异化更新）
+         * 写入终端（差异化更新）。
+         * 使用 ANSI 擦除序列清除旧输出，然后写入新内容。
          */
         private void writeToTerminal(String output) {
             StringBuilder sb = new StringBuilder();
 
-            // 清除之前的输出
+            // 清除之前的输出：先回到起始行，再逐行擦除
             if (lastLineCount > 0) {
-                // 移到最左列
-                sb.append("\r");
-                // 向上移动并清除每一行
-                for (int i = 0; i < lastLineCount - 1; i++) {
-                    sb.append("\u001B[2K"); // 清除当前行
-                    sb.append("\u001B[1A"); // 上移一行
+                // 向上移动到输出起始行
+                if (lastLineCount > 1) {
+                    sb.append("\u001B[").append(lastLineCount - 1).append("A");
                 }
-                sb.append("\u001B[2K"); // 清除最后一行
+                // 回到行首
+                sb.append("\r");
+                // 从起始行向下逐行擦除
+                for (int i = 0; i < lastLineCount; i++) {
+                    sb.append("\u001B[2K"); // 清除整行
+                    if (i < lastLineCount - 1) {
+                        sb.append("\u001B[1B"); // 下移一行
+                    }
+                }
+                // 回到起始行
+                if (lastLineCount > 1) {
+                    sb.append("\u001B[").append(lastLineCount - 1).append("A");
+                }
                 sb.append("\r");
             }
 
-            // 写入新输出
-            sb.append(output);
+            // 写入新输出（将 \n 替换为 \r\n 以确保 raw mode 下换行正确）
+            String[] lines = output.split("\n", -1);
+            for (int i = 0; i < lines.length; i++) {
+                if (i > 0) sb.append("\r\n");
+                sb.append(lines[i]);
+            }
 
             termWriter.print(sb);
             termWriter.flush();
 
             // 记录行数
-            lastLineCount = output.split("\n", -1).length;
+            lastLineCount = lines.length;
         }
 
         /**
