@@ -37,8 +37,12 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
                 Spacer.create(),
                 // === 状态栏（路径 + 模型信息）===
                 statusBar(w),
+                // === 输入区上方分隔线 ===
+                separator(w),
                 // === 输入区 ===
                 inputArea(s, w),
+                // === 输入区下方分隔线 ===
+                separator(w),
                 // === 底部快捷键栏 ===
                 shortcutBar(w)
         ).flexDirection(FlexDirection.COLUMN).width(w).height(getRows());
@@ -142,6 +146,15 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
 
         return Box.of(
                 Text.of(prompt, content)
+        ).paddingX(1);
+    }
+
+    /**
+     * 水平分隔线（浅灰色 ─ 线）
+     */
+    private Renderable separator(int w) {
+        return Box.of(
+                Text.of("─".repeat(Math.max(0, w - 2))).color(Color.BRIGHT_BLACK)
         ).paddingX(1);
     }
 

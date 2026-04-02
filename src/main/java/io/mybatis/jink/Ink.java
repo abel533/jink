@@ -198,6 +198,8 @@ public class Ink {
                 reader = terminal.reader();
                 termWriter = terminal.writer();
 
+                // 进入备用屏幕缓冲区（退出后不留渲染痕迹）
+                termWriter.print("\u001B[?1049h");
                 // 隐藏光标
                 termWriter.print("\u001B[?25l");
                 termWriter.flush();
@@ -285,38 +287,27 @@ public class Ink {
 
         /**
          * 写入终端（差异化更新）。
-         * 使用 ANSI 擦除序列清除旧输出，然后写入新内容。
+         * 在备用屏幕缓冲区中使用绝对定位从左上角开始写入。
          */
         private void writeToTerminal(String output) {
             StringBuilder sb = new StringBuilder();
 
-            // 清除之前的输出：先回到起始行，再逐行擦除
-            if (lastLineCount > 0) {
-                // 向上移动到输出起始行
-                if (lastLineCount > 1) {
-                    sb.append("\u001B[").append(lastLineCount - 1).append("A");
-                }
-                // 回到行首
-                sb.append("\r");
-                // 从起始行向下逐行擦除
-                for (int i = 0; i < lastLineCount; i++) {
-                    sb.append("\u001B[2K"); // 清除整行
-                    if (i < lastLineCount - 1) {
-                        sb.append("\u001B[1B"); // 下移一行
-                    }
-                }
-                // 回到起始行
-                if (lastLineCount > 1) {
-                    sb.append("\u001B[").append(lastLineCount - 1).append("A");
-                }
-                sb.append("\r");
-            }
+            // 移动光标到左上角（备用屏幕缓冲区使用绝对定位）
+            sb.append("\u001B[H");
 
             // 写入新输出（将 \n 替换为 \r\n 以确保 raw mode 下换行正确）
             String[] lines = output.split("\n", -1);
             for (int i = 0; i < lines.length; i++) {
-                if (i > 0) sb.append("\r\n");
+                sb.append("\u001B[2K"); // 清除整行
                 sb.append(lines[i]);
+                if (i < lines.length - 1) sb.append("\r\n");
+            }
+
+            // 清除剩余旧内容（当新输出比旧输出少行时）
+            if (lines.length < lastLineCount) {
+                for (int i = lines.length; i < lastLineCount; i++) {
+                    sb.append("\r\n\u001B[2K");
+                }
             }
 
             termWriter.print(sb);
@@ -467,8 +458,8 @@ public class Ink {
                 try {
                     // 显示光标
                     termWriter.print("\u001B[?25h");
-                    // 输出换行，避免下一个 shell 提示覆盖输出
-                    termWriter.println();
+                    // 离开备用屏幕缓冲区（恢复原始终端内容）
+                    termWriter.print("\u001B[?1049l");
                     termWriter.flush();
 
                     // 恢复终端属性
