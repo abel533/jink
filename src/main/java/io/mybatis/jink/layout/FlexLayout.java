@@ -425,7 +425,7 @@ public class FlexLayout {
     /**
      * 递归收集文本节点的所有文本内容（对应 ink 的 squashTextNodes）
      */
-    static String squashTextContent(Node node) {
+    public static String squashTextContent(Node node) {
         if (node instanceof TextNode textNode) {
             return textNode.getNodeValue();
         }
