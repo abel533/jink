@@ -311,30 +311,25 @@ public class Ink {
         private void writeToTerminal(String output) {
             StringBuilder sb = new StringBuilder();
 
-            // 移动光标到左上角（备用屏幕缓冲区使用绝对定位）
-            sb.append("\u001B[H");
-
-            // 写入新输出（将 \n 替换为 \r\n 以确保 raw mode 下换行正确）
+            // 使用绝对行定位写入每一行，避免 \r\n 引起的滚动问题
             String[] lines = output.split("\n", -1);
-            // 安全限制：不超过终端高度，防止滚动
             int maxLines = Math.min(lines.length, height);
             for (int i = 0; i < maxLines; i++) {
+                // ANSI 行号从 1 开始：\e[row;1H 定位到第 row 行第 1 列
+                sb.append("\u001B[").append(i + 1).append(";1H");
                 sb.append("\u001B[2K"); // 清除整行
                 sb.append(lines[i]);
-                if (i < maxLines - 1) sb.append("\r\n");
             }
 
             // 清除剩余旧内容（当新输出比旧输出少行时）
-            if (maxLines < lastLineCount) {
-                for (int i = maxLines; i < lastLineCount; i++) {
-                    sb.append("\r\n\u001B[2K");
-                }
+            for (int i = maxLines; i < lastLineCount; i++) {
+                sb.append("\u001B[").append(i + 1).append(";1H");
+                sb.append("\u001B[2K");
             }
 
             termWriter.print(sb);
             termWriter.flush();
 
-            // 记录行数
             lastLineCount = maxLines;
         }
 
