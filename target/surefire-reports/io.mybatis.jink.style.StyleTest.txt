@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: io.mybatis.jink.style.StyleTest
--------------------------------------------------------------------------------
-Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.027 s -- in io.mybatis.jink.style.StyleTest
