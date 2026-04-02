@@ -283,6 +283,14 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
             // PageDown: 向下滚动消息
             int newOffset = Math.max(0, s.scrollOffset - 5);
             setState(new State(s.inputText, s.messages, newOffset));
+        } else if (key.scrollUp()) {
+            // 鼠标滚轮上: 向上滚动消息（每次 3 行）
+            int newOffset = Math.min(s.scrollOffset + 3, Math.max(0, totalMessages - 1));
+            setState(new State(s.inputText, s.messages, newOffset));
+        } else if (key.scrollDown()) {
+            // 鼠标滚轮下: 向下滚动消息（每次 3 行）
+            int newOffset = Math.max(0, s.scrollOffset - 3);
+            setState(new State(s.inputText, s.messages, newOffset));
         } else if (!input.isEmpty() && isPrintableInput(input, key)) {
             // 普通文本输入（过滤导航键残余字符）
             setState(new State(s.inputText + input, s.messages, s.scrollOffset));
@@ -296,6 +304,7 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
         if (key.upArrow() || key.downArrow() || key.leftArrow() || key.rightArrow()) return false;
         if (key.pageUp() || key.pageDown() || key.home() || key.end()) return false;
         if (key.escape() || key.tab() || key.delete()) return false;
+        if (key.scrollUp() || key.scrollDown()) return false;
         // 排除单个控制字符
         if (input.length() == 1 && input.charAt(0) < 0x20) return false;
         return true;

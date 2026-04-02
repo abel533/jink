@@ -88,6 +88,11 @@ public class KeyParser {
      * 解析转义序列后缀（ESC 之后的部分）
      */
     public static ParseResult parseEscapeSequence(String suffix) {
+        // SGR 鼠标事件: [<button;col;rowM 或 [<button;col;rowm
+        if (suffix.startsWith("[<") && suffix.length() > 2) {
+            return parseMouseEvent(suffix);
+        }
+
         String keyName = ESC_SEQUENCES.get(suffix);
         boolean shift = SHIFT_SEQUENCES.containsKey(suffix);
 
@@ -112,6 +117,26 @@ public class KeyParser {
 
         // 未知序列，返回 escape
         return new ParseResult("escape", "", false, false, false);
+    }
+
+    /**
+     * 解析 SGR 鼠标事件: [<button;col;rowM
+     */
+    private static ParseResult parseMouseEvent(String suffix) {
+        // 去掉 [< 前缀和 M/m 结尾
+        String body = suffix.substring(2, suffix.length() - 1);
+        String[] parts = body.split(";");
+        if (parts.length >= 1) {
+            try {
+                int button = Integer.parseInt(parts[0]);
+                // button 64=scrollUp, 65=scrollDown
+                if (button == 64) return new ParseResult("scrollUp", "", false, false, false);
+                if (button == 65) return new ParseResult("scrollDown", "", false, false, false);
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        // 其他鼠标事件忽略
+        return null;
     }
 
     /**
@@ -157,9 +182,14 @@ public class KeyParser {
             return suffix.length() >= 2;
         }
 
-        // ESC [ ... (CSI 序列): 需要至少 2 个字符，以字母或 ~ 结尾
+        // ESC [ ... (CSI 序列)
         if (first == '[') {
             if (suffix.length() < 2) return false;
+            // SGR 鼠标序列: [<button;col;rowM — 以 M 或 m 结尾
+            if (suffix.length() >= 2 && suffix.charAt(1) == '<') {
+                char last = suffix.charAt(suffix.length() - 1);
+                return last == 'M' || last == 'm';
+            }
             char last = suffix.charAt(suffix.length() - 1);
             return Character.isLetter(last) || last == '~';
         }
@@ -191,7 +221,9 @@ public class KeyParser {
                     "tab".equals(name),
                     "backspace".equals(name),
                     "delete".equals(name),
-                    ctrl, shift, meta
+                    ctrl, shift, meta,
+                    "scrollUp".equals(name),
+                    "scrollDown".equals(name)
             );
         }
 
@@ -204,6 +236,7 @@ public class KeyParser {
                 case "up", "down", "left", "right",
                         "pageup", "pagedown", "home", "end",
                         "return", "escape", "tab", "backspace", "delete",
+                        "scrollUp", "scrollDown",
                         "f1", "f2", "f3", "f4", "f5", "f6",
                         "f7", "f8", "f9", "f10", "f11", "f12",
                         "insert" -> "";

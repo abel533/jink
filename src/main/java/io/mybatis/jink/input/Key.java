@@ -20,7 +20,9 @@ public record Key(
         boolean delete,
         boolean ctrl,
         boolean shift,
-        boolean meta
+        boolean meta,
+        boolean scrollUp,
+        boolean scrollDown
 ) {
 
     /**
@@ -28,7 +30,8 @@ public record Key(
      */
     public static Key plain() {
         return new Key(false, false, false, false, false, false, false, false,
-                false, false, false, false, false, false, false, false);
+                false, false, false, false, false, false, false, false,
+                false, false);
     }
 
     /**
@@ -43,6 +46,7 @@ public record Key(
         private boolean pageUp, pageDown, home, end;
         private boolean return_, escape, tab, backspace, delete;
         private boolean ctrl, shift, meta;
+        private boolean scrollUp, scrollDown;
 
         public Builder upArrow() { this.upArrow = true; return this; }
         public Builder downArrow() { this.downArrow = true; return this; }
@@ -60,12 +64,14 @@ public record Key(
         public Builder ctrl() { this.ctrl = true; return this; }
         public Builder shift() { this.shift = true; return this; }
         public Builder meta() { this.meta = true; return this; }
+        public Builder scrollUp() { this.scrollUp = true; return this; }
+        public Builder scrollDown() { this.scrollDown = true; return this; }
 
         public Key build() {
             return new Key(upArrow, downArrow, leftArrow, rightArrow,
                     pageUp, pageDown, home, end,
                     return_, escape, tab, backspace, delete,
-                    ctrl, shift, meta);
+                    ctrl, shift, meta, scrollUp, scrollDown);
         }
     }
 }
