@@ -4,6 +4,7 @@ import io.mybatis.jink.Ink;
 import io.mybatis.jink.component.*;
 import io.mybatis.jink.input.Key;
 import io.mybatis.jink.style.*;
+import io.mybatis.jink.util.StringWidth;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +53,7 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
         // 底部结构：shortcutBar(1) + separator(1) + input(N) + separator(1) + statusBar(1)
         // 输入区最后一行在 h-1(shortcut) -1(sep) -1 = h-3（从底部算）
         int cursorRow = h - 3;
-        int cursorCol = 1 + PROMPT_WIDTH + lastLine.length();
+        int cursorCol = 1 + PROMPT_WIDTH + StringWidth.width(lastLine);
         setCursorPosition(cursorRow, cursorCol);
 
         int headerHeight = 7;
