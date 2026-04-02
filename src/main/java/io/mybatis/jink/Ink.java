@@ -206,6 +206,8 @@ public class Ink {
                 // 清屏 + 光标归位（确保备用缓冲区干净，防止首次渲染滚动）
                 termWriter.print("\u001B[2J");
                 termWriter.print("\u001B[H");
+                // 禁用备用屏幕鼠标滚轮→箭头键转换（防止滚轮触发历史命令）
+                termWriter.print("\u001B[?1007l");
                 // 隐藏光标
                 termWriter.print("\u001B[?25l");
                 termWriter.flush();
@@ -500,6 +502,8 @@ public class Ink {
                 try {
                     // 显示光标
                     termWriter.print("\u001B[?25h");
+                    // 恢复鼠标滚轮默认行为
+                    termWriter.print("\u001B[?1007h");
                     // 离开备用屏幕缓冲区（恢复原始终端内容）
                     termWriter.print("\u001B[?1049l");
                     termWriter.flush();
