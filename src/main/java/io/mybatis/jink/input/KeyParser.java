@@ -19,18 +19,26 @@ public class KeyParser {
     private static final Map<String, String> ESC_SEQUENCES = new HashMap<>();
 
     static {
-        // 箭头键
+        // 箭头键 (CSI 格式: ESC [ x)
         ESC_SEQUENCES.put("[A", "up");
         ESC_SEQUENCES.put("[B", "down");
         ESC_SEQUENCES.put("[C", "right");
         ESC_SEQUENCES.put("[D", "left");
 
+        // 箭头键 (SS3 格式: ESC O x — JLine Windows 终端使用此格式)
+        ESC_SEQUENCES.put("OA", "up");
+        ESC_SEQUENCES.put("OB", "down");
+        ESC_SEQUENCES.put("OC", "right");
+        ESC_SEQUENCES.put("OD", "left");
+
         // 导航键
         ESC_SEQUENCES.put("[1~", "home");
         ESC_SEQUENCES.put("[H", "home");
+        ESC_SEQUENCES.put("OH", "home");  // SS3 格式
         ESC_SEQUENCES.put("[7~", "home");
         ESC_SEQUENCES.put("[4~", "end");
         ESC_SEQUENCES.put("[F", "end");
+        ESC_SEQUENCES.put("OF", "end");   // SS3 格式
         ESC_SEQUENCES.put("[8~", "end");
         ESC_SEQUENCES.put("[5~", "pageup");
         ESC_SEQUENCES.put("[6~", "pagedown");
@@ -144,18 +152,19 @@ public class KeyParser {
 
         char first = suffix.charAt(0);
 
-        // ESC O x (SS3 序列)
-        if (first == 'O' && suffix.length() >= 2) return true;
+        // ESC O x (SS3 序列): 需要至少 2 个字符（O + 字母）
+        if (first == 'O') {
+            return suffix.length() >= 2;
+        }
 
-        // ESC [ ... (CSI 序列)
+        // ESC [ ... (CSI 序列): 需要至少 2 个字符，以字母或 ~ 结尾
         if (first == '[') {
             if (suffix.length() < 2) return false;
             char last = suffix.charAt(suffix.length() - 1);
-            // CSI 序列以字母或 ~ 结尾
             return Character.isLetter(last) || last == '~';
         }
 
-        // 单个字符 (Meta+letter)
+        // 单个非前缀字符 (Meta+letter)
         return suffix.length() == 1;
     }
 

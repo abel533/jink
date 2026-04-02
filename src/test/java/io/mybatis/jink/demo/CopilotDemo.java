@@ -219,7 +219,7 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
         int totalMessages = 3 + s.messages.size(); // 3 固定消息 + 用户消息
 
         if (key.return_() && key.meta()) {
-            // Alt+Enter: 多行输入换行
+            // Shift+Enter: 多行输入换行（终端上 Shift+Enter 发送 ESC+CR）
             setState(new State(s.inputText + "\n", s.messages, 0));
         } else if (key.return_()) {
             // Enter: 发送消息
