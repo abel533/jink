@@ -126,6 +126,9 @@ public class Ink {
         private String lastOutput = "";
         private int lastLineCount = 0;
 
+        // 清理状态
+        private volatile boolean cleaned = false;
+
         // 焦点管理
         private final FocusManager focusManager = new FocusManager();
 
@@ -214,6 +217,14 @@ public class Ink {
                     this.height = newSize.getRows() > 0 ? newSize.getRows() : this.height;
                     markDirty();
                 });
+
+                // 监听 INT 信号（Ctrl+C 可能绕过 raw mode 输入）
+                terminal.handle(Terminal.Signal.INT, signal -> {
+                    running = false;
+                });
+
+                // JVM 关闭钩子：确保终端状态恢复（Ctrl+C/SIGTERM 等异常退出时）
+                Runtime.getRuntime().addShutdownHook(new Thread(this::cleanup, "jink-cleanup"));
             } catch (IOException e) {
                 // 终端初始化完全失败：回退到纯 PrintStream 模式
                 System.err.println("[jink] 终端初始化失败: " + e.getMessage()
@@ -479,9 +490,12 @@ public class Ink {
         }
 
         /**
-         * 清理终端资源
+         * 清理终端资源（幂等，可多次调用）
          */
-        private void cleanup() {
+        private synchronized void cleanup() {
+            if (cleaned) return;
+            cleaned = true;
+
             if (terminal != null) {
                 try {
                     // 显示光标
@@ -496,7 +510,7 @@ public class Ink {
                     }
 
                     terminal.close();
-                } catch (IOException e) {
+                } catch (Exception e) {
                     // 忽略清理错误
                 }
             }
