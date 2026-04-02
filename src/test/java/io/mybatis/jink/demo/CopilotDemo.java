@@ -49,18 +49,14 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
             lastLine = inputLines[inputLines.length - 1];
         }
 
-        // 光标位置：考虑多行输入
-        // 底部结构：statusBar(1) + separator(1) + input(N行) + separator(1) + shortcutBar(1)
-        int inputRow = h - 1 - 1 - 1 + (inputLineCount - 1) - inputLineCount; // = h - 3 - (inputLineCount - 1) 从最后一行开始往上
-        // 简化：输入区最后一行 = h - 3, 第一行 = h - 3 - (inputLineCount-1)
-        // 光标在最后一行
+        // 底部结构：shortcutBar(1) + separator(1) + input(N) + separator(1) + statusBar(1)
+        // 输入区最后一行在 h-1(shortcut) -1(sep) -1 = h-3（从底部算）
         int cursorRow = h - 3;
-        int cursorCol = 1 + 2 + lastLine.length(); // padding(1) + prompt("❯ "=2) + 最后一行文本长度
+        int cursorCol = 1 + PROMPT_WIDTH + lastLine.length();
         setCursorPosition(cursorRow, cursorCol);
 
-        // 计算消息区可用行数
         int headerHeight = 7;
-        int bottomHeight = 3 + inputLineCount + 1; // statusBar + sep + input(N) + sep + shortcut
+        int bottomHeight = 4 + inputLineCount; // statusBar(1) + sep(1) + input(N) + sep(1) + shortcut(1)
         int messagePaddingTop = 1;
         int maxMessageLines = h - headerHeight - bottomHeight - messagePaddingTop;
 
@@ -72,7 +68,7 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
                 // === 弹性空白区 ===
                 Spacer.create(),
                 // === 状态栏（路径 + 模型信息）===
-                statusBar(w),
+                statusBar(w, h),
                 // === 输入区上方分隔线 ===
                 separator(w),
                 // === 输入区 ===
@@ -167,8 +163,8 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
     /**
      * 状态栏（左: 路径, 右: 模型信息）
      */
-    private Renderable statusBar(int w) {
-        String left = "D:\\Learn\\ink4j";
+    private Renderable statusBar(int w, int h) {
+        String left = "D:\\Learn\\ink4j (" + w + "x" + h + ")";
         String right = "Jink 0.1.0 (Java 21)";
         int pad = w - left.length() - right.length() - 2;
         String middle = pad > 0 ? " ".repeat(pad) : " ";
