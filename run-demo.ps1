@@ -3,7 +3,7 @@
 # Example: .\run-demo.ps1
 #          .\run-demo.ps1 io.mybatis.jink.demo.SimpleDemo
 param(
-    [string]$MainClass = 'io.mybatis.jink.demo.InteractiveDemo'
+    [string]$MainClass = 'io.mybatis.jink.demo.CopilotDemo'
 )
 
 Set-StrictMode -Version Latest

@@ -263,6 +263,11 @@ public class Ink {
         public void rerender() {
             if (!running) return;
 
+            // 通知组件当前终端尺寸
+            if (rootRenderable instanceof Component<?> component) {
+                component.setTerminalSize(width, height);
+            }
+
             ElementNode root = buildDomTree(rootRenderable, width);
             VirtualScreen screen = NodeRenderer.render(root);
             String newOutput = screen.render();

@@ -30,6 +30,8 @@ public abstract class Component<S> implements Renderable {
 
     private S state;
     private Runnable onStateChange;
+    private int columns = 80;
+    private int rows = 24;
 
     protected Component(S initialState) {
         this.state = initialState;
@@ -80,6 +82,28 @@ public abstract class Component<S> implements Renderable {
      * 键盘输入处理
      */
     public void onInput(String input, Key key) {
+    }
+
+    /**
+     * 获取终端列数（由 Ink 框架设置）
+     */
+    protected int getColumns() {
+        return columns;
+    }
+
+    /**
+     * 获取终端行数（由 Ink 框架设置）
+     */
+    protected int getRows() {
+        return rows;
+    }
+
+    /**
+     * 设置终端尺寸（由 Ink 框架内部调用）
+     */
+    public void setTerminalSize(int columns, int rows) {
+        this.columns = columns;
+        this.rows = rows;
     }
 
     @Override
