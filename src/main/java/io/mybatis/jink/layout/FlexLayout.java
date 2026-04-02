@@ -196,8 +196,18 @@ public class FlexLayout {
             int childMarginH = cs.horizontalMargin();
 
             if (childWidth == Style.AUTO) {
-                // 先递归布局，确定自然宽度
-                layoutNode(child, contentWidth - childMarginH, availableHeight);
+                // 文本节点使用固有宽度（基于内容测量）
+                if (child.getNodeType() == io.mybatis.jink.dom.NodeType.INK_TEXT
+                        || child.getNodeType() == io.mybatis.jink.dom.NodeType.INK_VIRTUAL_TEXT) {
+                    int intrinsicWidth = measureIntrinsicWidth(child);
+                    int maxChildWidth = contentWidth - childMarginH;
+                    childWidth = Math.min(intrinsicWidth, maxChildWidth);
+                    child.setComputedWidth(childWidth);
+                    layoutNode(child, childWidth, availableHeight);
+                } else {
+                    // Box 节点使用可用宽度（默认填充行为）
+                    layoutNode(child, contentWidth - childMarginH, availableHeight);
+                }
             } else {
                 child.setComputedWidth(childWidth);
                 layoutNode(child, childWidth, availableHeight);
@@ -437,5 +447,56 @@ public class FlexLayout {
             return sb.toString();
         }
         return "";
+    }
+
+    /**
+     * 测量节点的固有宽度（基于内容，不拉伸）。
+     * 用于 Row 布局中确定 AUTO 宽度子节点的自然尺寸。
+     */
+    public static int measureIntrinsicWidth(ElementNode node) {
+        Style style = node.getStyle();
+        // 显式宽度直接返回
+        if (style.width() != Style.AUTO) return style.width();
+
+        int borderH = style.horizontalBorderWidth();
+        int paddingH = style.horizontalPadding();
+
+        // 文本节点：按内容最大行宽
+        if (node.getNodeType() == io.mybatis.jink.dom.NodeType.INK_TEXT
+                || node.getNodeType() == io.mybatis.jink.dom.NodeType.INK_VIRTUAL_TEXT) {
+            String text = squashTextContent(node);
+            int maxLineWidth = 0;
+            for (String line : text.split("\n", -1)) {
+                maxLineWidth = Math.max(maxLineWidth, AnsiStringUtils.visibleWidth(line));
+            }
+            return maxLineWidth + borderH + paddingH;
+        }
+
+        // Box 节点：根据子节点和布局方向计算
+        boolean isColumn = style.flexDirection() == FlexDirection.COLUMN
+                || style.flexDirection() == FlexDirection.COLUMN_REVERSE;
+        int gap = resolveGap(style, isColumn);
+
+        int total = 0;
+        int maxChild = 0;
+        int childCount = 0;
+        for (Node child : node.getChildNodes()) {
+            if (child instanceof ElementNode elem && elem.getStyle().display() != Display.NONE) {
+                int childIntrinsic = measureIntrinsicWidth(elem) + elem.getStyle().horizontalMargin();
+                if (isColumn) {
+                    maxChild = Math.max(maxChild, childIntrinsic);
+                } else {
+                    total += childIntrinsic;
+                    childCount++;
+                }
+            }
+        }
+
+        if (isColumn) {
+            return maxChild + borderH + paddingH;
+        } else {
+            total += gap * Math.max(0, childCount - 1);
+            return total + borderH + paddingH;
+        }
     }
 }

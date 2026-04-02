@@ -150,15 +150,23 @@ public class VirtualScreen {
      * 渲染单行，合并相同样式的字符以减少 ANSI 序列
      */
     private void renderLine(StringBuilder sb, int y) {
-        // 从行尾找到最后一个非空字符，避免输出尾部空格
+        // 从行尾找到最后一个有效字符（跳过默认空格和宽字符占位符）
         int lastNonSpace = width - 1;
-        while (lastNonSpace >= 0 && grid[y][lastNonSpace].equals(StyledChar.SPACE)) {
-            lastNonSpace--;
+        while (lastNonSpace >= 0) {
+            StyledChar sc = grid[y][lastNonSpace];
+            if (sc.equals(StyledChar.SPACE) || sc.ch().isEmpty()) {
+                lastNonSpace--;
+            } else {
+                break;
+            }
         }
 
         Style currentStyle = null;
         for (int x = 0; x <= lastNonSpace; x++) {
             StyledChar sc = grid[y][x];
+            // 跳过宽字符占位符（空字符串）
+            if (sc.ch().isEmpty()) continue;
+
             if (!Objects.equals(sc.style(), currentStyle)) {
                 // 样式变化，先关闭旧样式
                 if (currentStyle != null) {
@@ -198,7 +206,7 @@ public class VirtualScreen {
 
     private void putChar(int x, int y, String ch, Style style) {
         if (x >= 0 && x < width && y >= 0 && y < height) {
-            grid[y][x] = new StyledChar(ch.isEmpty() ? " " : ch, style);
+            grid[y][x] = new StyledChar(ch, style);
         }
     }
 
