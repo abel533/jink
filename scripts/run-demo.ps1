@@ -51,6 +51,13 @@ if ($JdkHome -ne "") {
         }
         exit 1
     }
+    # 从 java.exe 路径推导 JAVA_HOME（供 Maven 使用）
+    $javaExe = (Get-Command java -ErrorAction SilentlyContinue)?.Source
+    if ($javaExe) {
+        $detectedHome = Split-Path (Split-Path $javaExe -Parent) -Parent
+        $env:JAVA_HOME = $detectedHome
+        $env:PATH = "$detectedHome\bin;$env:PATH"
+    }
 }
 
 $env:MAVEN_OPTS = '-Dfile.encoding=UTF-8'

@@ -32,6 +32,13 @@ if ($JdkHome -ne "") {
     $major = Get-JavaMajorVersion "java"
     if ($major -ge 21) {
         Write-Host ("[jink] 使用系统 Java {0}" -f $major) -ForegroundColor Green
+        # 从 java.exe 路径推导 JAVA_HOME（供 Maven 使用）
+        $javaExe = (Get-Command java -ErrorAction SilentlyContinue)?.Source
+        if ($javaExe) {
+            $detectedHome = Split-Path (Split-Path $javaExe -Parent) -Parent
+            $env:JAVA_HOME = $detectedHome
+            $env:PATH = "$detectedHome\bin;$env:PATH"
+        }
     } else {
         if ($major -eq 0) {
             Write-Host "❌ 未找到 Java，请安装 JDK 21+ 或通过参数指定路径：" -ForegroundColor Red
