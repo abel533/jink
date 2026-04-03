@@ -208,6 +208,8 @@ public class Ink {
                 termWriter.print("\u001B[H");
                 // 隐藏光标
                 termWriter.print("\u001B[?25l");
+                // 启用 Bracketed Paste Mode
+                termWriter.print(io.mybatis.jink.ansi.Ansi.ENABLE_BRACKETED_PASTE);
                 termWriter.flush();
 
                 // 监听终端尺寸变化
@@ -446,7 +448,45 @@ public class Ink {
                 if (seq.length() > 20) break;
             }
 
+            // 检测 Bracketed Paste 起始标记 [200~
+            if ("[200~".equals(seq.toString())) {
+                return readPasteContent();
+            }
+
             return KeyParser.parseEscapeSequence(seq.toString());
+        }
+
+        /**
+         * 读取 Bracketed Paste 内容（从 [200~ 到 [201~ 之间的所有数据）
+         */
+        private KeyParser.ParseResult readPasteContent() throws IOException {
+            StringBuilder pasteBuffer = new StringBuilder();
+            // 读取直到遇到 ESC[201~ (粘贴结束标记)
+            // 最大缓冲 64KB 防止异常输入
+            while (pasteBuffer.length() < 65536) {
+                int ch = reader.read(1000); // 粘贴数据应该快速到达
+                if (ch < 0) break;
+
+                if (ch == 0x1b) {
+                    // 可能是结束标记 ESC[201~
+                    StringBuilder endSeq = new StringBuilder();
+                    for (int i = 0; i < 5; i++) { // "[201~" 长度为 5
+                        int more = reader.read(100);
+                        if (more < 0) break;
+                        endSeq.append((char) more);
+                    }
+                    if ("[201~".equals(endSeq.toString())) {
+                        break; // 粘贴结束
+                    }
+                    // 不是结束标记，将已读字符加入缓冲
+                    pasteBuffer.append('\u001B');
+                    pasteBuffer.append(endSeq);
+                } else {
+                    pasteBuffer.append((char) ch);
+                }
+            }
+
+            return KeyParser.pasteResult(pasteBuffer.toString());
         }
 
         /**
@@ -475,7 +515,11 @@ public class Ink {
 
             // 分发到组件
             if (rootRenderable instanceof Component<?> component) {
-                component.onInput(input, key);
+                if (result.isPaste()) {
+                    component.onPaste(input);
+                } else {
+                    component.onInput(input, key);
+                }
             }
         }
 
@@ -498,6 +542,8 @@ public class Ink {
 
             if (terminal != null) {
                 try {
+                    // 禁用 Bracketed Paste Mode
+                    termWriter.print(io.mybatis.jink.ansi.Ansi.DISABLE_BRACKETED_PASTE);
                     // 显示光标
                     termWriter.print("\u001B[?25h");
                     // 离开备用屏幕缓冲区（恢复原始终端内容）

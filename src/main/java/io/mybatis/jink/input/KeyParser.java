@@ -232,6 +232,8 @@ public class KeyParser {
          * 对于 Ctrl/Meta 组合键，返回字母本身（匹配 ink 行为，方便组件判断）。
          */
         public String inputText() {
+            // 粘贴事件返回完整粘贴文本
+            if ("paste".equals(name)) return input;
             return switch (name) {
                 case "up", "down", "left", "right",
                         "pageup", "pagedown", "home", "end",
@@ -243,5 +245,15 @@ public class KeyParser {
                 default -> input.isEmpty() ? name : input;
             };
         }
+
+        /** 是否为粘贴事件 */
+        public boolean isPaste() {
+            return "paste".equals(name);
+        }
+    }
+
+    /** 创建粘贴事件的 ParseResult */
+    public static ParseResult pasteResult(String pastedText) {
+        return new ParseResult("paste", pastedText, false, false, false);
     }
 }

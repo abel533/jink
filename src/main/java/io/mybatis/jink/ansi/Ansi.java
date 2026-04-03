@@ -119,6 +119,13 @@ public final class Ansi {
     /** 离开备用屏幕 */
     public static final String EXIT_ALT_SCREEN = CSI + "?1049l";
 
+    // ===== 粘贴模式 =====
+
+    /** 启用 Bracketed Paste Mode */
+    public static final String ENABLE_BRACKETED_PASTE = CSI + "?2004h";
+    /** 禁用 Bracketed Paste Mode */
+    public static final String DISABLE_BRACKETED_PASTE = CSI + "?2004l";
+
     // ===== 样式应用 =====
 
     /**

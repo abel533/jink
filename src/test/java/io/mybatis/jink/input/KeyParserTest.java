@@ -128,4 +128,31 @@ class KeyParserTest {
         assertTrue(shiftUp.shift());
         assertTrue(shiftUp.toKey().shift());
     }
+
+    @Test
+    void testPasteResult() {
+        var paste = KeyParser.pasteResult("Hello World\nLine 2");
+        assertEquals("paste", paste.name());
+        assertTrue(paste.isPaste());
+        assertEquals("Hello World\nLine 2", paste.inputText());
+        assertFalse(paste.ctrl());
+        assertFalse(paste.shift());
+        assertFalse(paste.meta());
+    }
+
+    @Test
+    void testPasteResultEmpty() {
+        var paste = KeyParser.pasteResult("");
+        assertEquals("paste", paste.name());
+        assertTrue(paste.isPaste());
+        assertEquals("", paste.inputText());
+    }
+
+    @Test
+    void testNonPasteResultNotPaste() {
+        var arrow = KeyParser.parseEscapeSequence("[A");
+        assertFalse(arrow.isPaste());
+        var ch = KeyParser.parseChar('a');
+        assertFalse(ch.isPaste());
+    }
 }

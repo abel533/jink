@@ -87,6 +87,20 @@ public abstract class Component<S> implements Renderable {
     }
 
     /**
+     * 粘贴事件处理（Bracketed Paste Mode）。
+     * 当用户在终端中粘贴文本时触发，text 包含完整的粘贴内容。
+     * 默认实现将粘贴文本逐字符作为 onInput 分发。
+     * 子类可覆盖以批量处理粘贴内容。
+     */
+    public void onPaste(String text) {
+        // 默认将粘贴文本逐字符通过 onInput 分发
+        for (int i = 0; i < text.length(); i++) {
+            String ch = String.valueOf(text.charAt(i));
+            onInput(ch, Key.plain());
+        }
+    }
+
+    /**
      * 获取终端列数（由 Ink 框架设置）
      */
     protected int getColumns() {
