@@ -436,4 +436,96 @@ class FlexLayoutTest {
         assertEquals(0, absChild.getComputedLeft());
         assertEquals(0, absChild.getComputedTop());
     }
+
+    // ===== FlexWrap 测试 =====
+
+    @Test
+    void flexWrapRowBasic() {
+        // 3 个 15 列宽子节点在 40 列容器中，第 3 个应换行
+        var root = ElementNode.createRoot();
+        root.setStyle(Style.builder()
+                .flexDirection(FlexDirection.ROW)
+                .flexWrap(Style.FlexWrap.WRAP)
+                .width(40)
+                .build());
+
+        var c1 = ElementNode.createBox();
+        c1.setStyle(Style.builder().width(15).height(3).build());
+        var c2 = ElementNode.createBox();
+        c2.setStyle(Style.builder().width(15).height(3).build());
+        var c3 = ElementNode.createBox();
+        c3.setStyle(Style.builder().width(15).height(4).build());
+
+        root.appendChild(c1);
+        root.appendChild(c2);
+        root.appendChild(c3);
+
+        FlexLayout.calculateLayout(root, 40);
+
+        // 第一行：c1 + c2 = 30 <= 40
+        assertEquals(0, c1.getComputedLeft());
+        assertEquals(0, c1.getComputedTop());
+        assertEquals(15, c2.getComputedLeft());
+        assertEquals(0, c2.getComputedTop());
+
+        // 第二行：c3 换行
+        assertEquals(0, c3.getComputedLeft());
+        assertEquals(3, c3.getComputedTop()); // 第一行高度=3
+    }
+
+    @Test
+    void flexWrapRowAllFit() {
+        // 所有子节点都在一行内，不应换行
+        var root = ElementNode.createRoot();
+        root.setStyle(Style.builder()
+                .flexDirection(FlexDirection.ROW)
+                .flexWrap(Style.FlexWrap.WRAP)
+                .width(40)
+                .build());
+
+        var c1 = ElementNode.createBox();
+        c1.setStyle(Style.builder().width(10).height(3).build());
+        var c2 = ElementNode.createBox();
+        c2.setStyle(Style.builder().width(10).height(3).build());
+        var c3 = ElementNode.createBox();
+        c3.setStyle(Style.builder().width(10).height(3).build());
+
+        root.appendChild(c1);
+        root.appendChild(c2);
+        root.appendChild(c3);
+
+        FlexLayout.calculateLayout(root, 40);
+
+        // 全在第一行
+        assertEquals(0, c1.getComputedLeft());
+        assertEquals(10, c2.getComputedLeft());
+        assertEquals(20, c3.getComputedLeft());
+        assertEquals(0, c1.getComputedTop());
+        assertEquals(0, c2.getComputedTop());
+        assertEquals(0, c3.getComputedTop());
+    }
+
+    @Test
+    void flexWrapRowHeight() {
+        // 验证换行后容器高度正确
+        var root = ElementNode.createRoot();
+        root.setStyle(Style.builder()
+                .flexDirection(FlexDirection.ROW)
+                .flexWrap(Style.FlexWrap.WRAP)
+                .width(30)
+                .build());
+
+        var c1 = ElementNode.createBox();
+        c1.setStyle(Style.builder().width(20).height(5).build());
+        var c2 = ElementNode.createBox();
+        c2.setStyle(Style.builder().width(20).height(3).build());
+
+        root.appendChild(c1);
+        root.appendChild(c2);
+
+        FlexLayout.calculateLayout(root, 30);
+
+        // 两行：5 + 3 = 8
+        assertEquals(8, root.getComputedHeight());
+    }
 }

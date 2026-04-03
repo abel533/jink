@@ -137,19 +137,38 @@ public class FlexLayout {
 
         // Flex 布局（仅非绝对定位子节点参与）
         if (!children.isEmpty()) {
+            Style.FlexWrap wrap = style.flexWrap();
+            boolean isWrapped = wrap == Style.FlexWrap.WRAP || wrap == Style.FlexWrap.WRAP_REVERSE;
+
             if (isColumn) {
-                layoutColumn(node, children, contentWidth, contentHeight, gap);
+                if (isWrapped) {
+                    layoutColumnWrapped(node, children, contentWidth, contentHeight, gap, wrap);
+                } else {
+                    layoutColumn(node, children, contentWidth, contentHeight, gap);
+                }
             } else {
-                layoutRow(node, children, contentWidth, contentHeight, gap);
+                if (isWrapped) {
+                    layoutRowWrapped(node, children, contentWidth, contentHeight, gap, wrap);
+                } else {
+                    layoutRow(node, children, contentWidth, contentHeight, gap);
+                }
             }
         }
 
         // 计算节点自身高度
         int childrenHeight = 0;
         if (!children.isEmpty()) {
-            childrenHeight = computeChildrenExtent(children, true, gap);
-            if (!isColumn) {
-                childrenHeight = computeChildrenExtent(children, false, 0);
+            Style.FlexWrap wrap = style.flexWrap();
+            boolean isWrapped = wrap == Style.FlexWrap.WRAP || wrap == Style.FlexWrap.WRAP_REVERSE;
+
+            if (isWrapped) {
+                // 换行布局：取所有子节点的最大 (top + height + marginBottom) 作为总高度
+                childrenHeight = computeWrappedExtent(children, isColumn);
+            } else {
+                childrenHeight = computeChildrenExtent(children, true, gap);
+                if (!isColumn) {
+                    childrenHeight = computeChildrenExtent(children, false, 0);
+                }
             }
         }
 
@@ -338,6 +357,245 @@ public class FlexLayout {
                 availableHeight != Style.AUTO ? availableHeight : 0, true);
     }
 
+    // ===== FlexWrap 多行布局 =====
+
+    /**
+     * Row 方向的 wrap 布局：子节点溢出时换行
+     */
+    private static void layoutRowWrapped(ElementNode parent, List<ElementNode> children,
+                                         int contentWidth, int availableHeight, int gap,
+                                         Style.FlexWrap wrapMode) {
+        // Phase 1: 测量所有子节点的自然宽度
+        for (ElementNode child : children) {
+            Style cs = child.getStyle();
+            int childWidth = resolveSize(cs.width(), contentWidth);
+            int childMarginH = cs.horizontalMargin();
+
+            if (childWidth == Style.AUTO) {
+                int intrinsicWidth = measureIntrinsicWidth(child);
+                int maxChildWidth = contentWidth - childMarginH;
+                childWidth = (intrinsicWidth > 0 || cs.flexGrow() > 0)
+                        ? Math.min(intrinsicWidth, maxChildWidth)
+                        : maxChildWidth;
+            }
+            child.setComputedWidth(childWidth);
+            layoutNode(child, childWidth, availableHeight, contentWidth, availableHeight);
+        }
+
+        // Phase 2: 按主轴宽度分行
+        List<List<ElementNode>> lines = splitIntoLines(children, contentWidth, gap, false);
+
+        // Phase 3: 每行独立做 flexGrow + justifyContent
+        for (List<ElementNode> line : lines) {
+            applyFlexGrowShrinkRow(line, contentWidth, gap, availableHeight);
+            int usedWidth = computeLineMainSize(line, gap, false);
+            positionOnMainAxis(line, parent.getStyle().justifyContent(), contentWidth, usedWidth, gap, false);
+        }
+
+        // Phase 4: 行间交叉轴堆叠 + alignItems per line
+        stackLinesOnCrossAxis(lines, parent.getStyle().alignItems(), availableHeight, gap,
+                true, wrapMode == Style.FlexWrap.WRAP_REVERSE);
+    }
+
+    /**
+     * Column 方向的 wrap 布局：子节点溢出时换列
+     */
+    private static void layoutColumnWrapped(ElementNode parent, List<ElementNode> children,
+                                            int contentWidth, int availableHeight, int gap,
+                                            Style.FlexWrap wrapMode) {
+        // Phase 1: 测量所有子节点的自然高度
+        for (ElementNode child : children) {
+            Style cs = child.getStyle();
+            int childMarginH = cs.horizontalMargin();
+            layoutNode(child, contentWidth - childMarginH, Style.AUTO, contentWidth, availableHeight);
+        }
+
+        // Phase 2: 按主轴高度分列
+        List<List<ElementNode>> lines = splitIntoLines(children, availableHeight, gap, true);
+
+        // Phase 3: 每列独立做 flexGrow + justifyContent
+        for (List<ElementNode> line : lines) {
+            applyFlexGrowShrinkColumn(line, availableHeight, gap);
+            int usedHeight = computeLineMainSize(line, gap, true);
+            positionOnMainAxis(line, parent.getStyle().justifyContent(),
+                    availableHeight != Style.AUTO ? availableHeight : usedHeight, usedHeight, gap, true);
+        }
+
+        // Phase 4: 列间交叉轴堆叠
+        stackLinesOnCrossAxis(lines, parent.getStyle().alignItems(), contentWidth, gap,
+                false, wrapMode == Style.FlexWrap.WRAP_REVERSE);
+    }
+
+    /**
+     * 将子节点按主轴尺寸分行/分列
+     */
+    private static List<List<ElementNode>> splitIntoLines(List<ElementNode> children,
+                                                          int mainAxisSize, int gap,
+                                                          boolean isColumn) {
+        List<List<ElementNode>> lines = new ArrayList<>();
+        List<ElementNode> currentLine = new ArrayList<>();
+        int currentSize = 0;
+
+        for (ElementNode child : children) {
+            Style cs = child.getStyle();
+            int childMainSize = isColumn
+                    ? child.getComputedHeight() + cs.verticalMargin()
+                    : child.getComputedWidth() + cs.horizontalMargin();
+            int gapAdd = currentLine.isEmpty() ? 0 : gap;
+
+            if (!currentLine.isEmpty() && mainAxisSize != Style.AUTO
+                    && currentSize + gapAdd + childMainSize > mainAxisSize) {
+                lines.add(currentLine);
+                currentLine = new ArrayList<>();
+                currentSize = 0;
+                gapAdd = 0;
+            }
+
+            currentLine.add(child);
+            currentSize += gapAdd + childMainSize;
+        }
+        if (!currentLine.isEmpty()) {
+            lines.add(currentLine);
+        }
+        return lines;
+    }
+
+    /**
+     * 对一行 row 子节点应用 flexGrow/flexShrink
+     */
+    private static void applyFlexGrowShrinkRow(List<ElementNode> line, int contentWidth,
+                                               int gap, int availableHeight) {
+        int totalWidth = computeLineMainSize(line, gap, false);
+        int totalGrow = 0, totalShrink = 0;
+        for (ElementNode c : line) {
+            totalGrow += c.getStyle().flexGrow();
+            totalShrink += c.getStyle().flexShrink();
+        }
+
+        int extra = Math.max(0, contentWidth - totalWidth);
+        if (totalGrow > 0 && extra > 0) {
+            for (ElementNode c : line) {
+                int grow = c.getStyle().flexGrow();
+                if (grow > 0) {
+                    int bonus = extra * grow / totalGrow;
+                    c.setComputedWidth(c.getComputedWidth() + bonus);
+                    layoutNode(c, c.getComputedWidth(), availableHeight, contentWidth, availableHeight);
+                }
+            }
+        }
+
+        int overflow = Math.max(0, totalWidth - contentWidth);
+        if (totalShrink > 0 && overflow > 0) {
+            for (ElementNode c : line) {
+                int shrink = c.getStyle().flexShrink();
+                if (shrink > 0) {
+                    int reduction = overflow * shrink / totalShrink;
+                    int newW = Math.max(0, c.getComputedWidth() - reduction);
+                    c.setComputedWidth(newW);
+                    layoutNode(c, newW, availableHeight, contentWidth, availableHeight);
+                }
+            }
+        }
+    }
+
+    /**
+     * 对一列 column 子节点应用 flexGrow
+     */
+    private static void applyFlexGrowShrinkColumn(List<ElementNode> line, int availableHeight, int gap) {
+        if (availableHeight == Style.AUTO) return;
+        int totalHeight = computeLineMainSize(line, gap, true);
+        int totalGrow = 0;
+        for (ElementNode c : line) totalGrow += c.getStyle().flexGrow();
+
+        int extra = Math.max(0, availableHeight - totalHeight);
+        if (totalGrow > 0 && extra > 0) {
+            for (ElementNode c : line) {
+                int grow = c.getStyle().flexGrow();
+                if (grow > 0) {
+                    c.setComputedHeight(c.getComputedHeight() + extra * grow / totalGrow);
+                }
+            }
+        }
+    }
+
+    /**
+     * 计算一行/一列的主轴总尺寸
+     */
+    private static int computeLineMainSize(List<ElementNode> line, int gap, boolean isColumn) {
+        int total = 0;
+        for (int i = 0; i < line.size(); i++) {
+            ElementNode c = line.get(i);
+            total += isColumn
+                    ? c.getComputedHeight() + c.getStyle().verticalMargin()
+                    : c.getComputedWidth() + c.getStyle().horizontalMargin();
+            if (i < line.size() - 1) total += gap;
+        }
+        return total;
+    }
+
+    /**
+     * 在交叉轴上堆叠多行/多列，并对每行应用 alignItems
+     *
+     * @param crossAxisIsVertical true=ROW布局(行堆叠垂直), false=COLUMN布局(列堆叠水平)
+     * @param reverse true=wrap-reverse
+     */
+    private static void stackLinesOnCrossAxis(List<List<ElementNode>> lines, AlignItems alignItems,
+                                              int crossSize, int gap,
+                                              boolean crossAxisIsVertical, boolean reverse) {
+        // 计算每行的交叉轴尺寸
+        int[] lineSizes = new int[lines.size()];
+        for (int i = 0; i < lines.size(); i++) {
+            int maxCross = 0;
+            for (ElementNode c : lines.get(i)) {
+                int cs = crossAxisIsVertical
+                        ? c.getComputedHeight() + c.getStyle().verticalMargin()
+                        : c.getComputedWidth() + c.getStyle().horizontalMargin();
+                maxCross = Math.max(maxCross, cs);
+            }
+            lineSizes[i] = maxCross;
+        }
+
+        // 堆叠行
+        int pos = 0;
+        int lineCount = lines.size();
+        for (int lineIdx = 0; lineIdx < lineCount; lineIdx++) {
+            int actualIdx = reverse ? (lineCount - 1 - lineIdx) : lineIdx;
+            List<ElementNode> line = lines.get(actualIdx);
+            int lineSize = lineSizes[actualIdx];
+
+            // 对该行中的每个子节点做交叉轴对齐
+            for (ElementNode child : line) {
+                Style cs = child.getStyle();
+                int childCross = crossAxisIsVertical
+                        ? child.getComputedHeight() + cs.verticalMargin()
+                        : child.getComputedWidth() + cs.horizontalMargin();
+                int freeSpace = Math.max(0, lineSize - childCross);
+
+                AlignItems itemAlign = cs.alignSelf() != null ? cs.alignSelf() : alignItems;
+                int crossOffset = switch (itemAlign) {
+                    case FLEX_START, BASELINE -> 0;
+                    case CENTER -> freeSpace / 2;
+                    case FLEX_END -> freeSpace;
+                    case STRETCH -> 0;
+                };
+
+                if (crossAxisIsVertical) {
+                    child.setComputedTop(pos + crossOffset + cs.marginTop());
+                    if (itemAlign == AlignItems.STRETCH && freeSpace > 0) {
+                        child.setComputedHeight(lineSize - cs.verticalMargin());
+                    }
+                } else {
+                    child.setComputedLeft(pos + crossOffset + cs.marginLeft());
+                    if (itemAlign == AlignItems.STRETCH && freeSpace > 0) {
+                        child.setComputedWidth(lineSize - cs.horizontalMargin());
+                    }
+                }
+            }
+
+            pos += lineSize;
+        }
+    }
+
     /**
      * 主轴定位（根据 justifyContent）
      */
@@ -505,6 +763,27 @@ public class FlexLayout {
             }
             return max;
         }
+    }
+
+    /**
+     * 换行布局下计算所有子节点占据的交叉轴总尺寸。
+     * 子节点已被 stackLinesOnCrossAxis 定位，取最大 (top+height) 或 (left+width)。
+     */
+    private static int computeWrappedExtent(List<ElementNode> children, boolean isColumn) {
+        int maxExtent = 0;
+        for (ElementNode child : children) {
+            Style cs = child.getStyle();
+            int extent;
+            if (isColumn) {
+                // column wrap: 交叉轴是水平方向
+                extent = child.getComputedLeft() + child.getComputedWidth() + cs.marginRight();
+            } else {
+                // row wrap: 交叉轴是垂直方向
+                extent = child.getComputedTop() + child.getComputedHeight() + cs.marginBottom();
+            }
+            maxExtent = Math.max(maxExtent, extent);
+        }
+        return maxExtent;
     }
 
     /**
