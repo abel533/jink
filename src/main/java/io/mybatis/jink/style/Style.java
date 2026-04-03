@@ -53,6 +53,10 @@ public record Style(
         // 边框
         BorderStyle borderStyle,
         Color borderColor,
+        Color borderTopColor,
+        Color borderRightColor,
+        Color borderBottomColor,
+        Color borderLeftColor,
 
         // 显示
         Display display,
@@ -137,6 +141,10 @@ public record Style(
         b.rowGap = this.rowGap;
         b.borderStyle = this.borderStyle;
         b.borderColor = this.borderColor;
+        b.borderTopColor = this.borderTopColor;
+        b.borderRightColor = this.borderRightColor;
+        b.borderBottomColor = this.borderBottomColor;
+        b.borderLeftColor = this.borderLeftColor;
         b.display = this.display;
         b.overflow = this.overflow;
         b.overflowX = this.overflowX;
@@ -158,6 +166,20 @@ public record Style(
      */
     public boolean hasBorder() {
         return borderStyle != null && borderStyle.hasBorder();
+    }
+
+    /** 获取某边的有效边框颜色（优先使用独立颜色，回退到 borderColor） */
+    public Color effectiveBorderTopColor() {
+        return borderTopColor != null ? borderTopColor : borderColor;
+    }
+    public Color effectiveBorderRightColor() {
+        return borderRightColor != null ? borderRightColor : borderColor;
+    }
+    public Color effectiveBorderBottomColor() {
+        return borderBottomColor != null ? borderBottomColor : borderColor;
+    }
+    public Color effectiveBorderLeftColor() {
+        return borderLeftColor != null ? borderLeftColor : borderColor;
     }
 
     /**
@@ -245,6 +267,10 @@ public record Style(
         private int rowGap = AUTO;
         private BorderStyle borderStyle = BorderStyle.NONE;
         private Color borderColor = null;
+        private Color borderTopColor = null;
+        private Color borderRightColor = null;
+        private Color borderBottomColor = null;
+        private Color borderLeftColor = null;
         private Display display = Display.FLEX;
         private Overflow overflow = Overflow.VISIBLE;
         private Overflow overflowX = null;
@@ -324,6 +350,10 @@ public record Style(
 
         public Builder borderStyle(BorderStyle v) { this.borderStyle = v; return this; }
         public Builder borderColor(Color v) { this.borderColor = v; return this; }
+        public Builder borderTopColor(Color v) { this.borderTopColor = v; return this; }
+        public Builder borderRightColor(Color v) { this.borderRightColor = v; return this; }
+        public Builder borderBottomColor(Color v) { this.borderBottomColor = v; return this; }
+        public Builder borderLeftColor(Color v) { this.borderLeftColor = v; return this; }
 
         public Builder display(Display v) { this.display = v; return this; }
         public Builder overflow(Overflow v) { this.overflow = v; return this; }
@@ -349,7 +379,7 @@ public record Style(
                     paddingTop, paddingRight, paddingBottom, paddingLeft,
                     marginTop, marginRight, marginBottom, marginLeft,
                     gap, columnGap, rowGap,
-                    borderStyle, borderColor,
+                    borderStyle, borderColor, borderTopColor, borderRightColor, borderBottomColor, borderLeftColor,
                     display, overflow, overflowX, overflowY,
                     textWrap, color, backgroundColor,
                     bold, italic, underline, strikethrough, inverse, dimmed

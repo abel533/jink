@@ -109,26 +109,33 @@ public class NodeRenderer {
      */
     private static void renderBorder(VirtualScreen screen, int x, int y, int w, int h, Style style) {
         BorderStyle border = style.borderStyle();
-        Style borderTextStyle = style.borderColor() != null
-                ? Style.builder().color(style.borderColor()).build()
-                : null;
 
-        // 四个角
-        screen.write(x, y, border.getTopLeft(), borderTextStyle);
-        screen.write(x + w - 1, y, border.getTopRight(), borderTextStyle);
-        screen.write(x, y + h - 1, border.getBottomLeft(), borderTextStyle);
-        screen.write(x + w - 1, y + h - 1, border.getBottomRight(), borderTextStyle);
+        // 每边独立颜色样式（null = 无颜色，使用默认）
+        Style topStyle = style.effectiveBorderTopColor() != null
+                ? Style.builder().color(style.effectiveBorderTopColor()).build() : null;
+        Style rightStyle = style.effectiveBorderRightColor() != null
+                ? Style.builder().color(style.effectiveBorderRightColor()).build() : null;
+        Style bottomStyle = style.effectiveBorderBottomColor() != null
+                ? Style.builder().color(style.effectiveBorderBottomColor()).build() : null;
+        Style leftStyle = style.effectiveBorderLeftColor() != null
+                ? Style.builder().color(style.effectiveBorderLeftColor()).build() : null;
+
+        // 四个角（角落使用相邻上/下边的颜色）
+        screen.write(x, y, border.getTopLeft(), topStyle);
+        screen.write(x + w - 1, y, border.getTopRight(), topStyle);
+        screen.write(x, y + h - 1, border.getBottomLeft(), bottomStyle);
+        screen.write(x + w - 1, y + h - 1, border.getBottomRight(), bottomStyle);
 
         // 上下边
         for (int col = x + 1; col < x + w - 1; col++) {
-            screen.write(col, y, border.getTop(), borderTextStyle);
-            screen.write(col, y + h - 1, border.getBottom(), borderTextStyle);
+            screen.write(col, y, border.getTop(), topStyle);
+            screen.write(col, y + h - 1, border.getBottom(), bottomStyle);
         }
 
         // 左右边
         for (int row = y + 1; row < y + h - 1; row++) {
-            screen.write(x, row, border.getLeft(), borderTextStyle);
-            screen.write(x + w - 1, row, border.getRight(), borderTextStyle);
+            screen.write(x, row, border.getLeft(), leftStyle);
+            screen.write(x + w - 1, row, border.getRight(), rightStyle);
         }
     }
 

@@ -333,4 +333,51 @@ class NodeRendererTest {
         // 截断模式下，高度应为 1（单行），而非换行后的 2 行
         assertEquals(1, text.getComputedHeight());
     }
+
+    @Test
+    void renderPerSideBorderColor() {
+        // 验证每边独立边框颜色正确渲染
+        var root = ElementNode.createRoot();
+        root.setStyle(Style.builder()
+                .flexDirection(FlexDirection.COLUMN)
+                .borderStyle(BorderStyle.SINGLE)
+                .borderTopColor(Color.RED)
+                .borderBottomColor(Color.GREEN)
+                .borderLeftColor(Color.BLUE)
+                .borderRightColor(Color.YELLOW)
+                .width(10)
+                .height(3)
+                .build());
+
+        FlexLayout.calculateLayout(root, 10);
+        VirtualScreen screen = NodeRenderer.render(root);
+        String output = screen.render();
+
+        // 应包含红色（顶部）和绿色（底部）的 ANSI 序列
+        assertTrue(output.contains("\u001B[31m")); // RED
+        assertTrue(output.contains("\u001B[32m")); // GREEN
+        assertTrue(output.contains("\u001B[34m")); // BLUE
+        assertTrue(output.contains("\u001B[33m")); // YELLOW
+    }
+
+    @Test
+    void renderBorderColorFallback() {
+        // borderColor 作为 fallback，未设置独立颜色的边使用 borderColor
+        var root = ElementNode.createRoot();
+        root.setStyle(Style.builder()
+                .flexDirection(FlexDirection.COLUMN)
+                .borderStyle(BorderStyle.SINGLE)
+                .borderColor(Color.CYAN)
+                .borderTopColor(Color.RED)
+                .width(10)
+                .height(3)
+                .build());
+
+        // effectiveBorderTopColor 应为 RED
+        assertEquals(Color.RED, root.getStyle().effectiveBorderTopColor());
+        // 其余三边应 fallback 到 CYAN
+        assertEquals(Color.CYAN, root.getStyle().effectiveBorderRightColor());
+        assertEquals(Color.CYAN, root.getStyle().effectiveBorderBottomColor());
+        assertEquals(Color.CYAN, root.getStyle().effectiveBorderLeftColor());
+    }
 }
