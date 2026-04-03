@@ -1,27 +1,58 @@
 # jink demo launcher for PowerShell
-# Usage: .\run-demo.ps1 [main-class]
+# Usage: .\run-demo.ps1 [main-class] [JDK_HOME]
 # Example: .\run-demo.ps1
 #          .\run-demo.ps1 io.mybatis.jink.demo.SimpleDemo
+#          .\run-demo.ps1 io.mybatis.jink.demo.SimpleDemo C:\Dev\jdk-21
 param(
-    [string]$MainClass = 'io.mybatis.jink.demo.CopilotDemo'
+    [string]$MainClass = 'io.mybatis.jink.demo.Counter',
+    [string]$JdkHome   = ''
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+function Get-JavaMajorVersion {
+    param([string]$JavaBin)
+    try {
+        $output = & $JavaBin "-version" 2>&1 | Select-Object -First 1 | Out-String
+        if ($output -match '"1\.(\d+)') { return [int]$Matches[1] }
+        if ($output -match '(\d+)\.\d+')  { return [int]$Matches[1] }
+        if ($output -match '(\d+)')        { return [int]$Matches[1] }
+    } catch {}
+    return 0
+}
+
 # Switch to project root (scripts are in scripts/ subdirectory)
 Set-Location -LiteralPath (Split-Path $PSScriptRoot -Parent)
 
 # Enable UTF-8 for console input/output
-[Console]::InputEncoding = [System.Text.Encoding]::UTF8
+[Console]::InputEncoding  = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 cmd /c chcp 65001 > $null
 
-# Always use JDK 21 for this project
-$jdkHome = if ($env:JINK_JAVA_HOME) { $env:JINK_JAVA_HOME } else { 'C:\Dev\jdk-21.0.10' }
-$env:JAVA_HOME = $jdkHome
-$env:PATH = ('{0}\bin;{1}' -f $env:JAVA_HOME, $env:PATH)
+# Determine Java binary
+$javaBin = "java"
+if ($JdkHome -ne "") {
+    $javaBin = Join-Path $JdkHome "bin\java.exe"
+    $env:JAVA_HOME = $JdkHome
+    $env:PATH = "$JdkHome\bin;$env:PATH"
+} elseif ($env:JINK_JAVA_HOME) {
+    $javaBin = Join-Path $env:JINK_JAVA_HOME "bin\java.exe"
+    $env:JAVA_HOME = $env:JINK_JAVA_HOME
+    $env:PATH = "$env:JINK_JAVA_HOME\bin;$env:PATH"
+} else {
+    $major = Get-JavaMajorVersion "java"
+    if ($major -lt 21) {
+        if ($major -eq 0) {
+            Write-Host "❌ 未找到 Java，请设置 JINK_JAVA_HOME 或通过第二个参数指定 JDK 21+ 路径" -ForegroundColor Red
+        } else {
+            Write-Host ("❌ 当前 Java {0} < 21，请设置 JINK_JAVA_HOME 或通过第二个参数指定 JDK 21+ 路径" -f $major) -ForegroundColor Red
+        }
+        exit 1
+    }
+}
+
 $env:MAVEN_OPTS = '-Dfile.encoding=UTF-8'
 
 Write-Host '[jink] compiling project...' -ForegroundColor Cyan
@@ -39,15 +70,12 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $deps = (Get-Content -LiteralPath 'target\cp.txt' -Raw).Trim()
-$cp = 'target\classes;target\test-classes'
-if ($deps) {
-    $cp = '{0};{1}' -f $cp, $deps
-}
+$cp   = if ($deps) { "target\classes;target\test-classes;$deps" } else { "target\classes;target\test-classes" }
 
 Write-Host ('[jink] starting {0} ...' -f $MainClass) -ForegroundColor Cyan
 Write-Host ''
 
-& (Join-Path $env:JAVA_HOME 'bin\java.exe') `
+& $javaBin `
     '--enable-native-access=ALL-UNNAMED' `
     '-Dfile.encoding=UTF-8' `
     '-Dstdout.encoding=UTF-8' `
@@ -56,3 +84,4 @@ Write-Host ''
     $MainClass
 
 exit $LASTEXITCODE
+

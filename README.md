@@ -127,10 +127,13 @@ public class Counter extends Component<Counter.State> {
 
     @Override
     public void onMount() {
-        scheduler.scheduleAtFixedRate(() ->
-            setState(new State(getState().count() + 1)),
-            100, 100, TimeUnit.MILLISECONDS
-        );
+        scheduler.scheduleAtFixedRate(() -> {
+            int next = getState().count() + 1;
+            setState(new State(next));
+            if (next >= 100) {
+                scheduler.shutdown();
+            }
+        }, 100, 100, TimeUnit.MILLISECONDS);
     }
 
     @Override
