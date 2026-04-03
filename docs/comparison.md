@@ -10,9 +10,9 @@
 |:-----|:----|:-----|:-------|
 | 组件数量 | 17 个（含 Context） | 11 个 | ~65% |
 | Hooks/API | 12 个 Hook | 9 个等效 API | ~75% |
-| Flexbox 属性 | ~95% CSS Flexbox | ~90% | ~90% |
+| Flexbox 属性 | ~95% CSS Flexbox | ~95% | ~95% |
 | 按键支持 | ~50+ 键（含 Kitty 协议） | ~60 键 + 粘贴 | ~75% |
-| **总体功能对等** | — | — | **~85%** |
+| **总体功能对等** | — | — | **~90%** |
 
 ---
 
@@ -79,7 +79,7 @@
 | **position: absolute** | ✅ relative/absolute | ✅ relative/absolute | ✅ 完整 | 绝对定位 + posTop/Right/Bottom/Left |
 | display | ✅ flex/none | ✅ flex/none | ✅ 完整 | |
 | overflow | ✅ visible/hidden | ✅ visible/hidden | ✅ 完整 | |
-| **aspectRatio** | ✅ | ❌ 缺失 | 🔴 可实现 | 宽高比（需更新 FlexLayout）|
+| **aspectRatio** | ✅ | ✅ aspectRatio() | ✅ 完整 | 宽高比（FlexLayout 支持）|
 
 ---
 
@@ -185,7 +185,7 @@
 | ~~baseline 对齐~~ | ~~中~~ | ✅ 已实现 (alignItems/alignSelf: BASELINE) |
 | ~~每边独立边框色~~ | ~~低~~ | ✅ 已实现 (borderTopColor/Right/Bottom/Left) |
 | ~~borderDimColor~~ | ~~低~~ | ✅ 已实现 (borderDimColor/每边独立 dimmed 支持) |
-| aspectRatio | 中 | 宽高比约束，需更新 FlexLayout |
+| ~~aspectRatio~~ | ~~中~~ | ✅ 已实现 (Box.aspectRatio(float)，FlexLayout 支持宽推高) |
 | Shift 修饰符完整支持 | 低 | Shift+字母等组合（受终端限制） |
 | ~~usePaste 等效~~ | ~~中~~ | ✅ 已实现 (Bracketed Paste Mode + onPaste) |
 | ~~useBoxMetrics 等效~~ | ~~低~~ | ✅ 已有 (getComputedLeft/Top/Width/Height) |

@@ -26,6 +26,7 @@ public record Style(
         int minHeight,
         int maxWidth,
         int maxHeight,
+        float aspectRatio,
 
         // 定位
         Position position,
@@ -130,6 +131,7 @@ public record Style(
         b.minHeight = this.minHeight;
         b.maxWidth = this.maxWidth;
         b.maxHeight = this.maxHeight;
+        b.aspectRatio = this.aspectRatio;
         b.position = this.position;
         b.posTop = this.posTop;
         b.posRight = this.posRight;
@@ -276,6 +278,7 @@ public record Style(
         private int minHeight = AUTO;
         private int maxWidth = AUTO;
         private int maxHeight = AUTO;
+        private float aspectRatio = 0;
         private Position position = Position.RELATIVE;
         private int posTop = AUTO;
         private int posRight = AUTO;
@@ -333,6 +336,8 @@ public record Style(
         public Builder minHeight(int v) { this.minHeight = v; return this; }
         public Builder maxWidth(int v) { this.maxWidth = v; return this; }
         public Builder maxHeight(int v) { this.maxHeight = v; return this; }
+        /** 宽高比约束（width / height）。0 表示不设置。 */
+        public Builder aspectRatio(float v) { this.aspectRatio = v; return this; }
 
         /** 百分比宽度，如 widthPercent(50) 表示 50% */
         public Builder widthPercent(int pct) { this.width = percent(pct); return this; }
@@ -412,7 +417,7 @@ public record Style(
             return new Style(
                     flexDirection, justifyContent, alignItems, alignSelf, alignContent, flexWrap,
                     flexGrow, flexShrink, flexBasis,
-                    width, height, minWidth, minHeight, maxWidth, maxHeight,
+                    width, height, minWidth, minHeight, maxWidth, maxHeight, aspectRatio,
                     position, posTop, posRight, posBottom, posLeft,
                     paddingTop, paddingRight, paddingBottom, paddingLeft,
                     marginTop, marginRight, marginBottom, marginLeft,

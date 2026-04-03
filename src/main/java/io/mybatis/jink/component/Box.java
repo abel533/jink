@@ -109,6 +109,16 @@ public class Box implements Renderable {
         return this;
     }
 
+    /**
+     * 设置宽高比约束（width / height）。
+     * 当 height 为 AUTO 时，height = width / ratio。
+     * 例如：aspectRatio(2.0f) 表示宽度是高度的两倍。
+     */
+    public Box aspectRatio(float ratio) {
+        style.aspectRatio(ratio);
+        return this;
+    }
+
     public Box widthPercent(int pct) {
         style.widthPercent(pct);
         return this;

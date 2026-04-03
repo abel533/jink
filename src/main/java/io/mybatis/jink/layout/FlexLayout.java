@@ -102,7 +102,11 @@ public class FlexLayout {
             int textHeight = measureTextHeight(node, contentWidth);
             int nodeHeight = resolveSize(style.height(), percentRefHeight);
             if (nodeHeight == Style.AUTO) {
-                nodeHeight = textHeight + innerBoxOffsetV;
+                if (style.aspectRatio() > 0) {
+                    nodeHeight = Math.max(1, (int) Math.round((double) nodeWidth / style.aspectRatio()));
+                } else {
+                    nodeHeight = textHeight + innerBoxOffsetV;
+                }
             }
             nodeHeight = clampSize(nodeHeight, style.minHeight(), style.maxHeight(), percentRefHeight);
             node.setComputedHeight(nodeHeight);
@@ -110,10 +114,14 @@ public class FlexLayout {
         }
 
         if (children.isEmpty() && absoluteChildren.isEmpty()) {
-            // 没有子节点，高度取显式值或 innerBoxOffsetV
+            // 没有子节点，高度取显式值或 aspectRatio 推算或 innerBoxOffsetV
             int nodeHeight = resolveSize(style.height(), percentRefHeight);
             if (nodeHeight == Style.AUTO) {
-                nodeHeight = innerBoxOffsetV;
+                if (style.aspectRatio() > 0) {
+                    nodeHeight = Math.max(1, (int) Math.round((double) nodeWidth / style.aspectRatio()));
+                } else {
+                    nodeHeight = innerBoxOffsetV;
+                }
             }
             nodeHeight = clampSize(nodeHeight, style.minHeight(), style.maxHeight(), percentRefHeight);
             node.setComputedHeight(nodeHeight);
@@ -125,11 +133,15 @@ public class FlexLayout {
 
         int gap = resolveGap(style, isColumn);
 
-        // 计算内容区可用高度：优先使用节点自身 height，否则用外部 availableHeight
+        // 计算内容区可用高度：优先使用节点自身 height，其次 aspectRatio，否则用外部 availableHeight
         int contentHeight = Style.AUTO;
         int resolvedHeight = resolveSize(style.height(), percentRefHeight);
         if (resolvedHeight != Style.AUTO) {
             contentHeight = resolvedHeight - innerBoxOffsetV;
+            if (contentHeight < 0) contentHeight = 0;
+        } else if (style.aspectRatio() > 0) {
+            int aspectDerived = Math.max(1, (int) Math.round((double) nodeWidth / style.aspectRatio()));
+            contentHeight = aspectDerived - innerBoxOffsetV;
             if (contentHeight < 0) contentHeight = 0;
         } else if (availableHeight != Style.AUTO) {
             contentHeight = availableHeight - innerBoxOffsetV;
@@ -175,7 +187,11 @@ public class FlexLayout {
 
         int nodeHeight = resolveSize(style.height(), percentRefHeight);
         if (nodeHeight == Style.AUTO) {
-            nodeHeight = childrenHeight + innerBoxOffsetV;
+            if (style.aspectRatio() > 0) {
+                nodeHeight = Math.max(1, (int) Math.round((double) nodeWidth / style.aspectRatio()));
+            } else {
+                nodeHeight = childrenHeight + innerBoxOffsetV;
+            }
         }
         nodeHeight = clampSize(nodeHeight, style.minHeight(), style.maxHeight(), percentRefHeight);
         node.setComputedHeight(nodeHeight);
