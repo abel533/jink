@@ -125,6 +125,7 @@ public class Ink {
         // 输出缓存
         private String lastOutput = "";
         private int lastLineCount = 0;
+        private String[] previousRenderedLines = new String[0];
 
         // 清理状态
         private volatile boolean cleaned = false;
@@ -324,14 +325,20 @@ public class Ink {
         private void writeToTerminal(String output) {
             StringBuilder sb = new StringBuilder();
 
-            // 使用绝对行定位写入每一行，避免 \r\n 引起的滚动问题
             String[] lines = output.split("\n", -1);
             int maxLines = Math.min(lines.length, height);
+
+            // 差异化行更新：仅输出有变化的行
             for (int i = 0; i < maxLines; i++) {
-                // ANSI 行号从 1 开始：\e[row;1H 定位到第 row 行第 1 列
-                sb.append("\u001B[").append(i + 1).append(";1H");
-                sb.append("\u001B[2K"); // 清除整行
-                sb.append(lines[i]);
+                String newLine = lines[i];
+                String oldLine = i < previousRenderedLines.length ? previousRenderedLines[i] : null;
+
+                if (!newLine.equals(oldLine)) {
+                    // ANSI 行号从 1 开始：\e[row;1H 定位到第 row 行第 1 列
+                    sb.append("\u001B[").append(i + 1).append(";1H");
+                    sb.append("\u001B[2K"); // 清除整行
+                    sb.append(newLine);
+                }
             }
 
             // 清除剩余旧内容（当新输出比旧输出少行时）
@@ -340,9 +347,12 @@ public class Ink {
                 sb.append("\u001B[2K");
             }
 
-            termWriter.print(sb);
-            termWriter.flush();
+            if (!sb.isEmpty()) {
+                termWriter.print(sb);
+                termWriter.flush();
+            }
 
+            previousRenderedLines = lines;
             lastLineCount = maxLines;
         }
 
