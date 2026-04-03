@@ -62,6 +62,21 @@ public class Box implements Renderable {
         return this;
     }
 
+    public Box alignSelf(AlignItems alignSelf) {
+        style.alignSelf(alignSelf);
+        return this;
+    }
+
+    public Box alignContent(AlignContent alignContent) {
+        style.alignContent(alignContent);
+        return this;
+    }
+
+    public Box flexWrap(Style.FlexWrap flexWrap) {
+        style.flexWrap(flexWrap);
+        return this;
+    }
+
     // === 尺寸 ===
 
     public Box width(int width) {
@@ -84,6 +99,26 @@ public class Box implements Renderable {
         return this;
     }
 
+    public Box maxWidth(int maxWidth) {
+        style.maxWidth(maxWidth);
+        return this;
+    }
+
+    public Box maxHeight(int maxHeight) {
+        style.maxHeight(maxHeight);
+        return this;
+    }
+
+    public Box widthPercent(int pct) {
+        style.widthPercent(pct);
+        return this;
+    }
+
+    public Box heightPercent(int pct) {
+        style.heightPercent(pct);
+        return this;
+    }
+
     // === Flex 属性 ===
 
     public Box flexGrow(int flexGrow) {
@@ -98,6 +133,38 @@ public class Box implements Renderable {
 
     public Box flexBasis(int flexBasis) {
         style.flexBasis(flexBasis);
+        return this;
+    }
+
+    public Box flexBasisPercent(int pct) {
+        style.flexBasisPercent(pct);
+        return this;
+    }
+
+    // === 定位 ===
+
+    public Box position(Position position) {
+        style.position(position);
+        return this;
+    }
+
+    public Box posTop(int v) {
+        style.posTop(v);
+        return this;
+    }
+
+    public Box posRight(int v) {
+        style.posRight(v);
+        return this;
+    }
+
+    public Box posBottom(int v) {
+        style.posBottom(v);
+        return this;
+    }
+
+    public Box posLeft(int v) {
+        style.posLeft(v);
         return this;
     }
 
@@ -187,6 +254,26 @@ public class Box implements Renderable {
         return this;
     }
 
+    public Box borderTopColor(Color color) {
+        style.borderTopColor(color);
+        return this;
+    }
+
+    public Box borderRightColor(Color color) {
+        style.borderRightColor(color);
+        return this;
+    }
+
+    public Box borderBottomColor(Color color) {
+        style.borderBottomColor(color);
+        return this;
+    }
+
+    public Box borderLeftColor(Color color) {
+        style.borderLeftColor(color);
+        return this;
+    }
+
     // === 间距 ===
 
     public Box gap(int gap) {
@@ -213,6 +300,30 @@ public class Box implements Renderable {
 
     public Box overflow(Overflow overflow) {
         style.overflow(overflow);
+        return this;
+    }
+
+    public Box overflowX(Overflow overflow) {
+        style.overflowX(overflow);
+        return this;
+    }
+
+    public Box overflowY(Overflow overflow) {
+        style.overflowY(overflow);
+        return this;
+    }
+
+    // === 文本换行 ===
+
+    public Box textWrap(TextWrap textWrap) {
+        style.textWrap(textWrap);
+        return this;
+    }
+
+    // === 文本颜色（用于容器默认文字色） ===
+
+    public Box color(Color color) {
+        style.color(color);
         return this;
     }
 
