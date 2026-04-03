@@ -592,6 +592,94 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
 
 ---
 
+### PromptDemo — 选项列表 + 自由输入
+
+### 展示功能
+- ✅ 单线边框包裹整个组件
+- ✅ 带编号的选项列表，`❯` 青色高亮当前项
+- ✅ `↑` / `↓` 键导航选择
+- ✅ Enter 确认，Esc 取消
+- ✅ 「Other (type your answer)」切换文本输入模式
+- ✅ 输入模式：逐字符累积 + Backspace 删除 + Enter 提交 + Esc 返回选择
+- ✅ 确认后显示 `✔` 绿色结果并自动退出
+
+### 运行步骤
+
+```powershell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.PromptDemo
+```
+
+### 键盘操作
+
+| 按键 | 功能 |
+|:-----|:-----|
+| `↑` / `↓` | 上下移动选择 |
+| `Enter` | 确认当前选项（若为 Other 则进入输入模式） |
+| `Esc` | 取消退出（选择模式）/ 返回选择模式（输入模式） |
+| 任意字符 | 输入模式下累积字符 |
+| `Backspace` | 输入模式下删除最后一个字符 |
+
+### 核心代码片段
+
+```java
+public class PromptDemo extends Component<PromptDemo.State> {
+
+    enum Mode { SELECT, INPUT, DONE }
+
+    record State(int selectedIndex, Mode mode, String inputText, String result) {}
+
+    @Override
+    public Renderable render() {
+        State s = getState();
+        // Build options with ❯ indicator
+        Box optionList = Box.of().flexDirection(FlexDirection.COLUMN).marginTop(1);
+        for (int i = 0; i < options.size(); i++) {
+            boolean isSelected = i == s.selectedIndex();
+            boolean isOther = options.get(i).equals(OTHER_LABEL);
+
+            if (isSelected && isOther && s.mode() == Mode.INPUT) {
+                // Show cursor in input mode
+                optionList.add(Box.of(
+                    Text.of("❯ " + (i+1) + ". ").color(Color.CYAN),
+                    Text.of(s.inputText() + "█").color(Color.CYAN)
+                ).flexDirection(FlexDirection.ROW));
+            } else {
+                String label = (isSelected ? "❯ " : "  ") + (i+1) + ". " + options.get(i);
+                optionList.add(Text.of(label).color(isSelected ? Color.CYAN : null));
+            }
+        }
+        return Box.of(
+            Text.of(question),
+            optionList,
+            Box.of(Text.of("↑↓ to select · Enter to confirm · Esc to cancel").dimmed()).marginTop(1)
+        ).flexDirection(FlexDirection.COLUMN)
+         .borderStyle(BorderStyle.SINGLE)
+         .paddingX(1);
+    }
+
+    @Override
+    public void onInput(String input, Key key) {
+        State s = getState();
+        if (s.mode() == Mode.INPUT) {
+            if (key.return_() && !s.inputText().isEmpty()) confirmAndExit(s.inputText());
+            else if (key.escape())    setState(new State(s.selectedIndex(), Mode.SELECT, "", null));
+            else if (key.backspace()) setState(new State(s.selectedIndex(), Mode.INPUT,
+                    s.inputText().substring(0, s.inputText().length() - 1), null));
+            else if (!input.isEmpty() && !key.ctrl())
+                setState(new State(s.selectedIndex(), Mode.INPUT, s.inputText() + input, null));
+        } else {
+            if (key.upArrow())    setState(new State((s.selectedIndex() - 1 + options.size()) % options.size(), Mode.SELECT, "", null));
+            else if (key.downArrow()) setState(new State((s.selectedIndex() + 1) % options.size(), Mode.SELECT, "", null));
+            else if (key.return_()) {
+                if (options.get(s.selectedIndex()).equals(OTHER_LABEL))
+                    setState(new State(s.selectedIndex(), Mode.INPUT, "", null));
+                else confirmAndExit(options.get(s.selectedIndex()));
+            } else if (key.escape()) System.exit(0);
+        }
+    }
+}
+```
+
 ### 颜色系统完整演示
 
 ```java
