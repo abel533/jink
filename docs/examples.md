@@ -65,6 +65,7 @@ scripts\run.cmd          # CMD
 | `CopilotDemoPreview` | CopilotDemo 静态预览 | 无 | `.\scripts\run-demo.ps1 io.mybatis.jink.demo.CopilotDemoPreview` |
 | `InputDiagnostic` | 诊断方向键/滚轮/ESC 序列 | ✅ | `.\scripts\run-demo.ps1 io.mybatis.jink.demo.InputDiagnostic` |
 | `FeatureShowcase` | 综合功能展示（4 个标签页）| ✅ | `.\scripts\run-demo.ps1 io.mybatis.jink.demo.FeatureShowcase` |
+| `PromptDemo` | 选项列表 + 自由输入交互提示 | ✅ | `.\scripts\run-demo.ps1 io.mybatis.jink.demo.PromptDemo` |
 
 ---
 
