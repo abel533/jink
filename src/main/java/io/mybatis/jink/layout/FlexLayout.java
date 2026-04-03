@@ -424,20 +424,28 @@ public class FlexLayout {
     }
 
     /**
-     * 测量文本节点的高度（根据可用宽度计算换行后的行数）
+     * 测量文本节点的高度（根据可用宽度和 textWrap 模式计算行数）
      */
     static int measureTextHeight(ElementNode textNode, int maxWidth) {
         String text = squashTextContent(textNode);
         if (text.isEmpty()) return 0;
         if (maxWidth <= 0) return 1;
 
+        TextWrap textWrap = textNode.getStyle().textWrap();
+        boolean isTruncate = textWrap != null && textWrap != TextWrap.WRAP;
+
         int lines = 0;
         for (String line : text.split("\n", -1)) {
-            int lineWidth = AnsiStringUtils.visibleWidth(line);
-            if (lineWidth == 0) {
+            if (isTruncate) {
+                // 截断模式：每个逻辑行固定占 1 行
                 lines++;
             } else {
-                lines += Math.max(1, (int) Math.ceil((double) lineWidth / maxWidth));
+                int lineWidth = AnsiStringUtils.visibleWidth(line);
+                if (lineWidth == 0) {
+                    lines++;
+                } else {
+                    lines += Math.max(1, (int) Math.ceil((double) lineWidth / maxWidth));
+                }
             }
         }
         return lines;

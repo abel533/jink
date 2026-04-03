@@ -10,6 +10,7 @@ import io.mybatis.jink.style.BorderStyle;
 import io.mybatis.jink.style.Color;
 import io.mybatis.jink.style.Display;
 import io.mybatis.jink.style.Style;
+import io.mybatis.jink.style.TextWrap;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -133,6 +134,7 @@ public class NodeRenderer {
 
     /**
      * 渲染文本内容（支持嵌套 Text 的独立样式）
+     * 支持 textWrap 模式：WRAP（自动换行）、TRUNCATE/TRUNCATE_END/TRUNCATE_START/TRUNCATE_MIDDLE（截断）
      */
     private static void renderText(ElementNode textNode, VirtualScreen screen,
                                    int x, int y, int w, int h, Style style) {
@@ -148,7 +150,21 @@ public class NodeRenderer {
         collectStyledSpans(textNode, textNode.getStyle(), spans);
         if (spans.isEmpty()) return;
 
-        // 逐字符渲染，支持换行和自动折行
+        TextWrap textWrap = style.textWrap();
+        if (textWrap == null || textWrap == TextWrap.WRAP) {
+            // 原有自动换行逻辑
+            renderTextWrap(spans, screen, contentX, contentY, contentW, y + h);
+        } else {
+            // 截断模式：按逻辑行截断
+            renderTextTruncate(spans, screen, contentX, contentY, contentW, y + h, textWrap);
+        }
+    }
+
+    /**
+     * 自动换行模式渲染文本（原有逻辑）
+     */
+    private static void renderTextWrap(List<StyledSpan> spans, VirtualScreen screen,
+                                       int contentX, int contentY, int contentW, int maxY) {
         int curX = contentX;
         int curY = contentY;
 
@@ -157,7 +173,7 @@ public class NodeRenderer {
             Style spanStyle = span.style;
 
             for (int i = 0; i < text.length(); ) {
-                if (curY >= y + h) break;
+                if (curY >= maxY) return;
 
                 int cp = text.codePointAt(i);
                 if (cp == '\n') {
@@ -171,7 +187,7 @@ public class NodeRenderer {
                 if (curX + charWidth - contentX > contentW) {
                     curY++;
                     curX = contentX;
-                    if (curY >= y + h) break;
+                    if (curY >= maxY) return;
                 }
 
                 screen.write(curX, curY, new String(Character.toChars(cp)), spanStyle);
@@ -179,6 +195,157 @@ public class NodeRenderer {
                 i += Character.charCount(cp);
             }
         }
+    }
+
+    /**
+     * 截断模式渲染文本：对每个逻辑行独立截断，不换行
+     */
+    private static void renderTextTruncate(List<StyledSpan> spans, VirtualScreen screen,
+                                           int contentX, int contentY, int contentW,
+                                           int maxY, TextWrap mode) {
+        // 构建带样式的字符列表，按换行符分割为逻辑行
+        List<List<StyledCodePoint>> lines = buildStyledLines(spans);
+
+        int curY = contentY;
+        for (List<StyledCodePoint> line : lines) {
+            if (curY >= maxY) return;
+            renderTruncatedLine(line, screen, contentX, curY, contentW, mode);
+            curY++;
+        }
+    }
+
+    /**
+     * 渲染单行截断文本
+     */
+    private static void renderTruncatedLine(List<StyledCodePoint> line, VirtualScreen screen,
+                                            int contentX, int curY, int contentW, TextWrap mode) {
+        int totalWidth = 0;
+        for (StyledCodePoint sc : line) totalWidth += sc.displayWidth;
+
+        // 宽度够，直接渲染
+        if (totalWidth <= contentW) {
+            int curX = contentX;
+            for (StyledCodePoint sc : line) {
+                screen.write(curX, curY, new String(Character.toChars(sc.codePoint)), sc.style);
+                curX += sc.displayWidth;
+            }
+            return;
+        }
+
+        // 容器太窄，只能放省略号
+        if (contentW <= 1) {
+            if (contentW == 1 && !line.isEmpty()) {
+                screen.write(contentX, curY, ELLIPSIS, line.getFirst().style);
+            }
+            return;
+        }
+
+        int availW = contentW - ELLIPSIS_WIDTH; // 留 1 列给 "…"
+
+        switch (mode) {
+            case TRUNCATE, TRUNCATE_END -> {
+                // 从头开始取字符，末尾加 …
+                int curX = contentX;
+                Style lastStyle = null;
+                for (StyledCodePoint sc : line) {
+                    if (curX - contentX + sc.displayWidth > availW) break;
+                    screen.write(curX, curY, new String(Character.toChars(sc.codePoint)), sc.style);
+                    lastStyle = sc.style;
+                    curX += sc.displayWidth;
+                }
+                screen.write(curX, curY, ELLIPSIS, lastStyle);
+            }
+            case TRUNCATE_START -> {
+                // 从末尾取字符，开头加 …
+                int startIdx = line.size();
+                int accWidth = 0;
+                for (int i = line.size() - 1; i >= 0; i--) {
+                    if (accWidth + line.get(i).displayWidth > availW) break;
+                    accWidth += line.get(i).displayWidth;
+                    startIdx = i;
+                }
+                int curX = contentX;
+                screen.write(curX, curY, ELLIPSIS, line.get(startIdx).style);
+                curX += ELLIPSIS_WIDTH;
+                for (int i = startIdx; i < line.size(); i++) {
+                    screen.write(curX, curY, new String(Character.toChars(line.get(i).codePoint)), line.get(i).style);
+                    curX += line.get(i).displayWidth;
+                }
+            }
+            case TRUNCATE_MIDDLE -> {
+                // 保留首尾，中间加 …
+                int firstHalfW = availW / 2;
+                int secondHalfW = availW - firstHalfW;
+
+                // 前半部分
+                int curX = contentX;
+                int firstEndIdx = 0;
+                int accWidth = 0;
+                for (int i = 0; i < line.size(); i++) {
+                    if (accWidth + line.get(i).displayWidth > firstHalfW) break;
+                    accWidth += line.get(i).displayWidth;
+                    firstEndIdx = i + 1;
+                }
+                for (int i = 0; i < firstEndIdx; i++) {
+                    screen.write(curX, curY, new String(Character.toChars(line.get(i).codePoint)), line.get(i).style);
+                    curX += line.get(i).displayWidth;
+                }
+
+                // 省略号
+                Style midStyle = firstEndIdx > 0 ? line.get(firstEndIdx - 1).style : line.getFirst().style;
+                screen.write(curX, curY, ELLIPSIS, midStyle);
+                curX += ELLIPSIS_WIDTH;
+
+                // 后半部分
+                int lastStartIdx = line.size();
+                accWidth = 0;
+                for (int i = line.size() - 1; i >= 0; i--) {
+                    if (accWidth + line.get(i).displayWidth > secondHalfW) break;
+                    accWidth += line.get(i).displayWidth;
+                    lastStartIdx = i;
+                }
+                for (int i = lastStartIdx; i < line.size(); i++) {
+                    screen.write(curX, curY, new String(Character.toChars(line.get(i).codePoint)), line.get(i).style);
+                    curX += line.get(i).displayWidth;
+                }
+            }
+            default -> {}
+        }
+    }
+
+    // 省略号字符及其显示宽度
+    private static final String ELLIPSIS = "…";
+    private static final int ELLIPSIS_WIDTH = 1;
+
+    /**
+     * 带样式的字符（code point + 显示宽度 + 样式）
+     */
+    private record StyledCodePoint(int codePoint, int displayWidth, Style style) {}
+
+    /**
+     * 将文本片段列表转换为按换行符分割的逻辑行
+     */
+    private static List<List<StyledCodePoint>> buildStyledLines(List<StyledSpan> spans) {
+        List<List<StyledCodePoint>> lines = new ArrayList<>();
+        List<StyledCodePoint> currentLine = new ArrayList<>();
+
+        for (StyledSpan span : spans) {
+            String text = span.text;
+            Style style = span.style;
+            for (int i = 0; i < text.length(); ) {
+                int cp = text.codePointAt(i);
+                if (cp == '\n') {
+                    lines.add(currentLine);
+                    currentLine = new ArrayList<>();
+                } else {
+                    int w = AnsiStringUtils.isWideChar(cp) ? 2 : 1;
+                    currentLine.add(new StyledCodePoint(cp, w, style));
+                }
+                i += Character.charCount(cp);
+            }
+        }
+        lines.add(currentLine);
+        return lines;
     }
 
     /**

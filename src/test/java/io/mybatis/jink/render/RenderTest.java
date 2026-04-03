@@ -211,4 +211,126 @@ class NodeRendererTest {
         assertTrue(stripped.contains("╭")); // inner round border
         assertTrue(stripped.contains("Nested"));
     }
+
+    @Test
+    void renderTextTruncateEnd() {
+        // 10 列宽的容器，放超长文本，TRUNCATE_END 应截断末尾加 …
+        var root = ElementNode.createRoot();
+        root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).width(10).build());
+
+        var text = ElementNode.createText();
+        text.setStyle(Style.builder().textWrap(TextWrap.TRUNCATE_END).build());
+        text.appendChild(new TextNode("Hello World 12345"));
+        root.appendChild(text);
+
+        FlexLayout.calculateLayout(root, 10);
+        VirtualScreen screen = NodeRenderer.render(root);
+        String output = screen.render();
+        String stripped = AnsiStringUtils.stripAnsi(output).split("\n")[0];
+
+        // 前 9 个字符 + …
+        assertEquals(10, AnsiStringUtils.visibleWidth(stripped.trim()));
+        assertTrue(stripped.trim().endsWith("…"));
+        assertTrue(stripped.trim().startsWith("Hello Wor"));
+    }
+
+    @Test
+    void renderTextTruncateStart() {
+        var root = ElementNode.createRoot();
+        root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).width(10).build());
+
+        var text = ElementNode.createText();
+        text.setStyle(Style.builder().textWrap(TextWrap.TRUNCATE_START).build());
+        text.appendChild(new TextNode("Hello World 12345"));
+        root.appendChild(text);
+
+        FlexLayout.calculateLayout(root, 10);
+        VirtualScreen screen = NodeRenderer.render(root);
+        String output = screen.render();
+        String stripped = AnsiStringUtils.stripAnsi(output).split("\n")[0];
+
+        // … + 末尾 9 个字符
+        assertEquals(10, AnsiStringUtils.visibleWidth(stripped.trim()));
+        assertTrue(stripped.trim().startsWith("…"));
+        assertTrue(stripped.trim().endsWith("12345"));
+    }
+
+    @Test
+    void renderTextTruncateMiddle() {
+        var root = ElementNode.createRoot();
+        root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).width(10).build());
+
+        var text = ElementNode.createText();
+        text.setStyle(Style.builder().textWrap(TextWrap.TRUNCATE_MIDDLE).build());
+        text.appendChild(new TextNode("Hello World 12345"));
+        root.appendChild(text);
+
+        FlexLayout.calculateLayout(root, 10);
+        VirtualScreen screen = NodeRenderer.render(root);
+        String output = screen.render();
+        String stripped = AnsiStringUtils.stripAnsi(output).split("\n")[0];
+
+        // 应包含 … 在中间
+        assertTrue(stripped.trim().contains("…"));
+        assertTrue(stripped.trim().startsWith("Hell"));
+        assertTrue(stripped.trim().endsWith("2345"));
+    }
+
+    @Test
+    void renderTextTruncateShortTextNoTruncation() {
+        // 文本比容器短时不应截断
+        var root = ElementNode.createRoot();
+        root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).width(20).build());
+
+        var text = ElementNode.createText();
+        text.setStyle(Style.builder().textWrap(TextWrap.TRUNCATE_END).build());
+        text.appendChild(new TextNode("Short"));
+        root.appendChild(text);
+
+        FlexLayout.calculateLayout(root, 20);
+        VirtualScreen screen = NodeRenderer.render(root);
+        String output = screen.render();
+        String stripped = AnsiStringUtils.stripAnsi(output).split("\n")[0];
+
+        assertTrue(stripped.contains("Short"));
+        assertFalse(stripped.contains("…"));
+    }
+
+    @Test
+    void renderTextTruncateMultiLine() {
+        // 多行文本中，每行独立截断
+        var root = ElementNode.createRoot();
+        root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).width(10).build());
+
+        var text = ElementNode.createText();
+        text.setStyle(Style.builder().textWrap(TextWrap.TRUNCATE_END).build());
+        text.appendChild(new TextNode("Long line one\nLong line two"));
+        root.appendChild(text);
+
+        FlexLayout.calculateLayout(root, 10);
+        VirtualScreen screen = NodeRenderer.render(root);
+        String output = screen.render();
+        String[] lines = AnsiStringUtils.stripAnsi(output).split("\n");
+
+        // 两行，每行都应该截断
+        assertTrue(lines.length >= 2);
+        assertTrue(lines[0].trim().endsWith("…"));
+        assertTrue(lines[1].trim().endsWith("…"));
+    }
+
+    @Test
+    void renderTextTruncateOneLine() {
+        // 截断模式下，文本高度应为逻辑行数（不换行）
+        var root = ElementNode.createRoot();
+        root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).width(10).build());
+
+        var text = ElementNode.createText();
+        text.setStyle(Style.builder().textWrap(TextWrap.TRUNCATE_END).build());
+        text.appendChild(new TextNode("Hello World 12345")); // 17 字符，但不应换行
+        root.appendChild(text);
+
+        FlexLayout.calculateLayout(root, 10);
+        // 截断模式下，高度应为 1（单行），而非换行后的 2 行
+        assertEquals(1, text.getComputedHeight());
+    }
 }
