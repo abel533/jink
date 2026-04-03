@@ -288,10 +288,10 @@ java -cp "target/classes;target/test-classes;..." io.mybatis.jink.demo.CopilotDe
 
 ```powershell
 # PowerShell
-.\run-demo.ps1
+.\scripts\run-demo.ps1
 
 # CMD
-.\run-demo.cmd
+.\scripts\run-demo.cmd
 ```
 
 ---

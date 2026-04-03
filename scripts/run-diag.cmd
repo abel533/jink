@@ -2,7 +2,7 @@
 setlocal
 set JAVA_HOME=D:\Dev\jdk-21
 set PATH=%JAVA_HOME%\bin;%PATH%
-cd /d %~dp0
+cd /d %~dp0\..
 echo Running Input Diagnostic...
 echo.
 

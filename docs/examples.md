@@ -8,10 +8,10 @@
 
 | Demo | 说明 | 交互性 | 运行命令 |
 |:-----|:-----|:------|:---------|
-| `SimpleDemo` | 静态渲染，展示布局和样式 | 无 | `.\run-simple.ps1` |
-| `InteractiveDemo` | 消息列表，键盘导航 | ✅ | `.\run-interactive.ps1` |
-| `CopilotDemo` | 完整 Copilot CLI 复刻 | ✅ | `.\run-demo.ps1` |
-| `CopilotDemoPreview` | CopilotDemo 静态预览 | 无 | `.\run-preview.ps1` |
+| `SimpleDemo` | 静态渲染，展示布局和样式 | 无 | `.\scripts\run-simple.ps1` |
+| `InteractiveDemo` | 消息列表，键盘导航 | ✅ | `.\scripts\run-interactive.ps1` |
+| `CopilotDemo` | 完整 Copilot CLI 复刻 | ✅ | `.\scripts\run-demo.ps1` |
+| `CopilotDemoPreview` | CopilotDemo 静态预览 | 无 | `.\scripts\run-preview.ps1` |
 
 ---
 
@@ -33,7 +33,7 @@
 
 ```powershell
 cd ink4j
-.\run-simple.ps1
+.\scripts\run-simple.ps1
 ```
 
 ### GIF 录制操作
@@ -93,7 +93,7 @@ Box.of(
 
 ```powershell
 cd ink4j
-.\run-interactive.ps1
+.\scripts\run-interactive.ps1
 ```
 
 ### GIF 录制操作
@@ -157,7 +157,7 @@ public class InteractiveDemo extends Component<InteractiveDemo.State> {
 
 ```powershell
 cd ink4j
-.\run-demo.ps1
+.\scripts\run-demo.ps1
 ```
 
 ### GIF 录制操作（完整流程，约 30 秒）
@@ -234,10 +234,10 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
 
 ```powershell
 cd ink4j
-.\run-preview.ps1
+.\scripts\run-preview.ps1
 
 # 自定义尺寸
-.\run-preview.ps1 120 30
+.\scripts\run-preview.ps1 120 30
 ```
 
 ### GIF 录制操作
@@ -264,34 +264,6 @@ cd ink4j
 | CJK 宽度 | string-width | StringWidth 工具 |
 | 终端控制 | 自动 | JLine 3 |
 | 最低版本 | Node.js 18+ | Java 21+ |
-
----
-
-## 创建运行脚本
-
-为方便录制演示，可创建以下 PowerShell 脚本：
-
-### run-simple.ps1
-
-```powershell
-$env:JAVA_HOME = "D:\Dev\jdk-21"
-$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-mvn -q test-compile
-$cp = (mvn -q dependency:build-classpath -Dmdep.outputFile=CON 2>$null)
-java -cp "target/classes;target/test-classes;$cp" io.mybatis.jink.demo.SimpleDemo
-```
-
-### run-interactive.ps1
-
-```powershell
-$env:JAVA_HOME = "D:\Dev\jdk-21"
-$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-mvn -q test-compile
-$cp = (mvn -q dependency:build-classpath -Dmdep.outputFile=CON 2>$null)
-java --enable-native-access=ALL-UNNAMED -cp "target/classes;target/test-classes;$cp" io.mybatis.jink.demo.InteractiveDemo
-```
 
 ---
 

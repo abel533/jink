@@ -1,7 +1,7 @@
 @echo off
 setlocal
 chcp 65001 >nul 2>&1
-cd /d "%~dp0"
+cd /d "%~dp0\.."
 
 :: Always use JDK 21 for this project
 if defined JINK_JAVA_HOME (

@@ -168,16 +168,16 @@ Ink.render(new CopilotDemo()).waitUntilExit();
 mvn compile test-compile
 
 # 静态渲染 Demo
-.\run-simple.ps1
+.\scripts\run-simple.ps1
 
 # 交互式 Demo（消息列表 + 键盘导航）
-.\run-interactive.ps1
+.\scripts\run-interactive.ps1
 
 # Copilot CLI 风格 Demo（完整功能）
-.\run-demo.ps1
+.\scripts\run-demo.ps1
 
 # 静态预览（调试用，可指定尺寸）
-.\run-preview.ps1 [width] [height]
+.\scripts\run-preview.ps1 [width] [height]
 ```
 
 ---

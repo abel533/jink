@@ -9,8 +9,8 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-# Switch to script directory so Maven always sees the project root
-Set-Location -LiteralPath $PSScriptRoot
+# Switch to project root (scripts are in scripts/ subdirectory)
+Set-Location -LiteralPath (Split-Path $PSScriptRoot -Parent)
 
 # Enable UTF-8 for console input/output
 [Console]::InputEncoding = [System.Text.Encoding]::UTF8
