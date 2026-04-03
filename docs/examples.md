@@ -2,6 +2,28 @@
 
 > 基于 ink 官方示例的 jink (Java) 等效实现，并包含 jink 原有功能展示 Demo。
 
+## 运行方式
+
+**先编译**（只需运行一次，或代码有改动时重新运行）：
+
+```powershell
+mvn test-compile
+```
+
+**交互式菜单选择 Demo**（推荐）：
+
+```powershell
+.\scripts\run.ps1        # PowerShell
+scripts\run.cmd          # CMD
+./scripts/run.sh         # Bash (Linux/macOS)
+```
+
+**直接运行指定 Demo**：
+
+```powershell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.Counter
+```
+
 ---
 
 ## ink 官方示例对照
@@ -37,12 +59,12 @@
 
 | Demo | 说明 | 交互性 | 运行命令 |
 |:-----|:-----|:------|:---------|
-| `SimpleDemo` | 静态渲染，展示布局和样式 | 无 | `.\scripts\run-simple.ps1` |
-| `InteractiveDemo` | 消息列表，键盘导航 | ✅ | `.\scripts\run-interactive.ps1` |
-| `CopilotDemo` | 完整 Copilot CLI 复刻 | ✅ | `.\scripts\run-demo.ps1` |
-| `CopilotDemoPreview` | CopilotDemo 静态预览 | 无 | `.\scripts\run-preview.ps1` |
-| `InputDiagnostic` | 诊断方向键/滚轮/ESC 序列 | ✅ | `mvn test-compile` 后手动运行 |
-| `FeatureShowcase` | 综合功能展示（4 个标签页）| ✅ | `mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.FeatureShowcase -Dexec.classpathScope=test` |
+| `SimpleDemo` | 静态渲染，展示布局和样式 | 无 | `.\scripts\run-demo.ps1 io.mybatis.jink.demo.SimpleDemo` |
+| `InteractiveDemo` | 消息列表，键盘导航 | ✅ | `.\scripts\run-demo.ps1 io.mybatis.jink.demo.InteractiveDemo` |
+| `CopilotDemo` | 完整 Copilot CLI 复刻 | ✅ | `.\scripts\run-demo.ps1 io.mybatis.jink.demo.CopilotDemo` |
+| `CopilotDemoPreview` | CopilotDemo 静态预览 | 无 | `.\scripts\run-demo.ps1 io.mybatis.jink.demo.CopilotDemoPreview` |
+| `InputDiagnostic` | 诊断方向键/滚轮/ESC 序列 | ✅ | `.\scripts\run-demo.ps1 io.mybatis.jink.demo.InputDiagnostic` |
+| `FeatureShowcase` | 综合功能展示（4 个标签页）| ✅ | `.\scripts\run-demo.ps1 io.mybatis.jink.demo.FeatureShowcase` |
 
 ---
 
@@ -58,8 +80,8 @@
 - 计数达到 100 时自动 shutdown
 
 **运行**:
-```
-mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.Counter -Dexec.classpathScope=test
+```powershell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.Counter
 ```
 
 ---
@@ -73,8 +95,8 @@ mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.Counter -Dexec.classpathScop
 - 展示 `SINGLE / DOUBLE / ROUND / BOLD / SINGLE_DOUBLE / DOUBLE_SINGLE / CLASSIC / ARROW` 八种边框
 
 **运行**:
-```
-mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.BordersDemo -Dexec.classpathScope=test
+```powershell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.BordersDemo
 ```
 
 ---
@@ -89,8 +111,8 @@ mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.BordersDemo -Dexec.classpath
 - 嵌套 Box 背景色继承/覆盖
 
 **运行**:
-```
-mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.BoxBackgroundsDemo -Dexec.classpathScope=test
+```powershell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.BoxBackgroundsDemo
 ```
 
 ---
@@ -104,8 +126,8 @@ mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.BoxBackgroundsDemo -Dexec.cl
 - 每行括号内展示 X/Y 分布效果
 
 **运行**:
-```
-mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.JustifyContentDemo -Dexec.classpathScope=test
+```powershell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.JustifyContentDemo
 ```
 
 ---
@@ -120,8 +142,8 @@ mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.JustifyContentDemo -Dexec.cl
 - 按 `q` 调用 `System.exit(0)` 退出
 
 **运行**:
-```
-mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.UseInputDemo -Dexec.classpathScope=test
+```powershell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.UseInputDemo
 ```
 
 ---
@@ -135,8 +157,8 @@ mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.UseInputDemo -Dexec.classpat
 - 组件使用 `Component<Void>` — 无需状态，直接读取终端尺寸
 
 **运行**:
-```
-mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.TerminalResizeDemo -Dexec.classpathScope=test
+```powershell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.TerminalResizeDemo
 ```
 
 ---
@@ -151,8 +173,8 @@ mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.TerminalResizeDemo -Dexec.cl
 - 已输出的行不会被覆盖，每次只追加新内容
 
 **运行**:
-```
-mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.StaticDemo -Dexec.classpathScope=test
+```powershell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.StaticDemo
 ```
 
 ---
@@ -166,8 +188,8 @@ mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.StaticDemo -Dexec.classpathS
 - `onInput` 处理上下键选择服务列表
 
 **运行**:
-```
-mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.IncrementalRenderingDemo -Dexec.classpathScope=test
+```powershell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.IncrementalRenderingDemo
 ```
 
 ---
@@ -181,8 +203,8 @@ mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.IncrementalRenderingDemo -De
 - 普通字符追加到 input 字符串
 
 **运行**:
-```
-mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.ChatDemo -Dexec.classpathScope=test
+```powershell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.ChatDemo
 ```
 
 ---
@@ -197,8 +219,8 @@ mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.ChatDemo -Dexec.classpathSco
 - `key.escape()` → 重置焦点（`focusIndex = -1`）
 
 **运行**:
-```
-mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.UseFocusDemo -Dexec.classpathScope=test
+```powershell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.UseFocusDemo
 ```
 
 ---
@@ -212,8 +234,8 @@ mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.UseFocusDemo -Dexec.classpat
 - 静态数据，使用 `Ink.renderOnce()`
 
 **运行**:
-```
-mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.TableDemo -Dexec.classpathScope=test
+```powershell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.TableDemo
 ```
 
 ---
@@ -228,8 +250,8 @@ mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.TableDemo -Dexec.classpathSc
 - 汇总行（passed/failed/time）实时更新
 
 **运行**:
-```
-mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.JestDemo -Dexec.classpathScope=test
+```powershell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.JestDemo
 ```
 
 ---
@@ -243,8 +265,8 @@ mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.JestDemo -Dexec.classpathSco
 - 在后台线程读取输出，`setState` 触发重渲染
 
 **运行**:
-```
-mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.SubprocessOutputDemo -Dexec.classpathScope=test
+```powershell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.SubprocessOutputDemo
 ```
 
 ---
@@ -259,8 +281,8 @@ mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.SubprocessOutputDemo -Dexec.
 - 无需第三方路由库
 
 **运行**:
-```
-mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.RouterDemo -Dexec.classpathScope=test
+```powershell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.RouterDemo
 ```
 
 ---
@@ -274,8 +296,8 @@ mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.RouterDemo -Dexec.classpathS
 - jink 不支持 ARIA / 屏幕阅读器功能，此部分略去
 
 **运行**:
-```
-mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.SelectInputDemo -Dexec.classpathScope=test
+```powershell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.SelectInputDemo
 ```
 
 ---
@@ -290,8 +312,8 @@ mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.SelectInputDemo -Dexec.class
 - 正确处理 surrogate pair（`codePointBefore`）
 
 **运行**:
-```
-mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.CursorImeDemo -Dexec.classpathScope=test
+```powershell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.CursorImeDemo
 ```
 
 ---
