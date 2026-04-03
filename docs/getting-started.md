@@ -14,11 +14,9 @@
 <dependency>
     <groupId>io.mybatis.jink</groupId>
     <artifactId>jink</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
 </dependency>
 ```
-
-> 注意：目前 jink 尚未发布到 Maven Central，需要本地 `mvn install` 后使用。
 
 ---
 
@@ -268,36 +266,50 @@ Ink.renderOnce(myComponent, 80, 24, new PrintStream("output.txt"));
 
 ## 运行 Demo
 
-项目内置了多个 Demo：
+项目内置了多个 Demo，使用启动脚本一键运行：
 
-```bash
-# 编译
-mvn compile test-compile
+### 交互式菜单（推荐）
 
-# 静态渲染 Demo（不需要 raw mode）
-java -cp "target/classes;target/test-classes;..." io.mybatis.jink.demo.SimpleDemo
-
-# 交互式 Demo（需要真实终端）
-java -cp "target/classes;target/test-classes;..." io.mybatis.jink.demo.InteractiveDemo
-
-# Copilot CLI 风格 Demo
-java -cp "target/classes;target/test-classes;..." io.mybatis.jink.demo.CopilotDemo
-
-# 输入诊断（查看方向键 / 滚轮 / ESC 序列）
-java -cp "target/classes;target/test-classes;..." io.mybatis.jink.demo.InputDiagnostic
-```
-
-项目提供了便捷的运行脚本：
+自动扫描并列出所有 Demo 类，选择序号运行：
 
 ```powershell
 # PowerShell
-.\scripts\run-demo.ps1
+.\scripts\run.ps1
 
-# CMD
-.\scripts\run-demo.cmd
+# 指定 JDK 路径（当系统 Java < 21 时）
+.\scripts\run.ps1 C:\path\to\jdk21
 ```
 
-如果需要排查 Windows Terminal + JLine 下的滚轮或方向键行为，优先运行 `InputDiagnostic`，它会直接打印收到的原始 ESC 序列和解析结果。
+```bash
+# Bash
+./scripts/run.sh
+
+# 指定 JDK 路径
+./scripts/run.sh /path/to/jdk21
+```
+
+```cmd
+:: CMD
+scripts\run.cmd
+```
+
+### 直接运行指定 Demo
+
+```powershell
+# PowerShell：run-demo.ps1 [类名] [JDK路径（可选）]
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.Counter
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.CopilotDemo
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.InputDiagnostic
+```
+
+```cmd
+:: CMD
+scripts\run-demo.cmd io.mybatis.jink.demo.Counter
+```
+
+> **JDK 优先级**：命令行参数 > `JINK_JAVA_HOME` 环境变量 > 系统 Java（须 ≥ 21）
+
+如果需要排查 Windows Terminal + JLine 下的滚轮或方向键行为，运行 `InputDiagnostic`，它会直接打印收到的原始 ESC 序列和解析结果。
 
 ---
 

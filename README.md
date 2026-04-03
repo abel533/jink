@@ -244,30 +244,59 @@ Ink.render(new CopilotDemo()).waitUntilExit();
 
 ## 🏃 运行 Demo
 
+### 交互式菜单（推荐）
+
+自动列出所有 Demo 类，选择序号运行：
+
 ```powershell
-# 编译
-mvn compile test-compile
+# PowerShell（Windows）
+.\scripts\run.ps1
 
-# 静态渲染 Demo
-.\scripts\run-simple.ps1
-
-# 交互式 Demo（消息列表 + 键盘导航）
-.\scripts\run-interactive.ps1
-
-# Copilot CLI 风格 Demo（完整功能）
-.\scripts\run-demo.ps1
-
-# 静态预览（调试用，可指定尺寸）
-.\scripts\run-preview.ps1 [width] [height]
+# 指定 JDK 路径（当系统 Java < 21 时）
+.\scripts\run.ps1 C:\path\to\jdk21
 ```
+
+```bash
+# Bash（Linux/macOS）
+./scripts/run.sh
+
+# 指定 JDK 路径
+./scripts/run.sh /path/to/jdk21
+```
+
+```cmd
+:: CMD（Windows）
+scripts\run.cmd
+
+:: 指定 JDK 路径
+scripts\run.cmd C:\path\to\jdk21
+```
+
+### 直接运行指定 Demo
+
+```powershell
+# PowerShell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.Counter
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.FeatureShowcase
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.CopilotDemo
+
+# 指定 JDK 路径（第二个参数）
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.Counter C:\path\to\jdk21
+```
+
+```cmd
+:: CMD
+scripts\run-demo.cmd io.mybatis.jink.demo.Counter
+```
+
+> **JDK 优先级**：命令行参数 > `JINK_JAVA_HOME` 环境变量 > 系统 Java（须 >= 21）
 
 ### 输入诊断
 
 当需要排查 Windows Terminal + JLine 下的键盘/鼠标输入时，可以运行诊断工具：
 
 ```powershell
-mvn test-compile
-java -cp "target\classes;target\test-classes;..." io.mybatis.jink.demo.InputDiagnostic
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.InputDiagnostic
 ```
 
 它会直接启用 `trackMouse()`，并打印收到的方向键、滚轮和其他 ESC 序列，方便确认当前终端实际发送的输入。
