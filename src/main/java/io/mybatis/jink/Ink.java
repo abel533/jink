@@ -543,12 +543,39 @@ public class Ink {
             }
         }
 
+        // 拦截的 console 输出缓冲
+        private final java.util.List<String> interceptedOutput = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+        /**
+         * 启用 console 拦截，防止 System.out/err 干扰 TUI 渲染。
+         * 拦截到的输出可通过 getInterceptedOutput() 获取。
+         * 对应 ink 的 patchConsole。
+         */
+        public void patchConsole() {
+            io.mybatis.jink.util.ConsolePatcher.patch(text -> {
+                interceptedOutput.add(text);
+                markDirty();
+            });
+        }
+
+        /**
+         * 获取并清空拦截到的 console 输出
+         */
+        public java.util.List<String> drainInterceptedOutput() {
+            java.util.List<String> drained = new java.util.ArrayList<>(interceptedOutput);
+            interceptedOutput.clear();
+            return drained;
+        }
+
         /**
          * 清理终端资源（幂等，可多次调用）
          */
         private synchronized void cleanup() {
             if (cleaned) return;
             cleaned = true;
+
+            // 恢复 console 拦截
+            io.mybatis.jink.util.ConsolePatcher.restore();
 
             if (terminal != null) {
                 try {
