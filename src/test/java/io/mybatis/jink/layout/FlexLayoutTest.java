@@ -615,4 +615,52 @@ class FlexLayoutTest {
         assertEquals(10, c2.getComputedTop());
         assertEquals(10, c2.getComputedHeight());
     }
+
+    // ===== baseline 对齐测试 =====
+
+    @Test
+    void alignItemsBaseline() {
+        // ROW 布局中，两个不同高度的文本节点应按基线对齐
+        // c1: paddingTop=2, 文本 "A" → baseline=3 (padding 2 + 行高 1)
+        // c2: paddingTop=0, 文本 "B" → baseline=1
+        // 最大基线=3，c2 应下移 2
+        var root = ElementNode.createRoot();
+        root.setStyle(Style.builder()
+                .flexDirection(FlexDirection.ROW)
+                .alignItems(AlignItems.BASELINE)
+                .width(40)
+                .build());
+
+        var c1 = ElementNode.createText();
+        c1.setStyle(Style.builder().paddingTop(2).build());
+        c1.appendChild(new TextNode("A"));
+
+        var c2 = ElementNode.createText();
+        c2.setStyle(Style.builder().paddingTop(0).build());
+        c2.appendChild(new TextNode("B"));
+
+        root.appendChild(c1);
+        root.appendChild(c2);
+
+        FlexLayout.calculateLayout(root, 40);
+
+        // c1 baseline = paddingTop(2) + 1 = 3
+        // c2 baseline = paddingTop(0) + 1 = 1
+        // c2 应偏移 maxBaseline - childBaseline = 3 - 1 = 2
+        assertEquals(0, c1.getComputedTop());
+        assertEquals(2, c2.getComputedTop());
+    }
+
+    @Test
+    void computeBaselineTextNode() {
+        // 直接测试 computeBaseline 方法
+        var text = ElementNode.createText();
+        text.setStyle(Style.builder().paddingTop(3).build());
+        text.appendChild(new TextNode("Hello"));
+
+        FlexLayout.calculateLayout(text, 20);
+        int baseline = FlexLayout.computeBaseline(text);
+        // paddingTop(3) + border(0) + 1 = 4
+        assertEquals(4, baseline);
+    }
 }

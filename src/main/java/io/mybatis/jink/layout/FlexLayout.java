@@ -3,6 +3,7 @@ package io.mybatis.jink.layout;
 import io.mybatis.jink.ansi.AnsiStringUtils;
 import io.mybatis.jink.dom.ElementNode;
 import io.mybatis.jink.dom.Node;
+import io.mybatis.jink.dom.NodeType;
 import io.mybatis.jink.dom.TextNode;
 import io.mybatis.jink.style.*;
 
@@ -605,6 +606,20 @@ public class FlexLayout {
             List<ElementNode> line = lines.get(actualIdx);
             int lineSize = lineSizes[actualIdx];
 
+            // 计算该行的最大基线（用于 BASELINE 对齐）
+            int lineMaxBaseline = 0;
+            boolean lineHasBaseline = false;
+            if (crossAxisIsVertical) {
+                for (ElementNode child : line) {
+                    AlignItems itemAlign = child.getStyle().alignSelf() != null
+                            ? child.getStyle().alignSelf() : alignItems;
+                    if (itemAlign == AlignItems.BASELINE) {
+                        lineHasBaseline = true;
+                        lineMaxBaseline = Math.max(lineMaxBaseline, computeBaseline(child));
+                    }
+                }
+            }
+
             // 对该行中的每个子节点做交叉轴对齐
             for (ElementNode child : line) {
                 Style cs = child.getStyle();
@@ -615,10 +630,16 @@ public class FlexLayout {
 
                 AlignItems itemAlign = cs.alignSelf() != null ? cs.alignSelf() : alignItems;
                 int crossOffset = switch (itemAlign) {
-                    case FLEX_START, BASELINE -> 0;
+                    case FLEX_START -> 0;
                     case CENTER -> lineFreeSpace / 2;
                     case FLEX_END -> lineFreeSpace;
                     case STRETCH -> 0;
+                    case BASELINE -> {
+                        if (lineHasBaseline && crossAxisIsVertical) {
+                            yield lineMaxBaseline - computeBaseline(child);
+                        }
+                        yield 0;
+                    }
                 };
 
                 if (crossAxisIsVertical) {
@@ -698,6 +719,21 @@ public class FlexLayout {
      */
     private static void positionOnCrossAxis(List<ElementNode> children, AlignItems align,
                                             int crossSize, boolean crossAxisIsVertical) {
+        // Baseline 对齐：先收集所有需要 baseline 对齐的子节点的基线，计算最大基线
+        int maxBaseline = 0;
+        boolean hasBaseline = false;
+        if (crossAxisIsVertical && (align == AlignItems.BASELINE || children.stream()
+                .anyMatch(c -> c.getStyle().alignSelf() == AlignItems.BASELINE))) {
+            for (ElementNode child : children) {
+                AlignItems selfAlign = child.getStyle().alignSelf() != null
+                        ? child.getStyle().alignSelf() : align;
+                if (selfAlign == AlignItems.BASELINE) {
+                    hasBaseline = true;
+                    maxBaseline = Math.max(maxBaseline, computeBaseline(child));
+                }
+            }
+        }
+
         for (ElementNode child : children) {
             Style cs = child.getStyle();
             AlignItems selfAlign = cs.alignSelf() != null ? cs.alignSelf() : align;
@@ -733,7 +769,14 @@ public class FlexLayout {
                     }
                     yield marginBefore;
                 }
-                case BASELINE -> marginBefore;
+                case BASELINE -> {
+                    if (hasBaseline && crossAxisIsVertical) {
+                        // 对齐基线：child.top = maxBaseline - childBaseline + marginTop
+                        int childBaseline = computeBaseline(child);
+                        yield marginBefore + (maxBaseline - childBaseline);
+                    }
+                    yield marginBefore;
+                }
             };
 
             if (crossAxisIsVertical) {
@@ -922,5 +965,34 @@ public class FlexLayout {
             total += gap * Math.max(0, childCount - 1);
             return total + borderH + paddingH;
         }
+    }
+
+    /**
+     * 计算节点的基线偏移量（从节点顶部到第一行文本基线的距离）。
+     * 用于 alignItems: BASELINE 对齐。
+     * - 文本节点：borderTop + paddingTop + 1（第一行文本的底部）
+     * - Box 节点：递归查找第一个文本后代
+     * - 无文本：返回节点高度作为 fallback
+     */
+    static int computeBaseline(ElementNode node) {
+        Style style = node.getStyle();
+        int borderTop = style.hasBorder() ? 1 : 0;
+        int paddingTop = style.paddingTop();
+
+        // 文本节点：基线 = 第一行文本底部
+        if (node.getNodeType() == NodeType.INK_TEXT
+                || node.getNodeType() == NodeType.INK_VIRTUAL_TEXT) {
+            return borderTop + paddingTop + 1;
+        }
+
+        // Box 节点：查找第一个子 ElementNode 并递归
+        for (Node child : node.getChildNodes()) {
+            if (child instanceof ElementNode elem && elem.getStyle().display() != Display.NONE) {
+                return borderTop + paddingTop + elem.getComputedTop() + computeBaseline(elem);
+            }
+        }
+
+        // 无子节点：fallback 到节点高度
+        return node.getComputedHeight();
     }
 }
