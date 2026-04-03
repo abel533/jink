@@ -7,10 +7,10 @@
 | 维度 | ink | jink | 覆盖率 |
 |:-----|:----|:-----|:-------|
 | 组件数量 | 17 个（含 Context） | 11 个 | ~65% |
-| Hooks/API | 12 个 Hook | 7 个等效 API | ~58% |
-| Flexbox 属性 | ~95% CSS Flexbox | ~85% | ~85% |
-| 按键支持 | ~50+ 键（含 Kitty 协议） | ~30 键 | ~60% |
-| **总体功能对等** | — | — | **~75%** |
+| Hooks/API | 12 个 Hook | 9 个等效 API | ~75% |
+| Flexbox 属性 | ~95% CSS Flexbox | ~90% | ~90% |
+| 按键支持 | ~50+ 键（含 Kitty 协议） | ~35 键 + 粘贴 | ~65% |
+| **总体功能对等** | — | — | **~80%** |
 
 ---
 
@@ -41,12 +41,12 @@
 |:---------|:----------|:-----|:-----|
 | `useApp()` | Component 基类 | ⚠️ 部分 | exit() 可用，缺少 stdin/stdout 暴露 |
 | `useInput()` | `Component.onInput()` | ✅ 完整 | 方法 vs Hook，功能等效 |
-| `usePaste()` | ❌ 缺失 | 🔴 可实现 | 剪贴板粘贴事件 |
+| `usePaste()` | `Component.onPaste()` | ✅ 完整 | Bracketed Paste Mode |
 | `useStdin()` | ❌ 缺失 | 🔴 可实现 | |
 | `useStdout()` | ❌ 缺失 | 🔴 可实现 | |
 | `useStderr()` | ❌ 缺失 | 🔴 可实现 | |
 | `useWindowSize()` | `getColumns()/getRows()` | ✅ 完整 | 含 WINCH 信号监听 |
-| `useBoxMetrics()` | ❌ 缺失 | 🔴 可实现 | 获取布局后的尺寸/位置 |
+| `useBoxMetrics()` | `getComputedXxx()` | ✅ 完整 | ElementNode 已有完整布局指标 |
 | `useFocus()` | `Focusable` 接口 | ✅ 完整 | |
 | `useFocusManager()` | `FocusManager` 类 | ✅ 完整 | |
 | `useCursor()` | `setCursorPosition()` | ✅ 完整 | |
@@ -62,9 +62,9 @@
 |:-----|:----------|:-----|:-----|:-----|
 | flexDirection | ✅ 4 个值 | ✅ 4 个值 | ✅ 完整 | row/column/row-reverse/column-reverse |
 | justifyContent | ✅ 6 个值 | ✅ 6 个值 | ✅ 完整 | |
-| alignItems | ✅ 5 个值 | ✅ 4 个值 | ⚠️ 缺 baseline | baseline 对齐缺失 |
-| alignSelf | ✅ 完整 | ⚠️ 部分 | 🟡 | |
-| **alignContent** | ✅ 7 个值 | ❌ 缺失 | 🔴 可实现 | 多行对齐（需 flexWrap） |
+| alignItems | ✅ 5 个值 | ✅ 5 个值 | ✅ 完整 | 含 BASELINE 对齐 |
+| alignSelf | ✅ 完整 | ✅ 完整 | ✅ 完整 | 含 BASELINE |
+| **alignContent** | ✅ 7 个值 | ✅ 7 个值 | ✅ 完整 | FLEX_START/CENTER/FLEX_END/STRETCH/SPACE_BETWEEN/AROUND/EVENLY |
 | **flexWrap** | ✅ nowrap/wrap/wrap-reverse | ✅ 3 个值 | ✅ 完整 | nowrap/wrap/wrap-reverse |
 | flexGrow | ✅ | ✅ | ✅ 完整 | |
 | flexShrink | ✅ | ✅ | ✅ 完整 | |
@@ -97,7 +97,7 @@
 | inverse | ✅ | ✅ | ✅ 完整 |
 | textWrap (多种截断) | ✅ 7 种模式 | ✅ WRAP + 3 种截断 | ✅ 完整 |
 | 边框样式 | ✅ 15+ 种 | ✅ 9 种 | 🟡 够用 |
-| 边框颜色 (每边独立) | ✅ | ⚠️ 单一颜色 | 🟡 |
+| 边框颜色 (每边独立) | ✅ | ✅ 每边独立 | ✅ 完整 | borderTopColor/Right/Bottom/Left |
 | 边框 dimColor | ✅ 每边独立 | ❌ 缺失 | 🔴 |
 
 ---
@@ -118,7 +118,7 @@
 | Shift 修饰符 | ✅ 完整 | ⚠️ 部分 | 🟡 仅 Shift+Arrow/Tab |
 | **Kitty 键盘协议** | ✅ 完整支持 | ❌ 缺失 | 🔴 可实现 |
 | 媒体键/小键盘 | ✅ | ❌ 缺失 | 🔴 低优先级 |
-| 粘贴事件 | ✅ usePaste | ❌ 缺失 | 🔴 可实现 |
+| 粘贴事件 | ✅ usePaste | ✅ onPaste() | ✅ 完整 | Bracketed Paste Mode |
 
 ---
 
@@ -179,12 +179,12 @@
 ### 中优先级
 | 功能 | 难度 | 说明 |
 |:-----|:-----|:-----|
-| alignContent | 中 | 多行对齐（依赖 flexWrap） |
-| baseline 对齐 | 中 | alignItems: baseline |
-| 每边独立边框色 | 低 | borderTopColor 等 |
-| Shift 修饰符完整支持 | 低 | Shift+字母等组合 |
-| usePaste 等效 | 中 | 剪贴板粘贴检测 |
-| useBoxMetrics 等效 | 低 | 获取组件渲染后的尺寸 |
+| ~~alignContent~~ | ~~中~~ | ✅ 已实现 (7 种对齐模式) |
+| ~~baseline 对齐~~ | ~~中~~ | ✅ 已实现 (alignItems/alignSelf: BASELINE) |
+| ~~每边独立边框色~~ | ~~低~~ | ✅ 已实现 (borderTopColor/Right/Bottom/Left) |
+| Shift 修饰符完整支持 | 低 | Shift+字母等组合（终端限制） |
+| ~~usePaste 等效~~ | ~~中~~ | ✅ 已实现 (Bracketed Paste Mode + onPaste) |
+| ~~useBoxMetrics 等效~~ | ~~低~~ | ✅ 已有 (getComputedLeft/Top/Width/Height) |
 
 ### 低优先级
 | 功能 | 难度 | 说明 |
