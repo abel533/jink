@@ -597,7 +597,7 @@ public class FeatureShowcase extends Component<FeatureShowcase.State> {
     private Renderable renderStaticDemo(int w) {
         var s = getState();
         List<String> staticItems = new ArrayList<>();
-        staticItems.add("框架名称: jink (ink4j)");
+        staticItems.add("框架名称: jink");
         staticItems.add("当前标签: " + tabLabel(s.tab()));
         staticItems.add("计数器值: " + s.counter());
 

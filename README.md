@@ -6,7 +6,7 @@
 
 ![Java 21+](https://img.shields.io/badge/Java-21%2B-blue)
 ![JLine 3](https://img.shields.io/badge/JLine-3.28.0-green)
-![Tests](https://img.shields.io/badge/Tests-108%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-146%20passing-brightgreen)
 
 ---
 
@@ -181,6 +181,17 @@ mvn compile test-compile
 .\scripts\run-preview.ps1 [width] [height]
 ```
 
+### 输入诊断
+
+当需要排查 Windows Terminal + JLine 下的键盘/鼠标输入时，可以运行诊断工具：
+
+```powershell
+mvn test-compile
+java -cp "target\classes;target\test-classes;..." io.mybatis.jink.demo.InputDiagnostic
+```
+
+它会直接启用 `trackMouse()`，并打印收到的方向键、滚轮和其他 ESC 序列，方便确认当前终端实际发送的输入。
+
 ---
 
 ## 🔧 构建 & 测试
@@ -189,7 +200,7 @@ mvn compile test-compile
 # 编译
 mvn clean compile
 
-# 运行 108 个单元测试
+# 运行 146 个单元测试
 mvn test
 
 # 打包
@@ -245,7 +256,7 @@ io.mybatis.jink
 
 ## 📋 已知限制
 
-- 鼠标滚轮在 Windows Terminal 中被转为箭头键序列（无法与键盘 ↑↓ 区分），详见 [TODO.md](../TODO.md)
+- CopilotDemo 的鼠标滚轮依赖 JLine Windows 终端的原生鼠标追踪；其他终端的鼠标事件格式可能需要额外适配
 - 目前仅在 Windows Terminal + JLine 3 上测试，Linux/macOS 终端行为可能不同
 - 尚未发布到 Maven Central
 

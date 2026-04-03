@@ -282,6 +282,9 @@ java -cp "target/classes;target/test-classes;..." io.mybatis.jink.demo.Interacti
 
 # Copilot CLI 风格 Demo
 java -cp "target/classes;target/test-classes;..." io.mybatis.jink.demo.CopilotDemo
+
+# 输入诊断（查看方向键 / 滚轮 / ESC 序列）
+java -cp "target/classes;target/test-classes;..." io.mybatis.jink.demo.InputDiagnostic
 ```
 
 项目提供了便捷的运行脚本：
@@ -293,6 +296,8 @@ java -cp "target/classes;target/test-classes;..." io.mybatis.jink.demo.CopilotDe
 # CMD
 .\scripts\run-demo.cmd
 ```
+
+如果需要排查 Windows Terminal + JLine 下的滚轮或方向键行为，优先运行 `InputDiagnostic`，它会直接打印收到的原始 ESC 序列和解析结果。
 
 ---
 

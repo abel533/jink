@@ -117,6 +117,7 @@ public class Ink {
         private NonBlockingReader reader;
         private PrintWriter termWriter;
         private boolean interactive;
+        private boolean mouseTrackingEnabled;
 
         // 渲染节流
         private long lastRenderTime = 0;
@@ -212,6 +213,12 @@ public class Ink {
                 // 启用 Bracketed Paste Mode
                 termWriter.print(io.mybatis.jink.ansi.Ansi.ENABLE_BRACKETED_PASTE);
                 termWriter.flush();
+
+                try {
+                    mouseTrackingEnabled = terminal.trackMouse(Terminal.MouseTracking.Normal);
+                } catch (Exception ignored) {
+                    mouseTrackingEnabled = false;
+                }
 
                 // 监听终端尺寸变化
                 terminal.handle(Terminal.Signal.WINCH, signal -> {
@@ -426,8 +433,7 @@ public class Ink {
 
         /**
          * 读取 ESC 转义序列。
-         * Windows 终端上鼠标滚轮发送 ESC[A/ESC[B，字节间可能有较大延迟，
-         * 需要足够长的超时来确保完整读取序列，避免拆分成单独字符。
+         * 鼠标事件和功能键都可能跨多个字节到达，需要等待完整序列。
          */
         private KeyParser.ParseResult readEscapeSequence() throws IOException {
             // 第一步：等待 ESC 后的第一个字符（区分独立 ESC 键和序列开始）
@@ -579,6 +585,9 @@ public class Ink {
 
             if (terminal != null) {
                 try {
+                    if (mouseTrackingEnabled) {
+                        terminal.trackMouse(Terminal.MouseTracking.Off);
+                    }
                     // 禁用 Bracketed Paste Mode
                     termWriter.print(io.mybatis.jink.ansi.Ansi.DISABLE_BRACKETED_PASTE);
                     // 显示光标

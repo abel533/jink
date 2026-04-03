@@ -26,6 +26,36 @@ class KeyParserTest {
     }
 
     @Test
+    void testSs3ArrowSequences() {
+        var up = KeyParser.parseEscapeSequence("OA");
+        assertEquals("up", up.name());
+        assertTrue(up.toKey().upArrow());
+        assertFalse(up.toKey().scrollUp());
+        assertEquals("", up.inputText());
+
+        var down = KeyParser.parseEscapeSequence("OB");
+        assertEquals("down", down.name());
+        assertTrue(down.toKey().downArrow());
+        assertFalse(down.toKey().scrollDown());
+        assertEquals("", down.inputText());
+    }
+
+    @Test
+    void testX10WheelSequences() {
+        var scrollUp = KeyParser.parseEscapeSequence("[M`!!");
+        assertEquals("scrollUp", scrollUp.name());
+        assertTrue(scrollUp.toKey().scrollUp());
+        assertFalse(scrollUp.toKey().upArrow());
+        assertEquals("", scrollUp.inputText());
+
+        var scrollDown = KeyParser.parseEscapeSequence("[Ma!!");
+        assertEquals("scrollDown", scrollDown.name());
+        assertTrue(scrollDown.toKey().scrollDown());
+        assertFalse(scrollDown.toKey().downArrow());
+        assertEquals("", scrollDown.inputText());
+    }
+
+    @Test
     void testNavigationKeys() {
         assertEquals("home", KeyParser.parseEscapeSequence("[H").name());
         assertEquals("end", KeyParser.parseEscapeSequence("[F").name());
@@ -114,10 +144,12 @@ class KeyParserTest {
     @Test
     void testCompleteSequence() {
         assertTrue(KeyParser.isCompleteSequence("[A"));
+        assertTrue(KeyParser.isCompleteSequence("[M`!!"));
         assertTrue(KeyParser.isCompleteSequence("[3~"));
         assertTrue(KeyParser.isCompleteSequence("OP"));
         assertTrue(KeyParser.isCompleteSequence("a"));
         assertFalse(KeyParser.isCompleteSequence("["));
+        assertFalse(KeyParser.isCompleteSequence("[M"));
         assertFalse(KeyParser.isCompleteSequence("[3"));
     }
 

@@ -12,6 +12,7 @@
 | `InteractiveDemo` | 消息列表，键盘导航 | ✅ | `.\scripts\run-interactive.ps1` |
 | `CopilotDemo` | 完整 Copilot CLI 复刻 | ✅ | `.\scripts\run-demo.ps1` |
 | `CopilotDemoPreview` | CopilotDemo 静态预览 | 无 | `.\scripts\run-preview.ps1` |
+| `InputDiagnostic` | 诊断方向键/滚轮/ESC 序列 | ✅ | `mvn test-compile` 后手动运行 |
 
 ---
 
@@ -32,12 +33,12 @@
 ### 运行步骤
 
 ```powershell
-cd ink4j
+cd jink
 .\scripts\run-simple.ps1
 ```
 
 ### GIF 录制操作
-1. 打开终端，进入 `ink4j` 目录
+1. 打开终端，进入 `jink` 模块目录
 2. 运行 `.\run-simple.ps1`
 3. 画面会依次显示：
    - Copilot CLI 风格界面（圆角边框 + 消息列表 + 输入框 + 快捷键栏）
@@ -92,7 +93,7 @@ Box.of(
 ### 运行步骤
 
 ```powershell
-cd ink4j
+cd jink
 .\scripts\run-interactive.ps1
 ```
 
@@ -147,8 +148,8 @@ public class InteractiveDemo extends Component<InteractiveDemo.State> {
 - ✅ 水平分隔线
 - ✅ 底部快捷键栏
 - ✅ 多行输入 (Shift+Enter)
-- ✅ 输入历史 (Ctrl+P/N)
-- ✅ 消息滚动 (↑↓/鼠标滚轮/PageUp/PageDown)
+- ✅ 输入历史 (↑↓)
+- ✅ 消息滚动 (鼠标滚轮/PageUp/PageDown)
 - ✅ CJK 字符光标位置正确
 - ✅ Ctrl+C 优雅退出
 - ✅ 终端尺寸自适应
@@ -156,9 +157,19 @@ public class InteractiveDemo extends Component<InteractiveDemo.State> {
 ### 运行步骤
 
 ```powershell
-cd ink4j
+cd jink
 .\scripts\run-demo.ps1
 ```
+
+### 推荐验证流程
+
+1. 连续发送 2-3 条消息，先让中间消息区产生可滚动内容
+2. 在输入框中输入一段未发送的文本，例如 `draft`
+3. 按 `↑`，确认输入框切换到上一条历史命令，而不是滚动中间消息
+4. 按 `↓`，确认输入框返回下一条历史或恢复到 `draft`
+5. 滚动鼠标滚轮，确认变化发生在**中间消息区**，而不是输入框内容
+6. 按 `PageUp` / `PageDown`，确认消息区可以大步滚动
+7. 在历史预览状态下继续输入字符，确认会退出历史浏览并进入当前编辑态
 
 ### GIF 录制操作（完整流程，约 30 秒）
 
@@ -170,11 +181,11 @@ cd ink4j
 
 **第二段：滚动和历史** (约 10 秒)
 5. 鼠标滚轮向上滚动查看消息
-6. 按 `↑↓` 滚动
+6. 按 `↑` / `↓` 切换输入历史
 7. 按 `PageUp` / `PageDown` 快速滚动
-8. 按 `Ctrl+P` 浏览输入历史（显示上一条命令）
-9. 按 `Ctrl+N` 切换到下一条
-10. 按 `Ctrl+P` 多次，浏览所有历史
+8. 鼠标滚轮向下滚动，回到最新消息
+9. 按 `↑` 多次，浏览所有输入历史
+10. 按 `↓` 逐步返回当前输入
 
 **第三段：多行输入** (约 5 秒)
 11. 输入 "第一行"
@@ -193,10 +204,9 @@ cd ink4j
 | `Enter` | 发送消息 |
 | `Alt+Enter` | 多行输入换行 |
 | `Backspace` | 删除字符 |
-| `↑` / `↓` | 滚动消息（每次 3 行） |
-| `PageUp` / `PageDown` | 快速滚动（每次 10 行） |
-| `Ctrl+P` | 上一条输入历史 |
-| `Ctrl+N` | 下一条输入历史 |
+| `↑` / `↓` | 输入框命令历史 |
+| 鼠标滚轮 | 滚动中间消息历史（每次 3 行） |
+| `PageUp` / `PageDown` | 快速滚动消息历史（每次 10 行） |
 | `Ctrl+C` | 退出 |
 
 ### 核心代码片段
@@ -233,7 +243,7 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
 ### 运行步骤
 
 ```powershell
-cd ink4j
+cd jink
 .\scripts\run-preview.ps1
 
 # 自定义尺寸

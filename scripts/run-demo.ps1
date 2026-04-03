@@ -19,7 +19,7 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 cmd /c chcp 65001 > $null
 
 # Always use JDK 21 for this project
-$jdkHome = if ($env:JINK_JAVA_HOME) { $env:JINK_JAVA_HOME } else { 'D:\Dev\jdk-21' }
+$jdkHome = if ($env:JINK_JAVA_HOME) { $env:JINK_JAVA_HOME } else { 'C:\Dev\jdk-21.0.10' }
 $env:JAVA_HOME = $jdkHome
 $env:PATH = ('{0}\bin;{1}' -f $env:JAVA_HOME, $env:PATH)
 $env:MAVEN_OPTS = '-Dfile.encoding=UTF-8'

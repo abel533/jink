@@ -126,7 +126,7 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
         allItems.add(statusLine(Color.BRIGHT_BLUE,
                 "Project loaded from current directory."));
         allItems.add(statusLine(Color.BRIGHT_BLUE,
-                "Environment loaded: Java 21, Maven, 102 tests passing."));
+                "Environment loaded: Java 21, Maven, 146 tests passing."));
 
         // 用户发送的消息
         for (String msg : s.messages) {
@@ -165,7 +165,7 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
      * 状态栏（左: 路径, 右: 模型信息）
      */
     private Renderable statusBar(int w, int h) {
-        String left = "D:\\Learn\\ink4j (" + w + "x" + h + ")";
+        String left = System.getProperty("user.dir", ".") + " (" + w + "x" + h + ")";
         String right = "Jink 0.1.0 (Java 21)";
         int pad = w - left.length() - right.length() - 2;
         String middle = pad > 0 ? " ".repeat(pad) : " ";
@@ -213,10 +213,10 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
         return Box.of(
                 Text.of(
                         Text.of("↑↓").dimmed(),
-                        Text.of(" scroll").dimmed(),
+                        Text.of(" input history").dimmed(),
                         Text.of("  "),
-                        Text.of("ctrl+p/n").dimmed(),
-                        Text.of(" history").dimmed()
+                        Text.of("wheel").dimmed(),
+                        Text.of(" messages").dimmed()
                 ),
                 Spacer.create(),
                 Text.of(
@@ -253,50 +253,67 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
             }
         } else if (key.backspace()) {
             if (!s.inputText.isEmpty()) {
+                abandonHistoryPreview();
                 String newText = s.inputText.substring(0, s.inputText.length() - 1);
                 setState(new State(newText, s.messages, s.scrollOffset));
             }
-        } else if (key.ctrl() && "p".equals(input)) {
-            // Ctrl+P: 浏览输入历史（上一条）
-            if (!inputHistory.isEmpty()) {
-                if (historyIndex == -1) {
-                    savedInput = s.inputText;
-                    historyIndex = inputHistory.size() - 1;
-                } else if (historyIndex > 0) {
-                    historyIndex--;
-                }
-                setState(new State(inputHistory.get(historyIndex), s.messages, s.scrollOffset));
-            }
-        } else if (key.ctrl() && "n".equals(input)) {
-            // Ctrl+N: 浏览输入历史（下一条）
-            if (historyIndex >= 0) {
-                historyIndex++;
-                if (historyIndex >= inputHistory.size()) {
-                    historyIndex = -1;
-                    setState(new State(savedInput, s.messages, s.scrollOffset));
-                } else {
-                    setState(new State(inputHistory.get(historyIndex), s.messages, s.scrollOffset));
-                }
-            }
         } else if (key.upArrow()) {
-            // ↑/鼠标滚轮上: 向上滚动消息
-            int newOffset = Math.min(s.scrollOffset + 3, Math.max(0, totalMessages - 1));
-            setState(new State(s.inputText, s.messages, newOffset));
+            browseHistoryUp(s);
         } else if (key.downArrow()) {
-            // ↓/鼠标滚轮下: 向下滚动消息
-            int newOffset = Math.max(0, s.scrollOffset - 3);
-            setState(new State(s.inputText, s.messages, newOffset));
+            browseHistoryDown(s);
+        } else if (key.scrollUp()) {
+            setState(new State(s.inputText, s.messages, scrollMessages(totalMessages, s.scrollOffset, 3)));
+        } else if (key.scrollDown()) {
+            setState(new State(s.inputText, s.messages, scrollMessages(totalMessages, s.scrollOffset, -3)));
         } else if (key.pageUp()) {
             // PageUp: 向上滚动查看消息历史（大步）
-            int newOffset = Math.min(s.scrollOffset + 10, Math.max(0, totalMessages - 1));
-            setState(new State(s.inputText, s.messages, newOffset));
+            setState(new State(s.inputText, s.messages, scrollMessages(totalMessages, s.scrollOffset, 10)));
         } else if (key.pageDown()) {
             // PageDown: 向下滚动消息（大步）
-            int newOffset = Math.max(0, s.scrollOffset - 10);
-            setState(new State(s.inputText, s.messages, newOffset));
+            setState(new State(s.inputText, s.messages, scrollMessages(totalMessages, s.scrollOffset, -10)));
         } else if (!input.isEmpty() && isPrintableInput(input, key)) {
             // 普通文本输入（过滤导航键和控制组合键）
+            abandonHistoryPreview();
             setState(new State(s.inputText + input, s.messages, s.scrollOffset));
+        }
+    }
+
+    private void browseHistoryUp(State s) {
+        if (inputHistory.isEmpty()) {
+            return;
+        }
+        if (historyIndex == -1) {
+            savedInput = s.inputText;
+            historyIndex = inputHistory.size() - 1;
+        } else if (historyIndex > 0) {
+            historyIndex--;
+        }
+        setState(new State(inputHistory.get(historyIndex), s.messages, s.scrollOffset));
+    }
+
+    private void browseHistoryDown(State s) {
+        if (historyIndex < 0) {
+            return;
+        }
+        historyIndex++;
+        if (historyIndex >= inputHistory.size()) {
+            historyIndex = -1;
+            setState(new State(savedInput, s.messages, s.scrollOffset));
+            savedInput = "";
+            return;
+        }
+        setState(new State(inputHistory.get(historyIndex), s.messages, s.scrollOffset));
+    }
+
+    private int scrollMessages(int totalMessages, int currentOffset, int delta) {
+        int maxOffset = Math.max(0, totalMessages - 1);
+        return Math.max(0, Math.min(currentOffset + delta, maxOffset));
+    }
+
+    private void abandonHistoryPreview() {
+        if (historyIndex >= 0) {
+            historyIndex = -1;
+            savedInput = "";
         }
     }
 

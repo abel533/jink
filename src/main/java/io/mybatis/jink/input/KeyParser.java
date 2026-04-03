@@ -25,7 +25,7 @@ public class KeyParser {
         ESC_SEQUENCES.put("[C", "right");
         ESC_SEQUENCES.put("[D", "left");
 
-        // 箭头键 (SS3 格式: ESC O x — JLine Windows 终端使用此格式)
+        // 箭头键 (SS3 格式)
         ESC_SEQUENCES.put("OA", "up");
         ESC_SEQUENCES.put("OB", "down");
         ESC_SEQUENCES.put("OC", "right");
@@ -148,6 +148,11 @@ public class KeyParser {
      * 解析转义序列后缀（ESC 之后的部分）
      */
     public static ParseResult parseEscapeSequence(String suffix) {
+        // X10 鼠标事件: [M Cb Cx Cy
+        if (suffix.startsWith("[M") && suffix.length() >= 5) {
+            return parseMouseEvent(suffix);
+        }
+
         // SGR 鼠标事件: [<button;col;rowM 或 [<button;col;rowm
         if (suffix.startsWith("[<") && suffix.length() > 2) {
             return parseMouseEvent(suffix);
@@ -184,6 +189,16 @@ public class KeyParser {
      * 解析 SGR 鼠标事件: [<button;col;rowM
      */
     private static ParseResult parseMouseEvent(String suffix) {
+        if (suffix.startsWith("[M") && suffix.length() >= 5) {
+            int button = suffix.charAt(2) - ' ';
+            if ((button & 0x40) != 0) {
+                return (button & 0x01) == 0
+                        ? new ParseResult("scrollUp", "", false, false, false)
+                        : new ParseResult("scrollDown", "", false, false, false);
+            }
+            return null;
+        }
+
         // 去掉 [< 前缀和 M/m 结尾
         String body = suffix.substring(2, suffix.length() - 1);
         String[] parts = body.split(";");
@@ -246,6 +261,10 @@ public class KeyParser {
         // ESC [ ... (CSI 序列)
         if (first == '[') {
             if (suffix.length() < 2) return false;
+            // X10 鼠标序列: [M Cb Cx Cy
+            if (suffix.length() >= 2 && suffix.charAt(1) == 'M') {
+                return suffix.length() >= 5;
+            }
             // SGR 鼠标序列: [<button;col;rowM — 以 M 或 m 结尾
             if (suffix.length() >= 2 && suffix.charAt(1) == '<') {
                 char last = suffix.charAt(suffix.length() - 1);
