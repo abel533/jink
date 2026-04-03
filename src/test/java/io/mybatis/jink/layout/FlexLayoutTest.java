@@ -528,4 +528,91 @@ class FlexLayoutTest {
         // 两行：5 + 3 = 8
         assertEquals(8, root.getComputedHeight());
     }
+
+    // ===== alignContent 测试 =====
+
+    @Test
+    void alignContentCenter() {
+        // 容器高 20，两行总高 6 (3+3)，CENTER 应使起始偏移 = (20-6)/2 = 7
+        var root = ElementNode.createRoot();
+        root.setStyle(Style.builder()
+                .flexDirection(FlexDirection.ROW)
+                .flexWrap(Style.FlexWrap.WRAP)
+                .alignContent(AlignContent.CENTER)
+                .width(20)
+                .height(20)
+                .build());
+
+        var c1 = ElementNode.createBox();
+        c1.setStyle(Style.builder().width(15).height(3).build());
+        var c2 = ElementNode.createBox();
+        c2.setStyle(Style.builder().width(15).height(3).build());
+
+        root.appendChild(c1);
+        root.appendChild(c2);
+
+        FlexLayout.calculateLayout(root, 20);
+
+        // 两行都应居中偏移 7
+        assertEquals(7, c1.getComputedTop());
+        assertEquals(10, c2.getComputedTop()); // 7 + 3
+    }
+
+    @Test
+    void alignContentSpaceBetween() {
+        // 容器高 20，两行总高 6，SPACE_BETWEEN: 第一行 top=0，第二行 top=20-3=17
+        var root = ElementNode.createRoot();
+        root.setStyle(Style.builder()
+                .flexDirection(FlexDirection.ROW)
+                .flexWrap(Style.FlexWrap.WRAP)
+                .alignContent(AlignContent.SPACE_BETWEEN)
+                .width(20)
+                .height(20)
+                .build());
+
+        var c1 = ElementNode.createBox();
+        c1.setStyle(Style.builder().width(15).height(3).build());
+        var c2 = ElementNode.createBox();
+        c2.setStyle(Style.builder().width(15).height(3).build());
+
+        root.appendChild(c1);
+        root.appendChild(c2);
+
+        FlexLayout.calculateLayout(root, 20);
+
+        assertEquals(0, c1.getComputedTop());
+        // freeSpace=14, 2行之间间距=14, c2.top = 3 + 14 = 17
+        assertEquals(17, c2.getComputedTop());
+    }
+
+    @Test
+    void alignContentStretch() {
+        // 容器高 20，两行总高 6，STRETCH: 每行多分 7 高度
+        var root = ElementNode.createRoot();
+        root.setStyle(Style.builder()
+                .flexDirection(FlexDirection.ROW)
+                .flexWrap(Style.FlexWrap.WRAP)
+                .alignContent(AlignContent.STRETCH)
+                .alignItems(AlignItems.STRETCH)
+                .width(20)
+                .height(20)
+                .build());
+
+        var c1 = ElementNode.createBox();
+        c1.setStyle(Style.builder().width(15).height(3).build());
+        var c2 = ElementNode.createBox();
+        c2.setStyle(Style.builder().width(15).height(3).build());
+
+        root.appendChild(c1);
+        root.appendChild(c2);
+
+        FlexLayout.calculateLayout(root, 20);
+
+        // freeSpace=14, 每行多得 7, 第一行 lineSize=10, 第二行 lineSize=10
+        assertEquals(0, c1.getComputedTop());
+        // c1 被 stretch 到 lineSize=10
+        assertEquals(10, c1.getComputedHeight());
+        assertEquals(10, c2.getComputedTop());
+        assertEquals(10, c2.getComputedHeight());
+    }
 }

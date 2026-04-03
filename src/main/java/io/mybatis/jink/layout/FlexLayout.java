@@ -393,8 +393,8 @@ public class FlexLayout {
         }
 
         // Phase 4: 行间交叉轴堆叠 + alignItems per line
-        stackLinesOnCrossAxis(lines, parent.getStyle().alignItems(), availableHeight, gap,
-                true, wrapMode == Style.FlexWrap.WRAP_REVERSE);
+        stackLinesOnCrossAxis(lines, parent.getStyle().alignItems(), parent.getStyle().alignContent(),
+                availableHeight, gap, true, wrapMode == Style.FlexWrap.WRAP_REVERSE);
     }
 
     /**
@@ -422,8 +422,8 @@ public class FlexLayout {
         }
 
         // Phase 4: 列间交叉轴堆叠
-        stackLinesOnCrossAxis(lines, parent.getStyle().alignItems(), contentWidth, gap,
-                false, wrapMode == Style.FlexWrap.WRAP_REVERSE);
+        stackLinesOnCrossAxis(lines, parent.getStyle().alignItems(), parent.getStyle().alignContent(),
+                contentWidth, gap, false, wrapMode == Style.FlexWrap.WRAP_REVERSE);
     }
 
     /**
@@ -540,10 +540,12 @@ public class FlexLayout {
      * @param reverse true=wrap-reverse
      */
     private static void stackLinesOnCrossAxis(List<List<ElementNode>> lines, AlignItems alignItems,
+                                              AlignContent alignContent,
                                               int crossSize, int gap,
                                               boolean crossAxisIsVertical, boolean reverse) {
         // 计算每行的交叉轴尺寸
         int[] lineSizes = new int[lines.size()];
+        int totalLineSize = 0;
         for (int i = 0; i < lines.size(); i++) {
             int maxCross = 0;
             for (ElementNode c : lines.get(i)) {
@@ -553,11 +555,51 @@ public class FlexLayout {
                 maxCross = Math.max(maxCross, cs);
             }
             lineSizes[i] = maxCross;
+            totalLineSize += maxCross;
+        }
+
+        int lineCount = lines.size();
+        int freeSpace = (crossSize != Style.AUTO) ? Math.max(0, crossSize - totalLineSize) : 0;
+
+        // alignContent STRETCH: 将多余空间均分给每行
+        if (alignContent == AlignContent.STRETCH && freeSpace > 0 && lineCount > 0) {
+            int extra = freeSpace / lineCount;
+            int remainder = freeSpace % lineCount;
+            for (int i = 0; i < lineCount; i++) {
+                lineSizes[i] += extra + (i < remainder ? 1 : 0);
+            }
+            freeSpace = 0;
+        }
+
+        // 计算起始偏移和行间距
+        int startOffset = 0;
+        int spaceBetweenLines = 0;
+
+        switch (alignContent) {
+            case FLEX_START, STRETCH -> startOffset = 0;
+            case FLEX_END -> startOffset = freeSpace;
+            case CENTER -> startOffset = freeSpace / 2;
+            case SPACE_BETWEEN -> {
+                if (lineCount > 1) spaceBetweenLines = freeSpace / (lineCount - 1);
+            }
+            case SPACE_AROUND -> {
+                if (lineCount > 0) {
+                    int eachSide = freeSpace / (lineCount * 2);
+                    startOffset = eachSide;
+                    spaceBetweenLines = eachSide * 2;
+                }
+            }
+            case SPACE_EVENLY -> {
+                if (lineCount > 0) {
+                    int each = freeSpace / (lineCount + 1);
+                    startOffset = each;
+                    spaceBetweenLines = each;
+                }
+            }
         }
 
         // 堆叠行
-        int pos = 0;
-        int lineCount = lines.size();
+        int pos = startOffset;
         for (int lineIdx = 0; lineIdx < lineCount; lineIdx++) {
             int actualIdx = reverse ? (lineCount - 1 - lineIdx) : lineIdx;
             List<ElementNode> line = lines.get(actualIdx);
@@ -569,30 +611,30 @@ public class FlexLayout {
                 int childCross = crossAxisIsVertical
                         ? child.getComputedHeight() + cs.verticalMargin()
                         : child.getComputedWidth() + cs.horizontalMargin();
-                int freeSpace = Math.max(0, lineSize - childCross);
+                int lineFreeSpace = Math.max(0, lineSize - childCross);
 
                 AlignItems itemAlign = cs.alignSelf() != null ? cs.alignSelf() : alignItems;
                 int crossOffset = switch (itemAlign) {
                     case FLEX_START, BASELINE -> 0;
-                    case CENTER -> freeSpace / 2;
-                    case FLEX_END -> freeSpace;
+                    case CENTER -> lineFreeSpace / 2;
+                    case FLEX_END -> lineFreeSpace;
                     case STRETCH -> 0;
                 };
 
                 if (crossAxisIsVertical) {
                     child.setComputedTop(pos + crossOffset + cs.marginTop());
-                    if (itemAlign == AlignItems.STRETCH && freeSpace > 0) {
+                    if (itemAlign == AlignItems.STRETCH && lineFreeSpace > 0) {
                         child.setComputedHeight(lineSize - cs.verticalMargin());
                     }
                 } else {
                     child.setComputedLeft(pos + crossOffset + cs.marginLeft());
-                    if (itemAlign == AlignItems.STRETCH && freeSpace > 0) {
+                    if (itemAlign == AlignItems.STRETCH && lineFreeSpace > 0) {
                         child.setComputedWidth(lineSize - cs.horizontalMargin());
                     }
                 }
             }
 
-            pos += lineSize;
+            pos += lineSize + spaceBetweenLines;
         }
     }
 

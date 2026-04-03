@@ -11,6 +11,7 @@ public record Style(
         JustifyContent justifyContent,
         AlignItems alignItems,
         AlignItems alignSelf,
+        AlignContent alignContent,
         FlexWrap flexWrap,
 
         // Flex 项目属性
@@ -113,6 +114,7 @@ public record Style(
         b.justifyContent = this.justifyContent;
         b.alignItems = this.alignItems;
         b.alignSelf = this.alignSelf;
+        b.alignContent = this.alignContent;
         b.flexWrap = this.flexWrap;
         b.flexGrow = this.flexGrow;
         b.flexShrink = this.flexShrink;
@@ -239,6 +241,7 @@ public record Style(
         private JustifyContent justifyContent = JustifyContent.FLEX_START;
         private AlignItems alignItems = AlignItems.STRETCH;
         private AlignItems alignSelf = null;
+        private AlignContent alignContent = AlignContent.FLEX_START;
         private FlexWrap flexWrap = FlexWrap.NO_WRAP;
         private int flexGrow = 0;
         private int flexShrink = 1;
@@ -289,6 +292,7 @@ public record Style(
         public Builder justifyContent(JustifyContent v) { this.justifyContent = v; return this; }
         public Builder alignItems(AlignItems v) { this.alignItems = v; return this; }
         public Builder alignSelf(AlignItems v) { this.alignSelf = v; return this; }
+        public Builder alignContent(AlignContent v) { this.alignContent = v; return this; }
         public Builder flexWrap(FlexWrap v) { this.flexWrap = v; return this; }
         public Builder flexGrow(int v) { this.flexGrow = v; return this; }
         public Builder flexShrink(int v) { this.flexShrink = v; return this; }
@@ -372,7 +376,7 @@ public record Style(
 
         public Style build() {
             return new Style(
-                    flexDirection, justifyContent, alignItems, alignSelf, flexWrap,
+                    flexDirection, justifyContent, alignItems, alignSelf, alignContent, flexWrap,
                     flexGrow, flexShrink, flexBasis,
                     width, height, minWidth, minHeight, maxWidth, maxHeight,
                     position, posTop, posRight, posBottom, posLeft,
