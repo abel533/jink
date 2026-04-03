@@ -100,7 +100,7 @@
 | textWrap (多种截断) | ✅ 7 种模式 | ✅ WRAP + 3 种截断 | ✅ 完整 |
 | 边框样式 | ✅ 15+ 种 | ✅ 9 种 | 🟡 够用 |
 | 边框颜色 (每边独立) | ✅ | ✅ 每边独立 | ✅ 完整 | borderTopColor/Right/Bottom/Left |
-| 边框 dimColor | ✅ 每边独立 | ❌ 缺失 | 🔴 可实现 | borderTopDimColor 等 |
+| 边框 dimColor | ✅ 每边独立 | ✅ borderDimColor/每边独立 | ✅ 完整 | borderTopDimColor/Right/Bottom/Left |
 
 ---
 
@@ -184,7 +184,7 @@
 | ~~alignContent~~ | ~~中~~ | ✅ 已实现 (7 种对齐模式) |
 | ~~baseline 对齐~~ | ~~中~~ | ✅ 已实现 (alignItems/alignSelf: BASELINE) |
 | ~~每边独立边框色~~ | ~~低~~ | ✅ 已实现 (borderTopColor/Right/Bottom/Left) |
-| borderDimColor | 低 | 每边独立的边框 dimmed（暗色）支持 |
+| ~~borderDimColor~~ | ~~低~~ | ✅ 已实现 (borderDimColor/每边独立 dimmed 支持) |
 | aspectRatio | 中 | 宽高比约束，需更新 FlexLayout |
 | Shift 修饰符完整支持 | 低 | Shift+字母等组合（受终端限制） |
 | ~~usePaste 等效~~ | ~~中~~ | ✅ 已实现 (Bracketed Paste Mode + onPaste) |

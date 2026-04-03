@@ -58,6 +58,11 @@ public record Style(
         Color borderRightColor,
         Color borderBottomColor,
         Color borderLeftColor,
+        boolean borderDimColor,
+        boolean borderTopDimColor,
+        boolean borderRightDimColor,
+        boolean borderBottomDimColor,
+        boolean borderLeftDimColor,
 
         // 显示
         Display display,
@@ -147,6 +152,11 @@ public record Style(
         b.borderRightColor = this.borderRightColor;
         b.borderBottomColor = this.borderBottomColor;
         b.borderLeftColor = this.borderLeftColor;
+        b.borderDimColor = this.borderDimColor;
+        b.borderTopDimColor = this.borderTopDimColor;
+        b.borderRightDimColor = this.borderRightDimColor;
+        b.borderBottomDimColor = this.borderBottomDimColor;
+        b.borderLeftDimColor = this.borderLeftDimColor;
         b.display = this.display;
         b.overflow = this.overflow;
         b.overflowX = this.overflowX;
@@ -182,6 +192,20 @@ public record Style(
     }
     public Color effectiveBorderLeftColor() {
         return borderLeftColor != null ? borderLeftColor : borderColor;
+    }
+
+    /** 获取某边的有效边框 dimmed 状态（独立 dim 或全局 borderDimColor） */
+    public boolean effectiveBorderTopDimmed() {
+        return borderTopDimColor || borderDimColor;
+    }
+    public boolean effectiveBorderRightDimmed() {
+        return borderRightDimColor || borderDimColor;
+    }
+    public boolean effectiveBorderBottomDimmed() {
+        return borderBottomDimColor || borderDimColor;
+    }
+    public boolean effectiveBorderLeftDimmed() {
+        return borderLeftDimColor || borderDimColor;
     }
 
     /**
@@ -274,6 +298,11 @@ public record Style(
         private Color borderRightColor = null;
         private Color borderBottomColor = null;
         private Color borderLeftColor = null;
+        private boolean borderDimColor = false;
+        private boolean borderTopDimColor = false;
+        private boolean borderRightDimColor = false;
+        private boolean borderBottomDimColor = false;
+        private boolean borderLeftDimColor = false;
         private Display display = Display.FLEX;
         private Overflow overflow = Overflow.VISIBLE;
         private Overflow overflowX = null;
@@ -358,6 +387,11 @@ public record Style(
         public Builder borderRightColor(Color v) { this.borderRightColor = v; return this; }
         public Builder borderBottomColor(Color v) { this.borderBottomColor = v; return this; }
         public Builder borderLeftColor(Color v) { this.borderLeftColor = v; return this; }
+        public Builder borderDimColor(boolean v) { this.borderDimColor = v; return this; }
+        public Builder borderTopDimColor(boolean v) { this.borderTopDimColor = v; return this; }
+        public Builder borderRightDimColor(boolean v) { this.borderRightDimColor = v; return this; }
+        public Builder borderBottomDimColor(boolean v) { this.borderBottomDimColor = v; return this; }
+        public Builder borderLeftDimColor(boolean v) { this.borderLeftDimColor = v; return this; }
 
         public Builder display(Display v) { this.display = v; return this; }
         public Builder overflow(Overflow v) { this.overflow = v; return this; }
@@ -384,6 +418,7 @@ public record Style(
                     marginTop, marginRight, marginBottom, marginLeft,
                     gap, columnGap, rowGap,
                     borderStyle, borderColor, borderTopColor, borderRightColor, borderBottomColor, borderLeftColor,
+                    borderDimColor, borderTopDimColor, borderRightDimColor, borderBottomDimColor, borderLeftDimColor,
                     display, overflow, overflowX, overflowY,
                     textWrap, color, backgroundColor,
                     bold, italic, underline, strikethrough, inverse, dimmed

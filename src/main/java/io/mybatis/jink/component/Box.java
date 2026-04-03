@@ -274,6 +274,31 @@ public class Box implements Renderable {
         return this;
     }
 
+    public Box borderDimColor() {
+        style.borderDimColor(true);
+        return this;
+    }
+
+    public Box borderTopDimColor() {
+        style.borderTopDimColor(true);
+        return this;
+    }
+
+    public Box borderRightDimColor() {
+        style.borderRightDimColor(true);
+        return this;
+    }
+
+    public Box borderBottomDimColor() {
+        style.borderBottomDimColor(true);
+        return this;
+    }
+
+    public Box borderLeftDimColor() {
+        style.borderLeftDimColor(true);
+        return this;
+    }
+
     // === 间距 ===
 
     public Box gap(int gap) {

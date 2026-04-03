@@ -111,14 +111,10 @@ public class NodeRenderer {
         BorderStyle border = style.borderStyle();
 
         // 每边独立颜色样式（null = 无颜色，使用默认）
-        Style topStyle = style.effectiveBorderTopColor() != null
-                ? Style.builder().color(style.effectiveBorderTopColor()).build() : null;
-        Style rightStyle = style.effectiveBorderRightColor() != null
-                ? Style.builder().color(style.effectiveBorderRightColor()).build() : null;
-        Style bottomStyle = style.effectiveBorderBottomColor() != null
-                ? Style.builder().color(style.effectiveBorderBottomColor()).build() : null;
-        Style leftStyle = style.effectiveBorderLeftColor() != null
-                ? Style.builder().color(style.effectiveBorderLeftColor()).build() : null;
+        Style topStyle = buildBorderSideStyle(style.effectiveBorderTopColor(), style.effectiveBorderTopDimmed());
+        Style rightStyle = buildBorderSideStyle(style.effectiveBorderRightColor(), style.effectiveBorderRightDimmed());
+        Style bottomStyle = buildBorderSideStyle(style.effectiveBorderBottomColor(), style.effectiveBorderBottomDimmed());
+        Style leftStyle = buildBorderSideStyle(style.effectiveBorderLeftColor(), style.effectiveBorderLeftDimmed());
 
         // 四个角（角落使用相邻上/下边的颜色）
         screen.write(x, y, border.getTopLeft(), topStyle);
@@ -137,6 +133,17 @@ public class NodeRenderer {
             screen.write(x, row, border.getLeft(), leftStyle);
             screen.write(x + w - 1, row, border.getRight(), rightStyle);
         }
+    }
+
+    /**
+     * 构建边框某边的样式，支持颜色和 dimmed 属性。
+     */
+    private static Style buildBorderSideStyle(Color color, boolean dimmed) {
+        if (color == null && !dimmed) return null;
+        Style.Builder b = Style.builder();
+        if (color != null) b.color(color);
+        if (dimmed) b.dimmed(true);
+        return b.build();
     }
 
     /**
