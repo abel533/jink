@@ -1,10 +1,39 @@
-# Jink 示例集锦
+# jink 示例
 
-> 全面展示 jink 各项功能的代码示例，附带演示操作步骤，适合录制 GIF 动画。
+> 基于 ink 官方示例的 jink (Java) 等效实现，并包含 jink 原有功能展示 Demo。
 
 ---
 
-## 内置 Demo 一览
+## ink 官方示例对照
+
+| 示例 | ink 原版 | jink 实现 | 状态 | 说明 |
+|:-----|:---------|:----------|:-----|:-----|
+| counter | ✅ | ✅ `Counter.java` | ✅ 完整 | 自动递增计数器（每 100ms，上限 100 次）|
+| borders | ✅ | ✅ `BordersDemo.java` | ✅ 完整 | 所有边框样式展示 |
+| box-backgrounds | ✅ | ✅ `BoxBackgroundsDemo.java` | ✅ 完整 | 背景色用法（RGB/Hex/嵌套继承）|
+| justify-content | ✅ | ✅ `JustifyContentDemo.java` | ✅ 完整 | 所有 justifyContent 对齐方式 |
+| use-input | ✅ | ✅ `UseInputDemo.java` | ✅ 完整 | 方向键移动小脸，q 退出 |
+| terminal-resize | ✅ | ✅ `TerminalResizeDemo.java` | ✅ 完整 | 实时终端尺寸显示，resize 即更新 |
+| static | ✅ | ✅ `StaticDemo.java` | ✅ 完整 | Static 增量渲染（10 个测试逐条打印）|
+| incremental-rendering | ✅ | ✅ `IncrementalRenderingDemo.java` | ✅ 完整 | 高频渲染：进度条 + 日志 + 服务列表 |
+| chat | ✅ | ✅ `ChatDemo.java` | ✅ 完整 | 简单聊天输入框 |
+| use-focus | ✅ | ✅ `UseFocusDemo.java` | ✅ 完整 | Tab/Shift+Tab 焦点导航（状态模拟）|
+| table | ✅ | ✅ `TableDemo.java` | ✅ 完整 | 固定宽度列表格 |
+| jest | ✅ | ✅ `JestDemo.java` | ✅ 完整 | 并发测试运行器模拟（Static + 进度）|
+| subprocess-output | ✅ | ✅ `SubprocessOutputDemo.java` | ✅ 完整 | ProcessBuilder 执行 java -version |
+| router | ✅ | ✅ `RouterDemo.java` | ✅ 完整 | 状态机路由（Home ↔ About）|
+| select-input | ✅ | ✅ `SelectInputDemo.java` | ⚠️ 部分 | 方向键列表选择（无 ARIA 支持）|
+| cursor-ime | ✅ | ✅ `CursorImeDemo.java` | ✅ 完整 | 光标跟随输入（含宽字符计算）|
+| suspense | ✅ | ❌ 无 | ❌ 不支持 | React Suspense 无 Java 等效 |
+| concurrent-suspense | ✅ | ❌ 无 | ❌ 不支持 | React 并发模式无 Java 等效 |
+| aria | ✅ | ❌ 无 | ❌ 不支持 | ARIA 辅助功能暂不支持 |
+| use-stdout / use-stderr | ✅ | — | — | Java System.out/err 直接可用，无需特殊封装 |
+| render-throttle | ✅ | — | — | jink 内部已做节流，无需示例 |
+| use-transition | ✅ | ❌ 无 | ❌ 不支持 | React useTransition 无 Java 等效 |
+
+---
+
+## jink 原有 Demo
 
 | Demo | 说明 | 交互性 | 运行命令 |
 |:-----|:-----|:------|:---------|
@@ -13,11 +42,301 @@
 | `CopilotDemo` | 完整 Copilot CLI 复刻 | ✅ | `.\scripts\run-demo.ps1` |
 | `CopilotDemoPreview` | CopilotDemo 静态预览 | 无 | `.\scripts\run-preview.ps1` |
 | `InputDiagnostic` | 诊断方向键/滚轮/ESC 序列 | ✅ | `mvn test-compile` 后手动运行 |
+| `FeatureShowcase` | 综合功能展示（4 个标签页）| ✅ | `mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.FeatureShowcase -Dexec.classpathScope=test` |
 
 ---
 
-## Demo 1：SimpleDemo — 静态渲染
+## 各示例详解
 
+### counter — 自动计数器
+
+**ink 原版用法**: `useState` + `useEffect` + `setInterval`
+
+**jink 实现要点**:
+- `Component<State>` + `onMount()` 启动 `ScheduledExecutorService`
+- `onUnmount()` 关闭定时器
+- 计数达到 100 时自动 shutdown
+
+**运行**:
+```
+mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.Counter -Dexec.classpathScope=test
+```
+
+---
+
+### borders — 边框样式
+
+**ink 原版用法**: 多个 `<Box borderStyle="...">` 嵌套展示
+
+**jink 实现要点**:
+- `Ink.renderOnce(build(), 80, 24)` — 静态一次性渲染
+- 展示 `SINGLE / DOUBLE / ROUND / BOLD / SINGLE_DOUBLE / DOUBLE_SINGLE / CLASSIC / ARROW` 八种边框
+
+**运行**:
+```
+mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.BordersDemo -Dexec.classpathScope=test
+```
+
+---
+
+### box-backgrounds — 背景色
+
+**ink 原版用法**: `backgroundColor` 属性 + 固定 `width/height`
+
+**jink 实现要点**:
+- `Box.backgroundColor(Color.RED/BLUE/GREEN/...)`
+- `Color.hex("FF8800")`, `Color.rgb(0, 255, 0)` 真彩色
+- 嵌套 Box 背景色继承/覆盖
+
+**运行**:
+```
+mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.BoxBackgroundsDemo -Dexec.classpathScope=test
+```
+
+---
+
+### justify-content — 内容对齐
+
+**ink 原版用法**: `<Box justifyContent="flex-start|flex-end|center|space-around|space-between|space-evenly">`
+
+**jink 实现要点**:
+- `Box.of(Text.of("X"), Text.of("Y")).justifyContent(JustifyContent.XXX).width(20).height(1)`
+- 每行括号内展示 X/Y 分布效果
+
+**运行**:
+```
+mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.JustifyContentDemo -Dexec.classpathScope=test
+```
+
+---
+
+### use-input — 键盘输入
+
+**ink 原版用法**: `useInput((input, key) => { ... })`
+
+**jink 实现要点**:
+- 重写 `onInput(String input, Key key)` 方法
+- `key.leftArrow()` / `key.rightArrow()` / `key.upArrow()` / `key.downArrow()`
+- 按 `q` 调用 `System.exit(0)` 退出
+
+**运行**:
+```
+mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.UseInputDemo -Dexec.classpathScope=test
+```
+
+---
+
+### terminal-resize — 终端尺寸
+
+**ink 原版用法**: `const { columns, rows } = useWindowSize()`
+
+**jink 实现要点**:
+- `getColumns()` / `getRows()` — 框架在终端 resize 时自动更新，触发重渲染
+- 组件使用 `Component<Void>` — 无需状态，直接读取终端尺寸
+
+**运行**:
+```
+mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.TerminalResizeDemo -Dexec.classpathScope=test
+```
+
+---
+
+### static — 静态增量渲染
+
+**ink 原版用法**: `<Static items={tests}>{test => <Box>...</Box>}</Static>`
+
+**jink 实现要点**:
+- `Static.<String>of(items, previousCount).render((item, idx) -> ...)` — 只渲染新增条目
+- 状态中需额外保存 `previousCount`（渲染前的 items 数量）
+- 已输出的行不会被覆盖，每次只追加新内容
+
+**运行**:
+```
+mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.StaticDemo -Dexec.classpathScope=test
+```
+
+---
+
+### incremental-rendering — 高频渲染
+
+**ink 原版用法**: 多个 `setInterval` 同时更新多个状态（~60fps）
+
+**jink 实现要点**:
+- 单个 `ScheduledExecutorService` 每 16ms 更新三个进度条 + 随机日志行 + 计数器
+- `onInput` 处理上下键选择服务列表
+
+**运行**:
+```
+mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.IncrementalRenderingDemo -Dexec.classpathScope=test
+```
+
+---
+
+### chat — 聊天输入框
+
+**ink 原版用法**: `useInput` 逐字符累积输入，Enter 发送
+
+**jink 实现要点**:
+- `onInput` 中判断 `key.return_()` / `key.backspace()` / `key.delete()`
+- 普通字符追加到 input 字符串
+
+**运行**:
+```
+mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.ChatDemo -Dexec.classpathScope=test
+```
+
+---
+
+### use-focus — 焦点导航
+
+**ink 原版用法**: `useFocus()` hook，多个子组件各自持有焦点状态
+
+**jink 实现要点**:
+- jink 不支持子组件独立焦点注册，使用状态 `focusIndex` 模拟
+- `key.tab()` + `key.shift()` → `focusPrevious`；`key.tab()` → `focusNext`
+- `key.escape()` → 重置焦点（`focusIndex = -1`）
+
+**运行**:
+```
+mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.UseFocusDemo -Dexec.classpathScope=test
+```
+
+---
+
+### table — 表格布局
+
+**ink 原版用法**: 使用百分比宽度 Box 模拟列（`width="10%"` 等）
+
+**jink 实现要点**:
+- 使用固定 `width(8/40/32)` 列宽（jink 尚未支持百分比列宽）
+- 静态数据，使用 `Ink.renderOnce()`
+
+**运行**:
+```
+mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.TableDemo -Dexec.classpathScope=test
+```
+
+---
+
+### jest — 测试运行器模拟
+
+**ink 原版用法**: `PQueue` 并发队列 + `Static` 已完成测试 + 运行中测试动态显示
+
+**jink 实现要点**:
+- `ScheduledExecutorService(4 threads)` + `Semaphore(4)` 模拟并发限制
+- `Static.<TestResult>of(completed, prevCount)` 永久输出已完成测试
+- 汇总行（passed/failed/time）实时更新
+
+**运行**:
+```
+mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.JestDemo -Dexec.classpathScope=test
+```
+
+---
+
+### subprocess-output — 子进程输出
+
+**ink 原版用法**: `child_process.spawn('npm', [...])` + stdout 流监听
+
+**jink 实现要点**:
+- `ProcessBuilder("java", "-version")` + `redirectErrorStream(true)`
+- 在后台线程读取输出，`setState` 触发重渲染
+
+**运行**:
+```
+mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.SubprocessOutputDemo -Dexec.classpathScope=test
+```
+
+---
+
+### router — 路由状态机
+
+**ink 原版用法**: `react-router` 的 `MemoryRouter` + `useNavigate`
+
+**jink 实现要点**:
+- `enum Page { HOME, ABOUT }` + 状态机
+- Enter 在页面间切换，q 退出
+- 无需第三方路由库
+
+**运行**:
+```
+mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.RouterDemo -Dexec.classpathScope=test
+```
+
+---
+
+### select-input — 列表选择
+
+**ink 原版用法**: `useInput` + `useState`（含 `useIsScreenReaderEnabled` ARIA 支持）
+
+**jink 实现要点**:
+- 上下键导航，Enter 确认，q 退出
+- jink 不支持 ARIA / 屏幕阅读器功能，此部分略去
+
+**运行**:
+```
+mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.SelectInputDemo -Dexec.classpathScope=test
+```
+
+---
+
+### cursor-ime — IME 光标定位
+
+**ink 原版用法**: `useCursor` + `stringWidth` 计算光标列
+
+**jink 实现要点**:
+- `setCursorPosition(row, col)` — 在 `render()` 中调用设置光标
+- 内置宽字符检测（CJK/emoji 占 2 列）
+- 正确处理 surrogate pair（`codePointBefore`）
+
+**运行**:
+```
+mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.CursorImeDemo -Dexec.classpathScope=test
+```
+
+---
+
+## 无法实现的示例
+
+| 示例 | 原因 |
+|:-----|:-----|
+| `suspense` | React Suspense 是 React 特有概念，无 Java 等效 |
+| `concurrent-suspense` | React 并发模式无 Java 等效 |
+| `aria` | ARIA 辅助功能元数据暂不支持 |
+| `use-transition` | React useTransition 无 Java 等效 |
+| `select-input`（完整） | ARIA 数字快捷选择暂不支持（核心功能已实现）|
+| `use-stdout` / `use-stderr` | Java `System.out` / `System.err` 直接可用，无需封装 |
+| `render-throttle` | jink 内部已做渲染节流，无需单独示例 |
+| `use-focus-with-id` | jink 当前不支持子组件独立焦点 ID 注册 |
+| `alternate-screen` | jink 默认使用备用屏幕，无需示例 |
+
+---
+
+## 功能对照表（ink vs jink）
+
+| 功能 | ink (TypeScript) | jink (Java) |
+|:-----|:----------------|:------------|
+| 声明式 UI | JSX | Builder API (`Box.of(...)`, `Text.of(...)`) |
+| 状态管理 | `useState` Hook | `Component.setState()` |
+| 副作用 | `useEffect` Hook | `onMount()` / `onUnmount()` |
+| 输入处理 | `useInput` Hook | `onInput(String, Key)` 方法 |
+| 终端尺寸 | `useWindowSize()` | `getColumns()` / `getRows()` |
+| 光标定位 | `useCursor` | `setCursorPosition(row, col)` |
+| Flexbox 布局 | Yoga (C++) | 纯 Java 实现 |
+| 颜色 | chalk | 内置 `Color` 类（16色/256色/RGB/Hex）|
+| 边框 | boxen 风格 | 8 种 `BorderStyle` |
+| 焦点管理 | `useFocus` | `FocusManager` + `Focusable` 接口 |
+| 静态内容 | `<Static items>` | `Static.<T>of(items, prevCount).render(...)` |
+| 文本换行 | wrap-ansi | 内置 `TextWrap` |
+| CJK 宽度 | string-width | 内置宽字符计算 |
+| 终端控制 | 自动 | JLine 3 |
+| 最低版本 | Node.js 18+ | Java 21+ |
+
+---
+
+## 原有 Demo 详解
+
+### SimpleDemo — 静态渲染
 ### 展示功能
 - ✅ 圆角边框 (BorderStyle.ROUND)
 - ✅ 边框着色 (borderColor)
@@ -79,7 +398,7 @@ Box.of(
 
 ---
 
-## Demo 2：InteractiveDemo — 键盘交互
+### InteractiveDemo — 键盘交互
 
 ### 展示功能
 - ✅ 有状态组件 (Component\<State\>)
@@ -136,7 +455,7 @@ public class InteractiveDemo extends Component<InteractiveDemo.State> {
 
 ---
 
-## Demo 3：CopilotDemo — 完整复刻
+### CopilotDemo — 完整复刻
 
 ### 展示功能
 - ✅ 全屏 Copilot CLI 界面
@@ -233,7 +552,7 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
 
 ---
 
-## Demo 4：CopilotDemoPreview — 静态预览
+### CopilotDemoPreview — 静态预览
 
 ### 展示功能
 - ✅ 无需 raw mode 的渲染测试
@@ -256,28 +575,6 @@ cd jink
 3. 观察调试信息（stderr 输出）
 
 ---
-
-## 功能对照表
-
-| 功能 | ink (TypeScript) | jink (Java) |
-|:-----|:----------------|:------------|
-| 声明式 UI | JSX | Builder API |
-| 状态管理 | useState Hook | Component.setState() |
-| 副作用 | useEffect Hook | onMount/onUnmount |
-| 输入处理 | useInput Hook | onInput 方法 |
-| Flexbox 布局 | Yoga (C++) | 纯 Java 实现 |
-| 颜色 | chalk | 内置 Color 类 |
-| 边框 | boxen 风格 | 9 种 BorderStyle |
-| 焦点管理 | useFocus | FocusManager |
-| 静态内容 | Static 组件 | Static 组件 |
-| 文本换行 | wrap-ansi | 内置 TextWrap |
-| CJK 宽度 | string-width | StringWidth 工具 |
-| 终端控制 | 自动 | JLine 3 |
-| 最低版本 | Node.js 18+ | Java 21+ |
-
----
-
-## 补充示例
 
 ### 颜色系统完整演示
 
