@@ -374,13 +374,12 @@ scripts\run.cmd          # CMD
 ### 运行步骤
 
 ```powershell
-cd jink
-.\scripts\run-simple.ps1
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.SimpleDemo
 ```
 
 ### GIF 录制操作
 1. 打开终端，进入 `jink` 模块目录
-2. 运行 `.\run-simple.ps1`
+2. 运行 `.\scripts\run-demo.ps1 io.mybatis.jink.demo.SimpleDemo`
 3. 画面会依次显示：
    - Copilot CLI 风格界面（圆角边框 + 消息列表 + 输入框 + 快捷键栏）
    - 嵌套 Flexbox 布局（左右两栏面板）
@@ -434,8 +433,7 @@ Box.of(
 ### 运行步骤
 
 ```powershell
-cd jink
-.\scripts\run-interactive.ps1
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.InteractiveDemo
 ```
 
 ### GIF 录制操作
@@ -498,8 +496,7 @@ public class InteractiveDemo extends Component<InteractiveDemo.State> {
 ### 运行步骤
 
 ```powershell
-cd jink
-.\scripts\run-demo.ps1
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.CopilotDemo
 ```
 
 ### 推荐验证流程
@@ -584,15 +581,11 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
 ### 运行步骤
 
 ```powershell
-cd jink
-.\scripts\run-preview.ps1
-
-# 自定义尺寸
-.\scripts\run-preview.ps1 120 30
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.CopilotDemoPreview
 ```
 
 ### GIF 录制操作
-1. 运行 `.\run-preview.ps1`
+1. 运行 `.\scripts\run-demo.ps1 io.mybatis.jink.demo.CopilotDemoPreview`
 2. 显示 CopilotDemo 的静态渲染结果（含 ANSI 颜色）
 3. 观察调试信息（stderr 输出）
 
