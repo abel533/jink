@@ -158,6 +158,7 @@ Ink.render(new CopilotDemo()).waitUntilExit();
 | [快速入门](docs/getting-started.md) | 从零开始，7 个完整示例 |
 | [架构与 API 参考](docs/architecture.md) | 包结构、渲染管道、完整 API |
 | [示例集锦](docs/examples.md) | 所有 Demo 的操作步骤（适合录制 GIF） |
+| [ink vs jink 对比](docs/comparison.md) | 功能覆盖率、缺失项、不可移植项分析 |
 
 ---
 
