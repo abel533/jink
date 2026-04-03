@@ -39,8 +39,19 @@ public class FlexLayout {
 
     /**
      * 对单个节点进行布局计算。
+     * availableWidth/Height: 可用空间（AUTO fallback 时使用）
+     * 百分比以 availableWidth/Height 为基准解析。
      */
     private static void layoutNode(ElementNode node, int availableWidth, int availableHeight) {
+        layoutNode(node, availableWidth, availableHeight, availableWidth, availableHeight);
+    }
+
+    /**
+     * 带百分比参考尺寸的布局计算。
+     * percentRefWidth/Height: 百分比解析的参考容器尺寸（通常是父节点的 content 区域大小）。
+     */
+    private static void layoutNode(ElementNode node, int availableWidth, int availableHeight,
+                                   int percentRefWidth, int percentRefHeight) {
         Style style = node.getStyle();
 
         // display: none 不参与布局
@@ -58,12 +69,12 @@ public class FlexLayout {
         int innerBoxOffset = borderH + paddingH;
         int innerBoxOffsetV = borderV + paddingV;
 
-        // 确定节点自身的宽高
-        int nodeWidth = resolveSize(style.width(), availableWidth);
+        // 确定节点自身的宽高（百分比使用 percentRef 解析）
+        int nodeWidth = resolveSize(style.width(), percentRefWidth);
         if (nodeWidth == Style.AUTO) {
             nodeWidth = availableWidth;
         }
-        nodeWidth = clampSize(nodeWidth, style.minWidth(), style.maxWidth());
+        nodeWidth = clampSize(nodeWidth, style.minWidth(), style.maxWidth(), percentRefWidth);
         node.setComputedWidth(nodeWidth);
 
         int contentWidth = nodeWidth - innerBoxOffset;
@@ -83,22 +94,22 @@ public class FlexLayout {
         // 文本节点：计算文本内容的高度
         if (node.getNodeType() == io.mybatis.jink.dom.NodeType.INK_TEXT) {
             int textHeight = measureTextHeight(node, contentWidth);
-            int nodeHeight = resolveSize(style.height(), availableHeight);
+            int nodeHeight = resolveSize(style.height(), percentRefHeight);
             if (nodeHeight == Style.AUTO) {
                 nodeHeight = textHeight + innerBoxOffsetV;
             }
-            nodeHeight = clampSize(nodeHeight, style.minHeight(), style.maxHeight());
+            nodeHeight = clampSize(nodeHeight, style.minHeight(), style.maxHeight(), percentRefHeight);
             node.setComputedHeight(nodeHeight);
             return;
         }
 
         if (children.isEmpty()) {
             // 没有子节点，高度取显式值或 innerBoxOffsetV
-            int nodeHeight = resolveSize(style.height(), availableHeight);
+            int nodeHeight = resolveSize(style.height(), percentRefHeight);
             if (nodeHeight == Style.AUTO) {
                 nodeHeight = innerBoxOffsetV;
             }
-            nodeHeight = clampSize(nodeHeight, style.minHeight(), style.maxHeight());
+            nodeHeight = clampSize(nodeHeight, style.minHeight(), style.maxHeight(), percentRefHeight);
             node.setComputedHeight(nodeHeight);
             return;
         }
@@ -110,7 +121,7 @@ public class FlexLayout {
 
         // 计算内容区可用高度：优先使用节点自身 height，否则用外部 availableHeight
         int contentHeight = Style.AUTO;
-        int resolvedHeight = resolveSize(style.height(), availableHeight);
+        int resolvedHeight = resolveSize(style.height(), percentRefHeight);
         if (resolvedHeight != Style.AUTO) {
             contentHeight = resolvedHeight - innerBoxOffsetV;
             if (contentHeight < 0) contentHeight = 0;
@@ -131,11 +142,11 @@ public class FlexLayout {
             childrenHeight = computeChildrenExtent(children, false, 0);
         }
 
-        int nodeHeight = resolveSize(style.height(), availableHeight);
+        int nodeHeight = resolveSize(style.height(), percentRefHeight);
         if (nodeHeight == Style.AUTO) {
             nodeHeight = childrenHeight + innerBoxOffsetV;
         }
-        nodeHeight = clampSize(nodeHeight, style.minHeight(), style.maxHeight());
+        nodeHeight = clampSize(nodeHeight, style.minHeight(), style.maxHeight(), percentRefHeight);
         node.setComputedHeight(nodeHeight);
 
         // 定位子节点（加上 border + padding 偏移）
@@ -160,8 +171,9 @@ public class FlexLayout {
             Style cs = child.getStyle();
             int childMarginH = cs.horizontalMargin();
 
-            // 先递归布局子节点（确定其宽高）
-            layoutNode(child, contentWidth - childMarginH, Style.AUTO);
+            // 先递归布局子节点（百分比以父容器 content 区域为基准）
+            layoutNode(child, contentWidth - childMarginH, Style.AUTO,
+                    contentWidth, availableHeight);
 
             totalFixedHeight += child.getComputedHeight() + cs.verticalMargin();
             totalGrow += cs.flexGrow();
@@ -211,17 +223,17 @@ public class FlexLayout {
                 int intrinsicWidth = measureIntrinsicWidth(child);
                 int maxChildWidth = contentWidth - childMarginH;
                 if (intrinsicWidth > 0 || cs.flexGrow() > 0) {
-                    // 有内容或有 flexGrow：使用内容自然宽度（flexGrow 后续会分配额外空间）
                     childWidth = Math.min(intrinsicWidth, maxChildWidth);
                 } else {
-                    // 无内容且无 flexGrow 的节点（如空 Box 容器）：默认占满可用宽度
                     childWidth = maxChildWidth;
                 }
                 child.setComputedWidth(childWidth);
-                layoutNode(child, childWidth, availableHeight);
+                layoutNode(child, childWidth, availableHeight,
+                        contentWidth, availableHeight);
             } else {
                 child.setComputedWidth(childWidth);
-                layoutNode(child, childWidth, availableHeight);
+                layoutNode(child, childWidth, availableHeight,
+                        contentWidth, availableHeight);
             }
 
             totalFixedWidth += child.getComputedWidth() + childMarginH;
@@ -239,8 +251,8 @@ public class FlexLayout {
                 if (grow > 0) {
                     int bonus = extraSpace * grow / totalGrow;
                     child.setComputedWidth(child.getComputedWidth() + bonus);
-                    // 重新布局以计算新高度
-                    layoutNode(child, child.getComputedWidth(), availableHeight);
+                    layoutNode(child, child.getComputedWidth(), availableHeight,
+                            contentWidth, availableHeight);
                 }
             }
         }
@@ -254,7 +266,8 @@ public class FlexLayout {
                     int reduction = overflow * shrink / totalShrink;
                     int newWidth = Math.max(0, child.getComputedWidth() - reduction);
                     child.setComputedWidth(newWidth);
-                    layoutNode(child, newWidth, availableHeight);
+                    layoutNode(child, newWidth, availableHeight,
+                            contentWidth, availableHeight);
                 }
             }
         }
@@ -384,12 +397,32 @@ public class FlexLayout {
 
     private static int resolveSize(int size, int containerSize) {
         if (size == Style.AUTO) return Style.AUTO;
+        if (Style.isPercent(size)) {
+            // 百分比：相对于容器尺寸计算
+            if (containerSize == Style.AUTO) return Style.AUTO;
+            return containerSize * Style.getPercent(size) / 100;
+        }
         return size;
     }
 
     private static int clampSize(int size, int min, int max) {
-        if (min != Style.AUTO && size < min) size = min;
-        if (max != Style.AUTO && size > max) size = max;
+        int resolvedMin = min;
+        int resolvedMax = max;
+        if (Style.isPercent(resolvedMin)) resolvedMin = Style.AUTO; // 百分比 min/max 需外部 resolve
+        if (Style.isPercent(resolvedMax)) resolvedMax = Style.AUTO;
+        if (resolvedMin != Style.AUTO && size < resolvedMin) size = resolvedMin;
+        if (resolvedMax != Style.AUTO && size > resolvedMax) size = resolvedMax;
+        return size;
+    }
+
+    /**
+     * 带容器尺寸的 clampSize，支持百分比 min/max
+     */
+    private static int clampSize(int size, int min, int max, int containerSize) {
+        int resolvedMin = resolveSize(min, containerSize);
+        int resolvedMax = resolveSize(max, containerSize);
+        if (resolvedMin != Style.AUTO && size < resolvedMin) size = resolvedMin;
+        if (resolvedMax != Style.AUTO && size > resolvedMax) size = resolvedMax;
         return size;
     }
 

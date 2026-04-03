@@ -279,4 +279,76 @@ class FlexLayoutTest {
         assertEquals(80, header.getComputedWidth());
         assertEquals(80, body.getComputedWidth());
     }
+
+    // ===== 百分比尺寸测试 =====
+
+    @Test
+    void percentWidth() {
+        // 子节点宽度 50%，容器 100 列
+        var root = ElementNode.createRoot();
+        root.setStyle(Style.builder().flexDirection(FlexDirection.ROW).build());
+
+        var child = ElementNode.createBox();
+        child.setStyle(Style.builder().widthPercent(50).height(1).build());
+        root.appendChild(child);
+
+        FlexLayout.calculateLayout(root, 100);
+
+        assertEquals(50, child.getComputedWidth());
+    }
+
+    @Test
+    void percentWidthTwoChildren() {
+        // 两个子节点各 30%，容器 100 列
+        var root = ElementNode.createRoot();
+        root.setStyle(Style.builder().flexDirection(FlexDirection.ROW).build());
+
+        var child1 = ElementNode.createBox();
+        child1.setStyle(Style.builder().widthPercent(30).height(1).build());
+        var child2 = ElementNode.createBox();
+        child2.setStyle(Style.builder().widthPercent(30).height(1).build());
+
+        root.appendChild(child1);
+        root.appendChild(child2);
+
+        FlexLayout.calculateLayout(root, 100);
+
+        assertEquals(30, child1.getComputedWidth());
+        assertEquals(30, child2.getComputedWidth());
+        assertEquals(0, child1.getComputedLeft());
+        assertEquals(30, child2.getComputedLeft());
+    }
+
+    @Test
+    void percentEncoding() {
+        // 测试百分比编码/解码
+        assertEquals(-51, Style.percent(50));
+        assertTrue(Style.isPercent(Style.percent(50)));
+        assertEquals(50, Style.getPercent(Style.percent(50)));
+
+        assertFalse(Style.isPercent(Style.AUTO));
+        assertFalse(Style.isPercent(0));
+        assertFalse(Style.isPercent(100));
+    }
+
+    @Test
+    void percentHeight() {
+        // 容器高度 20，子节点高度 50%
+        var root = ElementNode.createRoot();
+        root.setStyle(Style.builder()
+                .flexDirection(FlexDirection.COLUMN)
+                .height(20)
+                .build());
+
+        var child = ElementNode.createBox();
+        child.setStyle(Style.builder().heightPercent(50).build());
+        root.appendChild(child);
+
+        FlexLayout.calculateLayout(root, 80);
+
+        // 高度 50% of 20 = 10（但 availableHeight 在 layoutNode 中传递）
+        // 根节点高度 20，传给子节点 availableHeight = 20 - borderV - paddingV = 20
+        // 子节点 height = 50% of 20 = 10
+        assertEquals(10, child.getComputedHeight());
+    }
 }

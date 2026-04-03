@@ -70,6 +70,25 @@ public record Style(
     /** 使用 -1 表示 "auto"（未设置） */
     public static final int AUTO = -1;
 
+    /**
+     * 将百分比值编码为 int。50% → percent(50) = -51。
+     * 编码规则：-(pct + 1)，与 AUTO(-1) 不冲突。
+     */
+    public static int percent(int pct) {
+        if (pct < 0 || pct > 100) throw new IllegalArgumentException("百分比须在 0-100 之间: " + pct);
+        return -(pct + 1);
+    }
+
+    /** 判断值是否为百分比编码 */
+    public static boolean isPercent(int value) {
+        return value <= -2;
+    }
+
+    /** 从编码中解出百分比数值（0-100） */
+    public static int getPercent(int value) {
+        return -(value + 1);
+    }
+
     /** 空样式，所有属性为默认值 */
     public static final Style EMPTY = Style.builder().build();
 
@@ -243,6 +262,21 @@ public record Style(
         public Builder minHeight(int v) { this.minHeight = v; return this; }
         public Builder maxWidth(int v) { this.maxWidth = v; return this; }
         public Builder maxHeight(int v) { this.maxHeight = v; return this; }
+
+        /** 百分比宽度，如 widthPercent(50) 表示 50% */
+        public Builder widthPercent(int pct) { this.width = percent(pct); return this; }
+        /** 百分比高度 */
+        public Builder heightPercent(int pct) { this.height = percent(pct); return this; }
+        /** 百分比最小宽度 */
+        public Builder minWidthPercent(int pct) { this.minWidth = percent(pct); return this; }
+        /** 百分比最小高度 */
+        public Builder minHeightPercent(int pct) { this.minHeight = percent(pct); return this; }
+        /** 百分比最大宽度 */
+        public Builder maxWidthPercent(int pct) { this.maxWidth = percent(pct); return this; }
+        /** 百分比最大高度 */
+        public Builder maxHeightPercent(int pct) { this.maxHeight = percent(pct); return this; }
+        /** 百分比 flexBasis */
+        public Builder flexBasisPercent(int pct) { this.flexBasis = percent(pct); return this; }
 
         public Builder position(Position v) { this.position = v; return this; }
 
