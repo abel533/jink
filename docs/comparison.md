@@ -9,8 +9,8 @@
 | 组件数量 | 17 个（含 Context） | 11 个 | ~65% |
 | Hooks/API | 12 个 Hook | 9 个等效 API | ~75% |
 | Flexbox 属性 | ~95% CSS Flexbox | ~90% | ~90% |
-| 按键支持 | ~50+ 键（含 Kitty 协议） | ~35 键 + 粘贴 | ~65% |
-| **总体功能对等** | — | — | **~80%** |
+| 按键支持 | ~50+ 键（含 Kitty 协议） | ~60 键 + 粘贴 | ~75% |
+| **总体功能对等** | — | — | **~85%** |
 
 ---
 
@@ -111,7 +111,7 @@
 | 方向键 ↑↓←→ | ✅ | ✅ | ✅ 完整 |
 | 导航键 (Home/End/PgUp/PgDn) | ✅ | ✅ | ✅ 完整 |
 | F1-F12 | ✅ | ✅ | ✅ 完整 |
-| F13-F35 | ✅ | ❌ 缺失 | 🔴 可实现 |
+| F13-F36 | ✅ | ✅ F13-F36 | ✅ 完整 | Shift/Ctrl+F1-F12 |
 | Tab/Shift+Tab | ✅ | ✅ | ✅ 完整 |
 | Enter/Escape/Backspace/Delete | ✅ | ✅ | ✅ 完整 |
 | Meta/Alt 修饰符 | ✅ | ✅ | ✅ 完整 |
@@ -132,7 +132,7 @@
 | ANSI 转义码 | ✅ ansi-escapes 库 | ✅ Ansi 工具类 | ✅ 完整 |
 | 备用屏幕缓冲区 | ✅ | ✅ | ✅ 完整 |
 | 光标显示/隐藏 | ✅ | ✅ | ✅ 完整 |
-| **差异化行更新** | ✅ log-update (增量) | ⚠️ 全屏重写 | 🟡 性能影响小 |
+| **差异化行更新** | ✅ log-update (增量) | ✅ 逐行比较跳过 | ✅ 完整 |
 | 帧率控制 | ✅ | ✅ maxFps() | ✅ 完整 |
 | renderToString | ✅ | ✅ | ✅ 完整 |
 
@@ -148,7 +148,7 @@
 | 信号处理 (Ctrl+C) | ✅ signal-exit | ✅ INT signal + shutdown hook | ✅ 完整 |
 | React 并发模式 | ✅ React Scheduler | ❌ 单线程 | ⚫ 不适用 |
 | React DevTools | ✅ 可选集成 | ❌ 无 | ⚫ 不适用 |
-| patchConsole | ✅ 拦截 console.log | ❌ 无 | 🔴 可实现 |
+| patchConsole | ✅ 拦截 console.log | ✅ ConsolePatcher | ✅ 完整 |
 
 ---
 
@@ -189,11 +189,11 @@
 ### 低优先级
 | 功能 | 难度 | 说明 |
 |:-----|:-----|:-----|
-| F13-F35 功能键 | 低 | 极少使用 |
+| ~~F13-F36 功能键~~ | ~~低~~ | ✅ 已实现 (Shift+F1-F12 = F13-F24, Ctrl+F1-F12 = F25-F36) |
 | Kitty 键盘协议 | 高 | 需要完整协议实现 |
 | 辅助功能/屏幕阅读器 | 高 | 需要完整 a11y 系统 |
-| 差异化行更新 | 中 | 性能优化，当前全屏重写已够用 |
-| patchConsole | 低 | 拦截 System.out |
+| ~~差异化行更新~~ | ~~中~~ | ✅ 已实现 (逐行比较，跳过未变化行) |
+| ~~patchConsole~~ | ~~低~~ | ✅ 已实现 (ConsolePatcher 拦截 System.out/err) |
 | 媒体键/小键盘 | 低 | 极少在 TUI 中使用 |
 
 ---
