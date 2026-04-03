@@ -80,12 +80,17 @@ public class FlexLayout {
         int contentWidth = nodeWidth - innerBoxOffset;
         if (contentWidth < 0) contentWidth = 0;
 
-        // 收集可见子节点
+        // 收集可见子节点，分离 flex 布局和绝对定位子节点
         List<ElementNode> children = new ArrayList<>();
+        List<ElementNode> absoluteChildren = new ArrayList<>();
         for (Node child : node.getChildNodes()) {
             if (child instanceof ElementNode elem) {
                 if (elem.getStyle().display() != Display.NONE) {
-                    children.add(elem);
+                    if (elem.getStyle().position() == Position.ABSOLUTE) {
+                        absoluteChildren.add(elem);
+                    } else {
+                        children.add(elem);
+                    }
                 }
             }
             // TextNode 不直接参与布局，由父 Text 容器测量
@@ -103,7 +108,7 @@ public class FlexLayout {
             return;
         }
 
-        if (children.isEmpty()) {
+        if (children.isEmpty() && absoluteChildren.isEmpty()) {
             // 没有子节点，高度取显式值或 innerBoxOffsetV
             int nodeHeight = resolveSize(style.height(), percentRefHeight);
             if (nodeHeight == Style.AUTO) {
@@ -130,16 +135,22 @@ public class FlexLayout {
             if (contentHeight < 0) contentHeight = 0;
         }
 
-        if (isColumn) {
-            layoutColumn(node, children, contentWidth, contentHeight, gap);
-        } else {
-            layoutRow(node, children, contentWidth, contentHeight, gap);
+        // Flex 布局（仅非绝对定位子节点参与）
+        if (!children.isEmpty()) {
+            if (isColumn) {
+                layoutColumn(node, children, contentWidth, contentHeight, gap);
+            } else {
+                layoutRow(node, children, contentWidth, contentHeight, gap);
+            }
         }
 
         // 计算节点自身高度
-        int childrenHeight = computeChildrenExtent(children, true, gap);
-        if (!isColumn) {
-            childrenHeight = computeChildrenExtent(children, false, 0);
+        int childrenHeight = 0;
+        if (!children.isEmpty()) {
+            childrenHeight = computeChildrenExtent(children, true, gap);
+            if (!isColumn) {
+                childrenHeight = computeChildrenExtent(children, false, 0);
+            }
         }
 
         int nodeHeight = resolveSize(style.height(), percentRefHeight);
@@ -155,6 +166,46 @@ public class FlexLayout {
         for (ElementNode child : children) {
             child.setComputedLeft(child.getComputedLeft() + borderLeft + style.paddingLeft());
             child.setComputedTop(child.getComputedTop() + borderTop + style.paddingTop());
+        }
+
+        // 绝对定位子节点：相对于父节点 content 区域定位
+        if (!absoluteChildren.isEmpty()) {
+            int absContentW = nodeWidth - innerBoxOffset;
+            int absContentH = nodeHeight - innerBoxOffsetV;
+            if (absContentW < 0) absContentW = 0;
+            if (absContentH < 0) absContentH = 0;
+
+            for (ElementNode absChild : absoluteChildren) {
+                // 先布局绝对定位子节点自身（确定其宽高）
+                layoutNode(absChild, absContentW, absContentH, absContentW, absContentH);
+
+                Style acs = absChild.getStyle();
+                int childW = absChild.getComputedWidth();
+                int childH = absChild.getComputedHeight();
+
+                // 水平定位
+                int left;
+                if (acs.posLeft() != Style.AUTO) {
+                    left = acs.posLeft();
+                } else if (acs.posRight() != Style.AUTO) {
+                    left = absContentW - acs.posRight() - childW;
+                } else {
+                    left = 0;
+                }
+
+                // 垂直定位
+                int top;
+                if (acs.posTop() != Style.AUTO) {
+                    top = acs.posTop();
+                } else if (acs.posBottom() != Style.AUTO) {
+                    top = absContentH - acs.posBottom() - childH;
+                } else {
+                    top = 0;
+                }
+
+                absChild.setComputedLeft(left + borderLeft + style.paddingLeft());
+                absChild.setComputedTop(top + borderTop + style.paddingTop());
+            }
         }
     }
 

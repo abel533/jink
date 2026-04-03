@@ -28,6 +28,10 @@ public record Style(
 
         // 定位
         Position position,
+        int posTop,
+        int posRight,
+        int posBottom,
+        int posLeft,
 
         // 内边距
         int paddingTop,
@@ -116,6 +120,10 @@ public record Style(
         b.maxWidth = this.maxWidth;
         b.maxHeight = this.maxHeight;
         b.position = this.position;
+        b.posTop = this.posTop;
+        b.posRight = this.posRight;
+        b.posBottom = this.posBottom;
+        b.posLeft = this.posLeft;
         b.paddingTop = this.paddingTop;
         b.paddingRight = this.paddingRight;
         b.paddingBottom = this.paddingBottom;
@@ -220,6 +228,10 @@ public record Style(
         private int maxWidth = AUTO;
         private int maxHeight = AUTO;
         private Position position = Position.RELATIVE;
+        private int posTop = AUTO;
+        private int posRight = AUTO;
+        private int posBottom = AUTO;
+        private int posLeft = AUTO;
         private int paddingTop = 0;
         private int paddingRight = 0;
         private int paddingBottom = 0;
@@ -279,6 +291,10 @@ public record Style(
         public Builder flexBasisPercent(int pct) { this.flexBasis = percent(pct); return this; }
 
         public Builder position(Position v) { this.position = v; return this; }
+        public Builder posTop(int v) { this.posTop = v; return this; }
+        public Builder posRight(int v) { this.posRight = v; return this; }
+        public Builder posBottom(int v) { this.posBottom = v; return this; }
+        public Builder posLeft(int v) { this.posLeft = v; return this; }
 
         public Builder padding(int all) {
             this.paddingTop = this.paddingRight = this.paddingBottom = this.paddingLeft = all;
@@ -329,7 +345,7 @@ public record Style(
                     flexDirection, justifyContent, alignItems, alignSelf, flexWrap,
                     flexGrow, flexShrink, flexBasis,
                     width, height, minWidth, minHeight, maxWidth, maxHeight,
-                    position,
+                    position, posTop, posRight, posBottom, posLeft,
                     paddingTop, paddingRight, paddingBottom, paddingLeft,
                     marginTop, marginRight, marginBottom, marginLeft,
                     gap, columnGap, rowGap,

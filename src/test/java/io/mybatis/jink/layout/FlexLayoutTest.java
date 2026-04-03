@@ -346,9 +346,94 @@ class FlexLayoutTest {
 
         FlexLayout.calculateLayout(root, 80);
 
-        // 高度 50% of 20 = 10（但 availableHeight 在 layoutNode 中传递）
-        // 根节点高度 20，传给子节点 availableHeight = 20 - borderV - paddingV = 20
-        // 子节点 height = 50% of 20 = 10
         assertEquals(10, child.getComputedHeight());
+    }
+
+    // ===== 绝对定位测试 =====
+
+    @Test
+    void absolutePositionLeft() {
+        // 绝对定位子节点，left=5, top=3
+        var root = ElementNode.createRoot();
+        root.setStyle(Style.builder()
+                .flexDirection(FlexDirection.COLUMN)
+                .width(40).height(20)
+                .build());
+
+        var absChild = ElementNode.createBox();
+        absChild.setStyle(Style.builder()
+                .position(Position.ABSOLUTE)
+                .posLeft(5).posTop(3)
+                .width(10).height(5)
+                .build());
+        root.appendChild(absChild);
+
+        FlexLayout.calculateLayout(root, 40);
+
+        assertEquals(5, absChild.getComputedLeft());
+        assertEquals(3, absChild.getComputedTop());
+        assertEquals(10, absChild.getComputedWidth());
+        assertEquals(5, absChild.getComputedHeight());
+    }
+
+    @Test
+    void absolutePositionRight() {
+        // right=0 → 贴右边
+        var root = ElementNode.createRoot();
+        root.setStyle(Style.builder()
+                .flexDirection(FlexDirection.COLUMN)
+                .width(40).height(20)
+                .build());
+
+        var absChild = ElementNode.createBox();
+        absChild.setStyle(Style.builder()
+                .position(Position.ABSOLUTE)
+                .posRight(0).posBottom(0)
+                .width(10).height(5)
+                .build());
+        root.appendChild(absChild);
+
+        FlexLayout.calculateLayout(root, 40);
+
+        // 40 - 0 - 10 = 30
+        assertEquals(30, absChild.getComputedLeft());
+        // 20 - 0 - 5 = 15
+        assertEquals(15, absChild.getComputedTop());
+    }
+
+    @Test
+    void absoluteDoesNotAffectFlexLayout() {
+        // 绝对定位子节点不影响 flex 布局
+        var root = ElementNode.createRoot();
+        root.setStyle(Style.builder()
+                .flexDirection(FlexDirection.COLUMN)
+                .width(40)
+                .build());
+
+        var flexChild = ElementNode.createBox();
+        flexChild.setStyle(Style.builder().height(5).build());
+
+        var absChild = ElementNode.createBox();
+        absChild.setStyle(Style.builder()
+                .position(Position.ABSOLUTE)
+                .posLeft(0).posTop(0)
+                .width(20).height(20)
+                .build());
+
+        var flexChild2 = ElementNode.createBox();
+        flexChild2.setStyle(Style.builder().height(3).build());
+
+        root.appendChild(flexChild);
+        root.appendChild(absChild);
+        root.appendChild(flexChild2);
+
+        FlexLayout.calculateLayout(root, 40);
+
+        // flex 子节点不受绝对定位影响
+        assertEquals(0, flexChild.getComputedTop());
+        assertEquals(5, flexChild2.getComputedTop()); // 紧跟在 flexChild 之后
+        // 绝对定位子节点独立定位
+        assertEquals(0, absChild.getComputedLeft());
+        assertEquals(0, absChild.getComputedTop());
     }
 }
