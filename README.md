@@ -7,6 +7,7 @@
 ![Java 21+](https://img.shields.io/badge/Java-21%2B-blue)
 ![JLine 3](https://img.shields.io/badge/JLine-3.28.0-green)
 ![Tests](https://img.shields.io/badge/Tests-146%20passing-brightgreen)
+![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
 
 ---
 
@@ -258,11 +259,10 @@ io.mybatis.jink
 
 - CopilotDemo 的鼠标滚轮依赖 JLine Windows 终端的原生鼠标追踪；其他终端的鼠标事件格式可能需要额外适配
 - 目前仅在 Windows Terminal + JLine 3 上测试，Linux/macOS 终端行为可能不同
-- 尚未发布到 Maven Central
+- 尚未发布到 Maven Central（即将发布）
 
 ---
 
 ## 📄 License
 
-<!-- TODO: 选择开源协议 -->
-MIT License
+Apache License, Version 2.0 - 详见 [LICENSE](LICENSE) 文件。
