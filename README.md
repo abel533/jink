@@ -76,6 +76,82 @@ public class HelloWorld {
 
 ---
 
+## 🆚 与 ink 对比
+
+ink（React/TypeScript）的第一个示例是一个自动计数器：
+
+```tsx
+// ink (TypeScript)
+import React, {useState, useEffect} from 'react';
+import {render, Text} from 'ink';
+
+const Counter = () => {
+    const [counter, setCounter] = useState(0);
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCounter(previousCounter => previousCounter + 1);
+        }, 100);
+        return () => clearInterval(timer);
+    }, []);
+
+    return <Text color="green">{counter} tests passed</Text>;
+};
+
+render(<Counter />);
+```
+
+等效的 jink（Java）实现：
+
+```java
+// jink (Java)
+import io.mybatis.jink.Ink;
+import io.mybatis.jink.component.Component;
+import io.mybatis.jink.component.Renderable;
+import io.mybatis.jink.component.Text;
+import io.mybatis.jink.style.Color;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+public class Counter extends Component<Counter.State> {
+    record State(int count) {}
+
+    private final ScheduledExecutorService scheduler =
+            Executors.newSingleThreadScheduledExecutor();
+
+    public Counter() {
+        super(new State(0));
+    }
+
+    @Override
+    public void onMount() {
+        scheduler.scheduleAtFixedRate(() ->
+            setState(new State(getState().count() + 1)),
+            100, 100, TimeUnit.MILLISECONDS
+        );
+    }
+
+    @Override
+    public void onUnmount() {
+        scheduler.shutdownNow();
+    }
+
+    @Override
+    public Renderable render() {
+        return Text.of(getState().count() + " tests passed")
+                .color(Color.GREEN);
+    }
+
+    public static void main(String[] args) {
+        Ink.render(new Counter()).waitUntilExit();
+    }
+}
+```
+
+---
+
 ## 🎨 示例展示
 
 ### 文本样式
