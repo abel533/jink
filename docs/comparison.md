@@ -8,9 +8,9 @@
 |:-----|:----|:-----|:-------|
 | 组件数量 | 17 个（含 Context） | 11 个 | ~65% |
 | Hooks/API | 12 个 Hook | 7 个等效 API | ~58% |
-| Flexbox 属性 | ~95% CSS Flexbox | ~70% | ~70% |
+| Flexbox 属性 | ~95% CSS Flexbox | ~85% | ~85% |
 | 按键支持 | ~50+ 键（含 Kitty 协议） | ~30 键 | ~60% |
-| **总体功能对等** | — | — | **~65%** |
+| **总体功能对等** | — | — | **~75%** |
 
 ---
 
@@ -65,16 +65,16 @@
 | alignItems | ✅ 5 个值 | ✅ 4 个值 | ⚠️ 缺 baseline | baseline 对齐缺失 |
 | alignSelf | ✅ 完整 | ⚠️ 部分 | 🟡 | |
 | **alignContent** | ✅ 7 个值 | ❌ 缺失 | 🔴 可实现 | 多行对齐（需 flexWrap） |
-| **flexWrap** | ✅ nowrap/wrap/wrap-reverse | ❌ 缺失 | 🔴 可实现 | 仅单行布局 |
+| **flexWrap** | ✅ nowrap/wrap/wrap-reverse | ✅ 3 个值 | ✅ 完整 | nowrap/wrap/wrap-reverse |
 | flexGrow | ✅ | ✅ | ✅ 完整 | |
 | flexShrink | ✅ | ✅ | ✅ 完整 | |
-| flexBasis | ✅ 数值+百分比+auto | ⚠️ 仅数值 | 🟡 | 缺少百分比 |
-| width/height | ✅ 数值+百分比 | ✅ 仅数值 | 🟡 | 缺少百分比 |
-| minWidth/minHeight | ✅ 数值+百分比 | ✅ 仅数值 | 🟡 | |
+| flexBasis | ✅ 数值+百分比+auto | ✅ 数值+百分比+auto | ✅ 完整 | percent() 编码 |
+| width/height | ✅ 数值+百分比 | ✅ 数值+百分比 | ✅ 完整 | widthPercent()/heightPercent() |
+| minWidth/minHeight | ✅ 数值+百分比 | ✅ 数值+百分比 | ✅ 完整 | |
 | padding | ✅ 完整 | ✅ 完整 | ✅ 完整 | |
 | margin | ✅ 完整 | ✅ 完整 | ✅ 完整 | |
 | gap | ✅ gap/rowGap/columnGap | ✅ gap/rowGap/columnGap | ✅ 完整 | |
-| **position: absolute** | ✅ relative/absolute | ❌ 缺失 | 🔴 可实现 | 绝对定位 |
+| **position: absolute** | ✅ relative/absolute | ✅ relative/absolute | ✅ 完整 | 绝对定位 + posTop/Right/Bottom/Left |
 | display | ✅ flex/none | ✅ flex/none | ✅ 完整 | |
 | overflow | ✅ visible/hidden | ✅ visible/hidden | ✅ 完整 | |
 | **aspectRatio** | ✅ | ❌ 缺失 | 🔴 可实现 | 宽高比 |
@@ -95,7 +95,7 @@
 | strikethrough | ✅ | ✅ | ✅ 完整 |
 | dimmed | ✅ | ✅ | ✅ 完整 |
 | inverse | ✅ | ✅ | ✅ 完整 |
-| textWrap (多种截断) | ✅ 7 种模式 | ⚠️ 仅 wrap | 🟡 缺截断模式 |
+| textWrap (多种截断) | ✅ 7 种模式 | ✅ WRAP + 3 种截断 | ✅ 完整 |
 | 边框样式 | ✅ 15+ 种 | ✅ 9 种 | 🟡 够用 |
 | 边框颜色 (每边独立) | ✅ | ⚠️ 单一颜色 | 🟡 |
 | 边框 dimColor | ✅ 每边独立 | ❌ 缺失 | 🔴 |
@@ -170,10 +170,10 @@
 ### 高优先级
 | 功能 | 难度 | 说明 |
 |:-----|:-----|:-----|
-| textWrap 截断模式 | 中 | truncate/truncate-end/truncate-middle |
-| flexWrap | 高 | 多行 Flexbox 布局 |
-| position: absolute | 中 | 绝对定位支持 |
-| 百分比尺寸 | 中 | width: 50% 等 |
+| ~~textWrap 截断模式~~ | ~~中~~ | ✅ 已实现 (TRUNCATE_END/START/MIDDLE) |
+| ~~flexWrap~~ | ~~高~~ | ✅ 已实现 (WRAP/WRAP_REVERSE，行/列方向) |
+| ~~position: absolute~~ | ~~中~~ | ✅ 已实现 (posTop/Right/Bottom/Left) |
+| ~~百分比尺寸~~ | ~~中~~ | ✅ 已实现 (percent() 编码，width/height/min/max/flexBasis) |
 | ErrorBoundary | 低 | 错误边界组件 |
 
 ### 中优先级
