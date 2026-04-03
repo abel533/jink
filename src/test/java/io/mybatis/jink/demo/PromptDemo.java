@@ -72,12 +72,11 @@ public class PromptDemo extends Component<PromptDemo.State> {
 
             if (isSelected && isOther && s.mode() == Mode.INPUT) {
                 // Text input mode for "Other"
-                String cursor = "█";
+                String typedText = s.inputText().isEmpty() ? "" : s.inputText();
                 optionList.add(
                         Box.of(
                                 Text.of("❯ " + (i + 1) + ". ").color(Color.CYAN),
-                                Text.of(s.inputText().isEmpty() ? cursor
-                                        : s.inputText() + cursor).color(Color.CYAN)
+                                Text.of(typedText + "█").color(Color.CYAN)
                         ).flexDirection(FlexDirection.ROW)
                 );
             } else {
@@ -87,11 +86,15 @@ public class PromptDemo extends Component<PromptDemo.State> {
             }
         }
 
+        String hint = s.mode() == Mode.INPUT
+                ? "Type your answer · Enter to confirm · Esc to go back"
+                : "↑↓ to select · Enter to confirm · Esc to cancel";
+
         return Box.of(
                 Text.of(question),
                 optionList,
                 Box.of(
-                        Text.of("↑↓ to select · Enter to confirm · Esc to cancel").dimmed()
+                        Text.of(hint).dimmed()
                 ).marginTop(1)
         ).flexDirection(FlexDirection.COLUMN)
                 .borderStyle(BorderStyle.SINGLE)
@@ -115,7 +118,7 @@ public class PromptDemo extends Component<PromptDemo.State> {
                     setState(new State(s.selectedIndex(), Mode.INPUT,
                             s.inputText().substring(0, s.inputText().length() - 1), null));
                 }
-            } else if (!input.isEmpty() && !key.ctrl()) {
+            } else if (!input.isEmpty()) {
                 setState(new State(s.selectedIndex(), Mode.INPUT, s.inputText() + input, null));
             }
             return;
