@@ -1,6 +1,8 @@
 # ink vs jink 功能对比
 
 > 详细对比 ink (TypeScript) 和 jink (Java) 的功能实现情况。
+>
+> 当前版本：**0.2.0-SNAPSHOT**（0.1.0 已发布至 Maven Central）
 
 ## 总览
 
@@ -24,7 +26,7 @@
 | Transform | ✅ Transform.tsx | ✅ Transform.java | ✅ 完整 | 输出行变换 |
 | Newline | ✅ Newline.tsx | ✅ Newline.java | ✅ 完整 | 文本中插入换行 |
 | Spacer | ✅ Spacer.tsx | ✅ Spacer.java | ✅ 完整 | flexGrow=1 弹性空白 |
-| ErrorBoundary | ✅ ErrorBoundary.tsx | ❌ 缺失 | 🔴 可实现 | 错误边界组件 |
+| ErrorBoundary | ✅ ErrorBoundary.tsx | ✅ ErrorBoundary.java | ✅ 完整 | 错误边界组件 |
 | AppContext | ✅ 提供 exit/stdin/stdout | ⚠️ 部分 | 🟡 | jink 通过 Component 基类访问 |
 | StdinContext | ✅ 暴露 stdin 流 | ❌ 缺失 | 🔴 可实现 | jink 直接用 JLine |
 | StdoutContext | ✅ 暴露 stdout 流 | ❌ 缺失 | 🔴 可实现 | |
@@ -77,7 +79,7 @@
 | **position: absolute** | ✅ relative/absolute | ✅ relative/absolute | ✅ 完整 | 绝对定位 + posTop/Right/Bottom/Left |
 | display | ✅ flex/none | ✅ flex/none | ✅ 完整 | |
 | overflow | ✅ visible/hidden | ✅ visible/hidden | ✅ 完整 | |
-| **aspectRatio** | ✅ | ❌ 缺失 | 🔴 可实现 | 宽高比 |
+| **aspectRatio** | ✅ | ❌ 缺失 | 🔴 可实现 | 宽高比（需更新 FlexLayout）|
 
 ---
 
@@ -98,7 +100,7 @@
 | textWrap (多种截断) | ✅ 7 种模式 | ✅ WRAP + 3 种截断 | ✅ 完整 |
 | 边框样式 | ✅ 15+ 种 | ✅ 9 种 | 🟡 够用 |
 | 边框颜色 (每边独立) | ✅ | ✅ 每边独立 | ✅ 完整 | borderTopColor/Right/Bottom/Left |
-| 边框 dimColor | ✅ 每边独立 | ❌ 缺失 | 🔴 |
+| 边框 dimColor | ✅ 每边独立 | ❌ 缺失 | 🔴 可实现 | borderTopDimColor 等 |
 
 ---
 
@@ -174,7 +176,7 @@
 | ~~flexWrap~~ | ~~高~~ | ✅ 已实现 (WRAP/WRAP_REVERSE，行/列方向) |
 | ~~position: absolute~~ | ~~中~~ | ✅ 已实现 (posTop/Right/Bottom/Left) |
 | ~~百分比尺寸~~ | ~~中~~ | ✅ 已实现 (percent() 编码，width/height/min/max/flexBasis) |
-| ErrorBoundary | 低 | 错误边界组件 |
+| ~~ErrorBoundary~~ | ~~低~~ | ✅ 已实现 (捕获渲染异常，静态/动态 fallback) |
 
 ### 中优先级
 | 功能 | 难度 | 说明 |
@@ -182,7 +184,9 @@
 | ~~alignContent~~ | ~~中~~ | ✅ 已实现 (7 种对齐模式) |
 | ~~baseline 对齐~~ | ~~中~~ | ✅ 已实现 (alignItems/alignSelf: BASELINE) |
 | ~~每边独立边框色~~ | ~~低~~ | ✅ 已实现 (borderTopColor/Right/Bottom/Left) |
-| Shift 修饰符完整支持 | 低 | Shift+字母等组合（终端限制） |
+| borderDimColor | 低 | 每边独立的边框 dimmed（暗色）支持 |
+| aspectRatio | 中 | 宽高比约束，需更新 FlexLayout |
+| Shift 修饰符完整支持 | 低 | Shift+字母等组合（受终端限制） |
 | ~~usePaste 等效~~ | ~~中~~ | ✅ 已实现 (Bracketed Paste Mode + onPaste) |
 | ~~useBoxMetrics 等效~~ | ~~低~~ | ✅ 已有 (getComputedLeft/Top/Width/Height) |
 
