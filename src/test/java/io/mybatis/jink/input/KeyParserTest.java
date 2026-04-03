@@ -106,7 +106,8 @@ class KeyParserTest {
         assertEquals("", KeyParser.parseEscapeSequence("[A").inputText());
         assertEquals("", KeyParser.parseControlChar('\r').inputText());
         assertEquals("", KeyParser.parseControlChar(0x1b).inputText());
-        assertEquals("", KeyParser.parseControlChar(3).inputText());
+        // Ctrl+C: inputText 返回字母（匹配 ink 行为）
+        assertEquals("c", KeyParser.parseControlChar(3).inputText());
         assertEquals("x", KeyParser.parseChar('x').inputText());
     }
 

@@ -212,8 +212,11 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
     private Renderable shortcutBar(int w) {
         return Box.of(
                 Text.of(
-                        Text.of("shift+tab").dimmed(),
-                        Text.of(" switch mode").dimmed()
+                        Text.of("↑↓").dimmed(),
+                        Text.of(" scroll").dimmed(),
+                        Text.of("  "),
+                        Text.of("ctrl+p/n").dimmed(),
+                        Text.of(" history").dimmed()
                 ),
                 Spacer.create(),
                 Text.of(
@@ -253,8 +256,8 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
                 String newText = s.inputText.substring(0, s.inputText.length() - 1);
                 setState(new State(newText, s.messages, s.scrollOffset));
             }
-        } else if (key.upArrow()) {
-            // ↑: 浏览输入历史（上一条）
+        } else if (key.ctrl() && "p".equals(input)) {
+            // Ctrl+P: 浏览输入历史（上一条）
             if (!inputHistory.isEmpty()) {
                 if (historyIndex == -1) {
                     savedInput = s.inputText;
@@ -264,8 +267,8 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
                 }
                 setState(new State(inputHistory.get(historyIndex), s.messages, s.scrollOffset));
             }
-        } else if (key.downArrow()) {
-            // ↓: 浏览输入历史（下一条）
+        } else if (key.ctrl() && "n".equals(input)) {
+            // Ctrl+N: 浏览输入历史（下一条）
             if (historyIndex >= 0) {
                 historyIndex++;
                 if (historyIndex >= inputHistory.size()) {
@@ -275,32 +278,33 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
                     setState(new State(inputHistory.get(historyIndex), s.messages, s.scrollOffset));
                 }
             }
-        } else if (key.pageUp()) {
-            // PageUp: 向上滚动查看消息历史
-            int newOffset = Math.min(s.scrollOffset + 5, Math.max(0, totalMessages - 1));
-            setState(new State(s.inputText, s.messages, newOffset));
-        } else if (key.pageDown()) {
-            // PageDown: 向下滚动消息
-            int newOffset = Math.max(0, s.scrollOffset - 5);
-            setState(new State(s.inputText, s.messages, newOffset));
-        } else if (key.scrollUp()) {
-            // 鼠标滚轮上: 向上滚动消息（每次 3 行）
+        } else if (key.upArrow()) {
+            // ↑/鼠标滚轮上: 向上滚动消息
             int newOffset = Math.min(s.scrollOffset + 3, Math.max(0, totalMessages - 1));
             setState(new State(s.inputText, s.messages, newOffset));
-        } else if (key.scrollDown()) {
-            // 鼠标滚轮下: 向下滚动消息（每次 3 行）
+        } else if (key.downArrow()) {
+            // ↓/鼠标滚轮下: 向下滚动消息
             int newOffset = Math.max(0, s.scrollOffset - 3);
             setState(new State(s.inputText, s.messages, newOffset));
+        } else if (key.pageUp()) {
+            // PageUp: 向上滚动查看消息历史（大步）
+            int newOffset = Math.min(s.scrollOffset + 10, Math.max(0, totalMessages - 1));
+            setState(new State(s.inputText, s.messages, newOffset));
+        } else if (key.pageDown()) {
+            // PageDown: 向下滚动消息（大步）
+            int newOffset = Math.max(0, s.scrollOffset - 10);
+            setState(new State(s.inputText, s.messages, newOffset));
         } else if (!input.isEmpty() && isPrintableInput(input, key)) {
-            // 普通文本输入（过滤导航键残余字符）
+            // 普通文本输入（过滤导航键和控制组合键）
             setState(new State(s.inputText + input, s.messages, s.scrollOffset));
         }
     }
 
     /**
-     * 判断输入是否为可打印文本（排除导航键和控制字符残余）
+     * 判断输入是否为可打印文本（排除导航键、控制组合键）
      */
     private boolean isPrintableInput(String input, Key key) {
+        if (key.ctrl() || key.meta()) return false;
         if (key.upArrow() || key.downArrow() || key.leftArrow() || key.rightArrow()) return false;
         if (key.pageUp() || key.pageDown() || key.home() || key.end()) return false;
         if (key.escape() || key.tab() || key.delete()) return false;

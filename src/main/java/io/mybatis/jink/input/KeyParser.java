@@ -228,10 +228,10 @@ public class KeyParser {
         }
 
         /**
-         * 获取用户可见的输入文本（非特殊键时返回原始字符）
+         * 获取用户可见的输入文本。
+         * 对于 Ctrl/Meta 组合键，返回字母本身（匹配 ink 行为，方便组件判断）。
          */
         public String inputText() {
-            if (ctrl || meta) return "";
             return switch (name) {
                 case "up", "down", "left", "right",
                         "pageup", "pagedown", "home", "end",

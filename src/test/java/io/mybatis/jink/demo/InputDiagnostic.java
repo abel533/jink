@@ -3,14 +3,11 @@ package io.mybatis.jink.demo;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.terminal.Attributes;
+import org.jline.utils.InfoCmp;
 import org.jline.utils.NonBlockingReader;
 
 /**
- * 输入诊断工具：显示 JLine 实际收到的每个字符的十六进制值和时间间隔。
- * 用于调试方向键、鼠标滚轮等特殊键在 Windows 上的实际输入序列。
- *
- * 运行后请按方向键、滚动鼠标滚轮，观察输出的十六进制序列。
- * 按 Ctrl+C 退出。
+ * 输入诊断工具：测试 JLine 鼠标事件和键盘输入。
  */
 public class InputDiagnostic {
     public static void main(String[] args) throws Exception {
@@ -18,18 +15,38 @@ public class InputDiagnostic {
                 .system(true)
                 .build();
 
-        System.out.println("Terminal type: " + terminal.getType());
-        System.out.println("Terminal class: " + terminal.getClass().getName());
-        System.out.println("Size: " + terminal.getSize());
-        System.out.println();
-        System.out.println("Press keys to see their hex values. Ctrl+C to exit.");
-        System.out.println("Try: arrow keys, mouse wheel, Shift+Enter, Alt+Enter");
-        System.out.println("---");
-
         Attributes saved = terminal.enterRawMode();
-        NonBlockingReader reader = terminal.reader();
+        var writer = terminal.writer();
 
+        // 进入备用屏幕缓冲区
+        writer.print("\u001B[?1049h");
+        writer.print("\u001B[2J\u001B[H");
+        writer.print("\u001B[?25l");
+        writer.flush();
+
+        // 检查并启用 JLine 鼠标支持
+        boolean mouseOk = terminal.hasMouseSupport();
+        writer.printf("\u001B[1;1HMouse support: %s, Terminal: %s", mouseOk, terminal.getClass().getSimpleName());
+        if (mouseOk) {
+            terminal.trackMouse(Terminal.MouseTracking.Normal);
+            writer.print("\u001B[2;1HMouse tracking ENABLED. Scroll wheel, click, arrows, then Ctrl+C.");
+        } else {
+            writer.print("\u001B[2;1HMouse NOT supported. Try arrows, then Ctrl+C.");
+        }
+
+        // 获取 key_mouse 能力字符串
+        String keyMouse = null;
+        try {
+            keyMouse = terminal.getStringCapability(InfoCmp.Capability.key_mouse);
+        } catch (Exception ignored) {
+        }
+        writer.printf("\u001B[3;1Hkey_mouse: %s",
+                keyMouse != null ? "len=" + keyMouse.length() + " first=0x" + Integer.toHexString(keyMouse.charAt(0)) : "null");
+        writer.flush();
+
+        NonBlockingReader reader = terminal.reader();
         long lastTime = System.currentTimeMillis();
+        int row = 5;
 
         try {
             while (true) {
@@ -39,6 +56,26 @@ public class InputDiagnostic {
                 long now = System.currentTimeMillis();
                 long delta = now - lastTime;
                 lastTime = now;
+
+                // 检测是否为 key_mouse 触发字符
+                if (keyMouse != null && keyMouse.length() > 0 && ch == keyMouse.charAt(0)) {
+                    try {
+                        var mouseEvent = terminal.readMouseEvent(() -> {
+                            try { return reader.read(50); } catch (Exception e) { return -1; }
+                        });
+                        if (delta > 200) row++;
+                        writer.printf("\u001B[%d;1H\u001B[2K[+%3dms] MOUSE: %s   ", row, delta, mouseEvent);
+                        writer.flush();
+                        row++;
+                        continue;
+                    } catch (Exception e) {
+                        if (delta > 200) row++;
+                        writer.printf("\u001B[%d;1H\u001B[2K[+%3dms] MOUSE_ERR: %s   ", row, delta, e.getMessage());
+                        writer.flush();
+                        row++;
+                        continue;
+                    }
+                }
 
                 String display;
                 if (ch == 0x1B) display = "ESC";
@@ -50,19 +87,18 @@ public class InputDiagnostic {
                 else if (ch < 0x7F) display = "'" + (char) ch + "'";
                 else display = "U+" + Integer.toHexString(ch);
 
-                // 超过 200ms 间隔视为新事件，加空行分隔
-                if (delta > 200) {
-                    System.out.print("\r\n");
-                }
+                if (delta > 200) row++;
+                writer.printf("\u001B[%d;1H\u001B[2K[+%3dms] 0x%04X  %s   ", row, delta, ch, display);
+                writer.flush();
+                row++;
 
-                System.out.printf("[+%3dms] 0x%04X  %s\r\n", delta, ch, display);
-
-                // Ctrl+C
-                if (ch == 3) {
-                    break;
-                }
+                if (ch == 3) break;
             }
         } finally {
+            if (mouseOk) terminal.trackMouse(Terminal.MouseTracking.Off);
+            writer.print("\u001B[?25h");
+            writer.print("\u001B[?1049l");
+            writer.flush();
             terminal.setAttributes(saved);
             terminal.close();
         }
