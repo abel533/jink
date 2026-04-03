@@ -63,6 +63,34 @@ public class KeyParser {
         ESC_SEQUENCES.put("[23~", "f11");
         ESC_SEQUENCES.put("[24~", "f12");
 
+        // F13-F24 (Shift+F1-F12)
+        ESC_SEQUENCES.put("[1;2P", "f13");
+        ESC_SEQUENCES.put("[1;2Q", "f14");
+        ESC_SEQUENCES.put("[1;2R", "f15");
+        ESC_SEQUENCES.put("[1;2S", "f16");
+        ESC_SEQUENCES.put("[15;2~", "f17");
+        ESC_SEQUENCES.put("[17;2~", "f18");
+        ESC_SEQUENCES.put("[18;2~", "f19");
+        ESC_SEQUENCES.put("[19;2~", "f20");
+        ESC_SEQUENCES.put("[20;2~", "f21");
+        ESC_SEQUENCES.put("[21;2~", "f22");
+        ESC_SEQUENCES.put("[23;2~", "f23");
+        ESC_SEQUENCES.put("[24;2~", "f24");
+
+        // F25-F36 (Ctrl+F1-F12) — 部分终端支持
+        ESC_SEQUENCES.put("[1;5P", "f25");
+        ESC_SEQUENCES.put("[1;5Q", "f26");
+        ESC_SEQUENCES.put("[1;5R", "f27");
+        ESC_SEQUENCES.put("[1;5S", "f28");
+        ESC_SEQUENCES.put("[15;5~", "f29");
+        ESC_SEQUENCES.put("[17;5~", "f30");
+        ESC_SEQUENCES.put("[18;5~", "f31");
+        ESC_SEQUENCES.put("[19;5~", "f32");
+        ESC_SEQUENCES.put("[20;5~", "f33");
+        ESC_SEQUENCES.put("[21;5~", "f34");
+        ESC_SEQUENCES.put("[23;5~", "f35");
+        ESC_SEQUENCES.put("[24;5~", "f36");
+
         // Shift+箭头
         ESC_SEQUENCES.put("[1;2A", "up");
         ESC_SEQUENCES.put("[1;2B", "down");
@@ -82,6 +110,38 @@ public class KeyParser {
         SHIFT_SEQUENCES.put("[1;2C", true);
         SHIFT_SEQUENCES.put("[1;2D", true);
         SHIFT_SEQUENCES.put("[Z", true);
+        // F13-F24 (Shift+F1-F12)
+        SHIFT_SEQUENCES.put("[1;2P", true);
+        SHIFT_SEQUENCES.put("[1;2Q", true);
+        SHIFT_SEQUENCES.put("[1;2R", true);
+        SHIFT_SEQUENCES.put("[1;2S", true);
+        SHIFT_SEQUENCES.put("[15;2~", true);
+        SHIFT_SEQUENCES.put("[17;2~", true);
+        SHIFT_SEQUENCES.put("[18;2~", true);
+        SHIFT_SEQUENCES.put("[19;2~", true);
+        SHIFT_SEQUENCES.put("[20;2~", true);
+        SHIFT_SEQUENCES.put("[21;2~", true);
+        SHIFT_SEQUENCES.put("[23;2~", true);
+        SHIFT_SEQUENCES.put("[24;2~", true);
+    }
+
+    /** Ctrl 修饰的序列（修饰符 5 = Ctrl） */
+    private static final Map<String, Boolean> CTRL_SEQUENCES = new HashMap<>();
+
+    static {
+        // F25-F36 (Ctrl+F1-F12)
+        CTRL_SEQUENCES.put("[1;5P", true);
+        CTRL_SEQUENCES.put("[1;5Q", true);
+        CTRL_SEQUENCES.put("[1;5R", true);
+        CTRL_SEQUENCES.put("[1;5S", true);
+        CTRL_SEQUENCES.put("[15;5~", true);
+        CTRL_SEQUENCES.put("[17;5~", true);
+        CTRL_SEQUENCES.put("[18;5~", true);
+        CTRL_SEQUENCES.put("[19;5~", true);
+        CTRL_SEQUENCES.put("[20;5~", true);
+        CTRL_SEQUENCES.put("[21;5~", true);
+        CTRL_SEQUENCES.put("[23;5~", true);
+        CTRL_SEQUENCES.put("[24;5~", true);
     }
 
     /**
@@ -95,9 +155,10 @@ public class KeyParser {
 
         String keyName = ESC_SEQUENCES.get(suffix);
         boolean shift = SHIFT_SEQUENCES.containsKey(suffix);
+        boolean ctrl = CTRL_SEQUENCES.containsKey(suffix);
 
         if (keyName != null) {
-            return new ParseResult(keyName, "", false, shift, false);
+            return new ParseResult(keyName, "", ctrl, shift, false);
         }
 
         // ESC + 单个字母 = Meta 修饰
@@ -241,6 +302,10 @@ public class KeyParser {
                         "scrollUp", "scrollDown",
                         "f1", "f2", "f3", "f4", "f5", "f6",
                         "f7", "f8", "f9", "f10", "f11", "f12",
+                        "f13", "f14", "f15", "f16", "f17", "f18",
+                        "f19", "f20", "f21", "f22", "f23", "f24",
+                        "f25", "f26", "f27", "f28", "f29", "f30",
+                        "f31", "f32", "f33", "f34", "f35", "f36",
                         "insert" -> "";
                 default -> input.isEmpty() ? name : input;
             };

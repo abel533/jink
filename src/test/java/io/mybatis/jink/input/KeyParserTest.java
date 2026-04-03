@@ -155,4 +155,44 @@ class KeyParserTest {
         var ch = KeyParser.parseChar('a');
         assertFalse(ch.isPaste());
     }
+
+    @Test
+    void testF13ToF24ShiftFunctionKeys() {
+        // F13 = Shift+F1
+        var f13 = KeyParser.parseEscapeSequence("[1;2P");
+        assertEquals("f13", f13.name());
+        assertTrue(f13.shift());
+        assertFalse(f13.ctrl());
+        assertEquals("", f13.inputText());
+
+        // F17 = Shift+F5
+        var f17 = KeyParser.parseEscapeSequence("[15;2~");
+        assertEquals("f17", f17.name());
+        assertTrue(f17.shift());
+
+        // F24 = Shift+F12
+        var f24 = KeyParser.parseEscapeSequence("[24;2~");
+        assertEquals("f24", f24.name());
+        assertTrue(f24.shift());
+    }
+
+    @Test
+    void testF25ToF36CtrlFunctionKeys() {
+        // F25 = Ctrl+F1
+        var f25 = KeyParser.parseEscapeSequence("[1;5P");
+        assertEquals("f25", f25.name());
+        assertTrue(f25.ctrl());
+        assertFalse(f25.shift());
+        assertEquals("", f25.inputText());
+
+        // F29 = Ctrl+F5
+        var f29 = KeyParser.parseEscapeSequence("[15;5~");
+        assertEquals("f29", f29.name());
+        assertTrue(f29.ctrl());
+
+        // F36 = Ctrl+F12
+        var f36 = KeyParser.parseEscapeSequence("[24;5~");
+        assertEquals("f36", f36.name());
+        assertTrue(f36.ctrl());
+    }
 }
