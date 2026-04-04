@@ -39,7 +39,7 @@ scripts\run.cmd          # CMD
 | static | ✅ | ✅ `StaticDemo.java` | ✅ 完整 | Static 增量渲染（10 个测试逐条打印）|
 | incremental-rendering | ✅ | ✅ `IncrementalRenderingDemo.java` | ✅ 完整 | 高频渲染：进度条 + 日志 + 服务列表 |
 | chat | ✅ | ✅ `ChatDemo.java` | ✅ 完整 | 简单聊天输入框 |
-| use-focus | ✅ | ✅ `UseFocusDemo.java` | ✅ 完整 | Tab/Shift+Tab 焦点导航（状态模拟）|
+| use-focus | ✅ | ✅ `UseFocusDemo.java` | ⚠️ 部分 | ↑/↓ 方向键焦点导航（Tab 被框架拦截，改用方向键）|
 | table | ✅ | ✅ `TableDemo.java` | ✅ 完整 | 固定宽度列表格 |
 | jest | ✅ | ✅ `JestDemo.java` | ✅ 完整 | 并发测试运行器模拟（Static + 进度）|
 | subprocess-output | ✅ | ✅ `SubprocessOutputDemo.java` | ✅ 完整 | ProcessBuilder 执行 java -version |
@@ -100,6 +100,19 @@ scripts\run.cmd          # CMD
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.BordersDemo
 ```
 
+**效果**:
+```
+
+
+
+  ┌──────┐  ╔══════╗  ╭─────╮  ┏━━━━┓
+  │single│  ║double║  │round│  ┃bold┃
+  └──────┘  ╚══════╝  ╰─────╯  ┗━━━━┛
+
+  ╓────────────╖  ╒════════════╕  +-------+  ↘↓↓↓↓↓↙
+  ║singleDouble║  │doubleSingle│  |classic|  →arrow←
+  ╙────────────╜  ╘════════════╛  +-------+  ↗↑↑↑↑↑↖
+```
 ---
 
 ### box-backgrounds — 背景色
@@ -129,6 +142,16 @@ scripts\run.cmd          # CMD
 **运行**:
 ```powershell
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.JustifyContentDemo
+```
+
+**效果**:
+```
+[XY                  ] flex-start
+[                  XY] flex-end
+[         XY         ] center
+[    X         Y     ] space-around
+[X                  Y] space-between
+[      X      Y      ] space-evenly
 ```
 
 ---
@@ -216,7 +239,8 @@ scripts\run.cmd          # CMD
 
 **jink 实现要点**:
 - jink 不支持子组件独立焦点注册，使用状态 `focusIndex` 模拟
-- `key.tab()` + `key.shift()` → `focusPrevious`；`key.tab()` → `focusNext`
+- ⚠️ jink 框架内部拦截 Tab 键用于内置焦点管理，Tab 不会到达 `onInput`
+- 改用 `key.upArrow()` / `key.downArrow()` 实现焦点移动
 - `key.escape()` → 重置焦点（`focusIndex = -1`）
 
 **运行**:

@@ -12,14 +12,15 @@ import io.mybatis.jink.style.FlexDirection;
 /**
  * ink 官方示例 use-focus 的 jink 等效实现。
  *
- * <p>展示焦点导航：Tab 切换到下一项，Shift+Tab 切换到上一项，Esc 重置焦点。
- * ink 使用 useFocus() hook；jink 在组件内通过状态跟踪当前焦点索引。
+ * <p>展示焦点导航：↑/↓ 方向键切换焦点，Esc 重置。
+ * ink 使用 useFocus() hook 配合 Tab 键；jink 框架内部使用 Tab 键管理内置焦点，
+ * 因此此示例使用 ↑/↓ 方向键模拟 useFocus 行为。
  *
- * <p>注意：jink 不支持子组件独立注册焦点，此处用状态模拟 useFocus 行为。
+ * <p>注意：jink 不支持子组件独立注册焦点，此处用状态跟踪当前焦点索引。
  *
  * <p>运行:
  * <pre>
- * mvn exec:java -Dexec.mainClass=io.mybatis.jink.demo.UseFocusDemo -Dexec.classpathScope=test
+ * .\scripts\run-demo.ps1 io.mybatis.jink.demo.UseFocusDemo
  * </pre>
  */
 public class UseFocusDemo extends Component<UseFocusDemo.State> {
@@ -43,7 +44,7 @@ public class UseFocusDemo extends Component<UseFocusDemo.State> {
                     : Text.of(ITEMS[i]);
         }
         return Box.of(
-                Box.of(Text.of("Press Tab to focus next, Shift+Tab to focus previous, Esc to reset."))
+                Box.of(Text.of("Press ↑/↓ to move focus, Esc to reset, q to quit."))
                         .marginBottom(1),
                 Box.of(items).flexDirection(FlexDirection.COLUMN)
         ).flexDirection(FlexDirection.COLUMN).padding(1);
@@ -52,12 +53,14 @@ public class UseFocusDemo extends Component<UseFocusDemo.State> {
     @Override
     public void onInput(String input, Key key) {
         State s = getState();
-        if (key.escape()) {
+        if ("q".equals(input)) {
+            System.exit(0);
+        } else if (key.escape()) {
             setState(new State(-1));
-        } else if (key.tab() && key.shift()) {
+        } else if (key.upArrow()) {
             int next = s.focusIndex() <= 0 ? ITEMS.length - 1 : s.focusIndex() - 1;
             setState(new State(next));
-        } else if (key.tab()) {
+        } else if (key.downArrow()) {
             int next = (s.focusIndex() + 1) % ITEMS.length;
             setState(new State(next));
         }
