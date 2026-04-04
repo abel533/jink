@@ -69,15 +69,27 @@ public class Ink {
     /**
      * 交互式渲染（自动检测终端尺寸）
      */
+    /**
+     * 交互式渲染到终端（默认 Ctrl+C 退出）
+     */
     public static Instance render(Renderable renderable) {
-        return new Instance(renderable, -1, -1, true);
+        return new Instance(renderable, -1, -1, true, true);
+    }
+
+    /**
+     * 交互式渲染到终端，可配置 Ctrl+C 行为
+     *
+     * @param exitOnCtrlC true=Ctrl+C 退出应用（默认），false=将 Ctrl+C 传递给组件处理
+     */
+    public static Instance render(Renderable renderable, boolean exitOnCtrlC) {
+        return new Instance(renderable, -1, -1, true, exitOnCtrlC);
     }
 
     /**
      * 交互式渲染（指定尺寸，不使用终端 raw mode）
      */
     public static Instance render(Renderable renderable, int width, int height) {
-        return new Instance(renderable, width, height, false);
+        return new Instance(renderable, width, height, false, true);
     }
 
     /**
@@ -134,13 +146,18 @@ public class Ink {
         // 焦点管理
         private final FocusManager focusManager = new FocusManager();
 
+        // Ctrl+C 行为：true=退出应用，false=传递给组件
+        private final boolean exitOnCtrlC;
+
         /**
          * 构造实例
          *
-         * @param useTerminal true=使用 JLine 3 终端（raw mode），false=使用 PrintStream
+         * @param useTerminal  true=使用 JLine 3 终端（raw mode），false=使用 PrintStream
+         * @param exitOnCtrlC  true=Ctrl+C 退出应用，false=将 Ctrl+C 传递给组件
          */
-        Instance(Renderable renderable, int width, int height, boolean useTerminal) {
+        Instance(Renderable renderable, int width, int height, boolean useTerminal, boolean exitOnCtrlC) {
             this.rootRenderable = renderable;
+            this.exitOnCtrlC = exitOnCtrlC;
 
             if (useTerminal) {
                 initTerminal();
@@ -512,10 +529,13 @@ public class Ink {
             Key key = result.toKey();
             String input = result.inputText();
 
-            // 内置处理：Ctrl+C 退出
+            // 内置处理：Ctrl+C 退出（可配置）
             if ("c".equals(result.name()) && result.ctrl()) {
-                exit();
-                return;
+                if (exitOnCtrlC) {
+                    exit();
+                    return;
+                }
+                // exitOnCtrlC=false 时，将 Ctrl+C 传递给组件处理
             }
 
             // 内置处理：Tab 焦点导航
