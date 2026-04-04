@@ -55,11 +55,15 @@ public class VirtualScreen {
             int cp = stripped.codePointAt(i);
             int charWidth = AnsiStringUtils.isWideChar(cp) ? 2 : 1;
 
-            if (isInClipRegion(col, y)) {
-                putChar(col, y, new String(Character.toChars(cp)), style);
-                // 宽字符占两列，第二列用占位符
-                if (charWidth == 2 && col + 1 < width) {
-                    putChar(col + 1, y, "", style);
+            if (charWidth == 2) {
+                // 宽字符：两列都必须在裁剪区域内才能渲染
+                if (isInClipRegion(col, y) && isInClipRegion(col + 1, y) && col + 1 < width) {
+                    putChar(col, y, new String(Character.toChars(cp)), style);
+                    putChar(col + 1, y, "", style); // 占位符
+                }
+            } else {
+                if (isInClipRegion(col, y)) {
+                    putChar(col, y, new String(Character.toChars(cp)), style);
                 }
             }
 
