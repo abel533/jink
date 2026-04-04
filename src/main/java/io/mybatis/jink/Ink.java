@@ -654,5 +654,18 @@ public class Ink {
         public FocusManager getFocusManager() {
             return focusManager;
         }
+
+        /**
+         * 直接向终端写入原始转义序列（绕过渲染引擎）。
+         * 用于设置终端标题等不可见的控制序列。
+         * 对应 ink 的 TerminalWriteContext / writeRaw。
+         */
+        public void writeRaw(String escapeSequence) {
+            if (escapeSequence == null || escapeSequence.isEmpty()) return;
+            if (interactive && termWriter != null) {
+                termWriter.print(escapeSequence);
+                termWriter.flush();
+            }
+        }
     }
 }
