@@ -85,6 +85,8 @@ scripts\run.cmd          # CMD
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.Counter
 ```
 
+![Counter](docs/imgs/Counter.gif)
+
 ---
 
 ### borders — 边框样式
@@ -129,6 +131,8 @@ scripts\run.cmd          # CMD
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.BoxBackgroundsDemo
 ```
 
+![BoxBackgroundsDemo](docs/imgs/BoxBackgroundsDemo.png)
+
 ---
 
 ### justify-content — 内容对齐
@@ -170,6 +174,8 @@ scripts\run.cmd          # CMD
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.UseInputDemo
 ```
 
+![UseInputDemo](docs/imgs/UseInputDemo.gif)
+
 ---
 
 ### terminal-resize — 终端尺寸
@@ -184,6 +190,8 @@ scripts\run.cmd          # CMD
 ```powershell
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.TerminalResizeDemo
 ```
+
+![TerminalResizeDemo](docs/imgs/TerminalResizeDemo.gif)
 
 ---
 
@@ -201,6 +209,8 @@ scripts\run.cmd          # CMD
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.StaticDemo
 ```
 
+![StaticDemo](docs/imgs/StaticDemo.gif)
+
 ---
 
 ### incremental-rendering — 高频渲染
@@ -216,6 +226,8 @@ scripts\run.cmd          # CMD
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.IncrementalRenderingDemo
 ```
 
+![IncrementalRenderingDemo](docs/imgs/IncrementalRenderingDemo.gif)
+
 ---
 
 ### chat — 聊天输入框
@@ -230,6 +242,8 @@ scripts\run.cmd          # CMD
 ```powershell
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.ChatDemo
 ```
+
+![ChatDemo](docs/imgs/ChatDemo.gif)
 
 ---
 
@@ -248,6 +262,8 @@ scripts\run.cmd          # CMD
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.UseFocusDemo
 ```
 
+![UseFocusDemo](docs/imgs/UseFocusDemo.gif)
+
 ---
 
 ### table — 表格布局
@@ -262,6 +278,22 @@ scripts\run.cmd          # CMD
 ```powershell
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.TableDemo
 ```
+
+**效果**:
+```
+ID      Name                                    Email
+0       alice_dev                               alice@example.com
+1       bob_builder                             bob@example.com
+2       carol_qi                                carol@example.com
+3       david_ops                               david@example.com
+4       eve_sec                                 eve@example.com
+5       frank_data                              frank@example.com
+6       grace_ux                                grace@example.com
+7       henry_ml                                henry@example.com
+8       iris_cloud                              iris@example.com
+9       jack_mobile                             jack@example.com
+```
+
 
 ---
 
@@ -279,6 +311,8 @@ scripts\run.cmd          # CMD
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.JestDemo
 ```
 
+![JestDemo](docs/imgs/JestDemo.gif)
+
 ---
 
 ### subprocess-output — 子进程输出
@@ -293,6 +327,8 @@ scripts\run.cmd          # CMD
 ```powershell
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.SubprocessOutputDemo
 ```
+
+![SubprocessOutputDemo](docs/imgs/SubprocessOutputDemo.png)
 
 ---
 
@@ -310,6 +346,8 @@ scripts\run.cmd          # CMD
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.RouterDemo
 ```
 
+![RouterDemo](docs/imgs/RouterDemo.gif)
+
 ---
 
 ### select-input — 列表选择
@@ -324,6 +362,8 @@ scripts\run.cmd          # CMD
 ```powershell
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.SelectInputDemo
 ```
+
+![SelectInputDemo](docs/imgs/SelectInputDemo.gif)
 
 ---
 
@@ -340,6 +380,8 @@ scripts\run.cmd          # CMD
 ```powershell
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.CursorImeDemo
 ```
+
+![CursorImeDemo](docs/imgs/CursorImeDemo.gif)
 
 ---
 
@@ -402,14 +444,7 @@ scripts\run.cmd          # CMD
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.SimpleDemo
 ```
 
-### GIF 录制操作
-1. 打开终端，进入 `jink` 模块目录
-2. 运行 `.\scripts\run-demo.ps1 io.mybatis.jink.demo.SimpleDemo`
-3. 画面会依次显示：
-   - Copilot CLI 风格界面（圆角边框 + 消息列表 + 输入框 + 快捷键栏）
-   - 嵌套 Flexbox 布局（左右两栏面板）
-   - 颜色与样式验证（多种文本效果）
-4. 程序自动退出
+![SimpleDemo](docs/imgs/SimpleDemo.png)
 
 ### 核心代码片段
 
@@ -461,14 +496,7 @@ Box.of(
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.InteractiveDemo
 ```
 
-### GIF 录制操作
-1. 运行后显示欢迎消息列表
-2. **输入文字**：键入 "Hello Jink"，观察输入框实时更新
-3. **发送消息**：按 `Enter`，消息出现在列表中
-4. **再发几条**：输入 "这是第二条" → Enter → "Third message" → Enter
-5. **方向键选择**：按 `↑` `↓` 选择消息，观察高亮变化（青色粗体）
-6. **删除消息**：选中某条后按 `Backspace` 删除
-7. **退出**：按 `Ctrl+C`，终端恢复干净
+![InteractiveDemo](docs/imgs/InteractiveDemo.gif)
 
 ### 核心代码片段
 
@@ -524,41 +552,7 @@ public class InteractiveDemo extends Component<InteractiveDemo.State> {
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.CopilotDemo
 ```
 
-### 推荐验证流程
-
-1. 连续发送 2-3 条消息，先让中间消息区产生可滚动内容
-2. 在输入框中输入一段未发送的文本，例如 `draft`
-3. 按 `↑`，确认输入框切换到上一条历史命令，而不是滚动中间消息
-4. 按 `↓`，确认输入框返回下一条历史或恢复到 `draft`
-5. 滚动鼠标滚轮，确认变化发生在**中间消息区**，而不是输入框内容
-6. 按 `PageUp` / `PageDown`，确认消息区可以大步滚动
-7. 在历史预览状态下继续输入字符，确认会退出历史浏览并进入当前编辑态
-
-### GIF 录制操作（完整流程，约 30 秒）
-
-**第一段：基本输入** (约 10 秒)
-1. 运行后展示完整界面（标题框 + 消息 + 输入框 + 快捷键）
-2. 输入 "Hello Jink!" → 按 `Enter` 发送
-3. 输入 "你好，这是中文测试" → 按 `Enter`
-4. 输入 "Third message" → 按 `Enter`
-
-**第二段：滚动和历史** (约 10 秒)
-5. 鼠标滚轮向上滚动查看消息
-6. 按 `↑` / `↓` 切换输入历史
-7. 按 `PageUp` / `PageDown` 快速滚动
-8. 鼠标滚轮向下滚动，回到最新消息
-9. 按 `↑` 多次，浏览所有输入历史
-10. 按 `↓` 逐步返回当前输入
-
-**第三段：多行输入** (约 5 秒)
-11. 输入 "第一行"
-12. 按 `Shift+Enter`（实际为 `Alt+Enter`）换行
-13. 继续输入 "第二行"
-14. 按 `Enter` 发送多行消息
-
-**第四段：退出** (约 3 秒)
-15. 按 `Ctrl+C` 退出
-16. 观察终端恢复到正常状态
+![CopilotDemo](docs/imgs/CopilotDemo.gif)
 
 ### 快捷键总结
 
@@ -609,10 +603,7 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.CopilotDemoPreview
 ```
 
-### GIF 录制操作
-1. 运行 `.\scripts\run-demo.ps1 io.mybatis.jink.demo.CopilotDemoPreview`
-2. 显示 CopilotDemo 的静态渲染结果（含 ANSI 颜色）
-3. 观察调试信息（stderr 输出）
+![CopilotDemoPreview](docs/imgs/CopilotDemoPreview.png)
 
 ---
 
@@ -632,6 +623,8 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
 ```powershell
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.PromptDemo
 ```
+
+![PromptDemo](docs/imgs/PromptDemo.gif)
 
 ### 键盘操作
 
