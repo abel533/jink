@@ -44,6 +44,11 @@ public class KeyParser {
         ESC_SEQUENCES.put("[6~", "pagedown");
         ESC_SEQUENCES.put("[2~", "insert");
         ESC_SEQUENCES.put("[3~", "delete");
+        // Ctrl+导航键（修饰符 5 = Ctrl）
+        ESC_SEQUENCES.put("[1;5H", "home");
+        ESC_SEQUENCES.put("[1;5F", "end");
+        ESC_SEQUENCES.put("[5;5~", "pageup");
+        ESC_SEQUENCES.put("[6;5~", "pagedown");
 
         // 功能键 (xterm/VT)
         ESC_SEQUENCES.put("OP", "f1");
@@ -142,6 +147,11 @@ public class KeyParser {
         CTRL_SEQUENCES.put("[21;5~", true);
         CTRL_SEQUENCES.put("[23;5~", true);
         CTRL_SEQUENCES.put("[24;5~", true);
+        // Ctrl+导航键
+        CTRL_SEQUENCES.put("[1;5H", true);  // Ctrl+Home
+        CTRL_SEQUENCES.put("[1;5F", true);  // Ctrl+End
+        CTRL_SEQUENCES.put("[5;5~", true);  // Ctrl+PageUp
+        CTRL_SEQUENCES.put("[6;5~", true);  // Ctrl+PageDown
     }
 
     /**
