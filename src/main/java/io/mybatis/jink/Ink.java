@@ -246,12 +246,19 @@ public class Ink {
                 });
 
                 // 监听 INT 信号（Ctrl+C 可能绕过 raw mode 输入）
-                // 仅在 exitOnCtrlC=true 时退出；否则忽略信号（让 raw mode 输入处理 Ctrl+C）
+                // Windows Console 可能将 Ctrl+C 作为 CTRL_C_EVENT 信号处理，
+                // 而非将 0x03 字节传递给 raw mode 输入。
+                // 因此需要在信号处理器中手动分发 Ctrl+C 到组件。
                 terminal.handle(Terminal.Signal.INT, signal -> {
                     if (exitOnCtrlC) {
                         running = false;
+                    } else {
+                        // 手动构造 Ctrl+C 事件并分发到组件
+                        if (rootRenderable instanceof Component<?> component) {
+                            var result = KeyParser.parseControlChar(0x03);
+                            component.onInput(result.inputText(), result.toKey());
+                        }
                     }
-                    // exitOnCtrlC=false 时：忽略信号，由输入循环将 Ctrl+C 传递给组件
                 });
 
                 // JVM 关闭钩子：确保终端状态恢复（Ctrl+C/SIGTERM 等异常退出时）
