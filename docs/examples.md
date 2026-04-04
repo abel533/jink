@@ -85,7 +85,7 @@ scripts\run.cmd          # CMD
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.Counter
 ```
 
-![Counter](docs/imgs/Counter.gif)
+![Counter](imgs/Counter.gif)
 
 ---
 
@@ -131,7 +131,7 @@ scripts\run.cmd          # CMD
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.BoxBackgroundsDemo
 ```
 
-![BoxBackgroundsDemo](docs/imgs/BoxBackgroundsDemo.png)
+![BoxBackgroundsDemo](imgs/BoxBackgroundsDemo.png)
 
 ---
 
@@ -174,7 +174,7 @@ scripts\run.cmd          # CMD
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.UseInputDemo
 ```
 
-![UseInputDemo](docs/imgs/UseInputDemo.gif)
+![UseInputDemo](imgs/UseInputDemo.gif)
 
 ---
 
@@ -191,7 +191,7 @@ scripts\run.cmd          # CMD
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.TerminalResizeDemo
 ```
 
-![TerminalResizeDemo](docs/imgs/TerminalResizeDemo.gif)
+![TerminalResizeDemo](imgs/TerminalResizeDemo.gif)
 
 ---
 
@@ -209,7 +209,7 @@ scripts\run.cmd          # CMD
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.StaticDemo
 ```
 
-![StaticDemo](docs/imgs/StaticDemo.gif)
+![StaticDemo](imgs/StaticDemo.gif)
 
 ---
 
@@ -226,7 +226,7 @@ scripts\run.cmd          # CMD
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.IncrementalRenderingDemo
 ```
 
-![IncrementalRenderingDemo](docs/imgs/IncrementalRenderingDemo.gif)
+![IncrementalRenderingDemo](imgs/IncrementalRenderingDemo.gif)
 
 ---
 
@@ -243,7 +243,7 @@ scripts\run.cmd          # CMD
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.ChatDemo
 ```
 
-![ChatDemo](docs/imgs/ChatDemo.gif)
+![ChatDemo](imgs/ChatDemo.gif)
 
 ---
 
@@ -262,7 +262,7 @@ scripts\run.cmd          # CMD
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.UseFocusDemo
 ```
 
-![UseFocusDemo](docs/imgs/UseFocusDemo.gif)
+![UseFocusDemo](imgs/UseFocusDemo.gif)
 
 ---
 
@@ -311,7 +311,7 @@ ID      Name                                    Email
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.JestDemo
 ```
 
-![JestDemo](docs/imgs/JestDemo.gif)
+![JestDemo](imgs/JestDemo.gif)
 
 ---
 
@@ -328,7 +328,7 @@ ID      Name                                    Email
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.SubprocessOutputDemo
 ```
 
-![SubprocessOutputDemo](docs/imgs/SubprocessOutputDemo.png)
+![SubprocessOutputDemo](imgs/SubprocessOutputDemo.png)
 
 ---
 
@@ -346,7 +346,7 @@ ID      Name                                    Email
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.RouterDemo
 ```
 
-![RouterDemo](docs/imgs/RouterDemo.gif)
+![RouterDemo](imgs/RouterDemo.gif)
 
 ---
 
@@ -363,7 +363,7 @@ ID      Name                                    Email
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.SelectInputDemo
 ```
 
-![SelectInputDemo](docs/imgs/SelectInputDemo.gif)
+![SelectInputDemo](imgs/SelectInputDemo.gif)
 
 ---
 
@@ -381,7 +381,7 @@ ID      Name                                    Email
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.CursorImeDemo
 ```
 
-![CursorImeDemo](docs/imgs/CursorImeDemo.gif)
+![CursorImeDemo](imgs/CursorImeDemo.gif)
 
 ---
 
@@ -444,7 +444,7 @@ ID      Name                                    Email
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.SimpleDemo
 ```
 
-![SimpleDemo](docs/imgs/SimpleDemo.png)
+![SimpleDemo](imgs/SimpleDemo.png)
 
 ### 核心代码片段
 
@@ -496,7 +496,7 @@ Box.of(
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.InteractiveDemo
 ```
 
-![InteractiveDemo](docs/imgs/InteractiveDemo.gif)
+![InteractiveDemo](imgs/InteractiveDemo.gif)
 
 ### 核心代码片段
 
@@ -552,7 +552,7 @@ public class InteractiveDemo extends Component<InteractiveDemo.State> {
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.CopilotDemo
 ```
 
-![CopilotDemo](docs/imgs/CopilotDemo.gif)
+![CopilotDemo](imgs/CopilotDemo.gif)
 
 ### 快捷键总结
 
@@ -603,7 +603,7 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.CopilotDemoPreview
 ```
 
-![CopilotDemoPreview](docs/imgs/CopilotDemoPreview.png)
+![CopilotDemoPreview](imgs/CopilotDemoPreview.png)
 
 ---
 
@@ -624,7 +624,7 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
 .\scripts\run-demo.ps1 io.mybatis.jink.demo.PromptDemo
 ```
 
-![PromptDemo](docs/imgs/PromptDemo.gif)
+![PromptDemo](imgs/PromptDemo.gif)
 
 ### 键盘操作
 

@@ -15,6 +15,8 @@
     <groupId>io.mybatis.jink</groupId>
     <artifactId>jink</artifactId>
     <version>0.2.0</version>
+</dependency>
+```
 
 ## 示例 1：Hello World（静态渲染）
 

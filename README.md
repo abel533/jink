@@ -13,14 +13,14 @@
 
 ## 🖼️ 效果预览
 
-<table>
+<table style="width:80%">
   <tr>
-    <td><img src="docs/imgs/1.png" alt="Demo 1" width="100%"/></td>
-    <td><img src="docs/imgs/2.png" alt="Demo 2" width="100%"/></td>
+    <td><img src="docs/imgs/1.png" alt="布局" width="100%"/></td>
+    <td><img src="docs/imgs/2.png" alt="样式" width="100%"/></td>
   </tr>
   <tr>
-    <td><img src="docs/imgs/3.png" alt="Demo 3" width="100%"/></td>
-    <td><img src="docs/imgs/4.png" alt="Demo 4" width="100%"/></td>
+    <td><img src="docs/imgs/3.png" alt="交互" width="100%"/></td>
+    <td><img src="docs/imgs/4.png" alt="高级" width="100%"/></td>
   </tr>
 </table>
 
