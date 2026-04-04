@@ -246,8 +246,12 @@ public class Ink {
                 });
 
                 // 监听 INT 信号（Ctrl+C 可能绕过 raw mode 输入）
+                // 仅在 exitOnCtrlC=true 时退出；否则忽略信号（让 raw mode 输入处理 Ctrl+C）
                 terminal.handle(Terminal.Signal.INT, signal -> {
-                    running = false;
+                    if (exitOnCtrlC) {
+                        running = false;
+                    }
+                    // exitOnCtrlC=false 时：忽略信号，由输入循环将 Ctrl+C 传递给组件
                 });
 
                 // JVM 关闭钩子：确保终端状态恢复（Ctrl+C/SIGTERM 等异常退出时）
