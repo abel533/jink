@@ -11,6 +11,23 @@
 
 ---
 
+## 🖼️ 效果预览
+
+<table>
+  <tr>
+    <td><img src="docs/imgs/1.png" alt="Demo 1" width="100%"/></td>
+    <td><img src="docs/imgs/2.png" alt="Demo 2" width="100%"/></td>
+  </tr>
+  <tr>
+    <td><img src="docs/imgs/3.png" alt="Demo 3" width="100%"/></td>
+    <td><img src="docs/imgs/4.png" alt="Demo 4" width="100%"/></td>
+  </tr>
+</table>
+
+> 📖 [查看全部示例与运行效果](docs/examples.md)
+
+---
+
 ## ✨ 特性
 
 | 功能 | 说明 |
