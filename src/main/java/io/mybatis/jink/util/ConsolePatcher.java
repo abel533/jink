@@ -35,8 +35,13 @@ public final class ConsolePatcher {
         originalErr = System.err;
         patched = true;
 
-        System.setOut(new PrintStream(new InterceptOutputStream(), true, StandardCharsets.UTF_8));
-        System.setErr(new PrintStream(new InterceptOutputStream(), true, StandardCharsets.UTF_8));
+        try {
+            System.setOut(new PrintStream(new InterceptOutputStream(), true, "UTF-8"));
+            System.setErr(new PrintStream(new InterceptOutputStream(), true, "UTF-8"));
+        } catch (java.io.UnsupportedEncodingException e) {
+            // UTF-8 is always supported; this branch is unreachable
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -94,7 +99,7 @@ public final class ConsolePatcher {
 
         @Override
         public void flush() {
-            if (buffer.isEmpty()) return;
+            if (buffer.length() == 0) return;
             String text = buffer.toString();
             buffer.setLength(0);
             for (Consumer<String> listener : listeners) {

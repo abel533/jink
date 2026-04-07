@@ -198,7 +198,7 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
             content = Text.of("Type @ to mention files, / for commands, or ? for help").dimmed();
         } else {
             // 多行输入：续行加缩进，使文字和第一行对齐
-            String indent = " ".repeat(PROMPT_WIDTH);
+            String indent = rep(" ", PROMPT_WIDTH);
             String displayText = s.inputText.replace("\n", "\n" + indent);
             content = Text.of(displayText).color(Color.WHITE);
         }
@@ -347,5 +347,11 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
     public static void main(String[] args) {
         Ink.Instance app = Ink.render(new CopilotDemo());
         app.waitUntilExit();
+    }
+
+    private static String rep(String s, int n) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < n; i++) sb.append(s);
+        return sb.toString();
     }
 }

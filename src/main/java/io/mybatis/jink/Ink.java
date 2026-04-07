@@ -384,7 +384,7 @@ public class Ink {
                 sb.append("\u001B[2K");
             }
 
-            if (!sb.isEmpty()) {
+            if (sb.length() > 0) {
                 termWriter.print(sb);
                 termWriter.flush();
             }

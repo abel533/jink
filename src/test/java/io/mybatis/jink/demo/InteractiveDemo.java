@@ -86,11 +86,11 @@ public class InteractiveDemo extends Component<InteractiveDemo.State> {
                         .paddingX(1)
                         .paddingY(1),
                 // 分隔线
-                Text.of("─".repeat(width)),
+                Text.of(rep("─", width)),
                 // 输入区域
                 Box.of(inputDisplay).paddingX(1),
                 // 分隔线
-                Text.of("─".repeat(width)),
+                Text.of(rep("─", width)),
                 // 快捷键
                 Box.of(
                         Text.of(Text.of(" Enter ").bold().inverse(), Text.of(" Send").dimmed()),
@@ -146,5 +146,11 @@ public class InteractiveDemo extends Component<InteractiveDemo.State> {
     public static void main(String[] args) {
         Ink.Instance app = Ink.render(new InteractiveDemo());
         app.waitUntilExit();
+    }
+
+    private static String rep(String s, int n) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < n; i++) sb.append(s);
+        return sb.toString();
     }
 }

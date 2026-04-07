@@ -171,7 +171,9 @@ class FlexLayoutTest {
 
         // 创建超长文本
         ElementNode text = ElementNode.createText();
-        text.appendChild(new TextNode("A".repeat(200)));
+        StringBuilder sb200 = new StringBuilder(200);
+        for (int i = 0; i < 200; i++) sb200.append('A');
+        text.appendChild(new TextNode(sb200.toString()));
         root.appendChild(text);
 
         FlexLayout.calculateLayout(root, 80);
