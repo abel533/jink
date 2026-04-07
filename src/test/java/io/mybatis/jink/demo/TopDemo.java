@@ -714,7 +714,8 @@ public class TopDemo extends Component<TopDemo.AppState> {
         int selIdx = s.getSelectedIndex();
 
         if ("q".equals(input)) {
-            System.exit(0);
+            exit();
+            return;
         } else if ("/".equals(input)) {
             setState(new AppState(s.getSysInfo(), s.getProcesses(), 0,
                     s.getSortField(), s.getSearchQuery(), true));
@@ -779,6 +780,6 @@ public class TopDemo extends Component<TopDemo.AppState> {
     // ===== 入口 =====
 
     public static void main(String[] args) {
-        Ink.render(new TopDemo()).waitUntilExit();
+        Ink.render(new TopDemo()).enableMouseTracking().waitUntilExit();
     }
 }

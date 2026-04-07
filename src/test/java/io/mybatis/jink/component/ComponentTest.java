@@ -215,6 +215,39 @@ class ComponentTest {
     }
 
     @Test
+    void testComponentCanRequestFrameworkExit() {
+        class ExitComponent extends Component<String> {
+            private boolean unmounted;
+
+            ExitComponent() {
+                super("test");
+            }
+
+            @Override
+            public Renderable render() {
+                return Text.of(getState());
+            }
+
+            @Override
+            public void onUnmount() {
+                unmounted = true;
+            }
+
+            void triggerExit() {
+                exit();
+            }
+        }
+
+        ExitComponent component = new ExitComponent();
+        Ink.Instance instance = Ink.render(component, 20, 1);
+
+        component.triggerExit();
+
+        assertFalse(instance.isRunning(), "组件触发退出后实例应停止运行");
+        assertTrue(component.unmounted, "组件触发退出后应执行卸载回调");
+    }
+
+    @Test
     void testStateChangeTriggersRerender() {
         int[] renderCount = new int[]{0};
 

@@ -30,6 +30,7 @@ public abstract class Component<S> implements Renderable {
 
     private S state;
     private Runnable onStateChange;
+    private Runnable onExit;
     private int columns = 80;
     private int rows = 24;
     private int cursorRow = -1;
@@ -69,6 +70,13 @@ public abstract class Component<S> implements Renderable {
     }
 
     /**
+     * 设置退出回调（由 Ink 框架内部调用）
+     */
+    public void setOnExit(Runnable callback) {
+        this.onExit = callback;
+    }
+
+    /**
      * 组件挂载时调用
      */
     public void onMount() {
@@ -84,6 +92,16 @@ public abstract class Component<S> implements Renderable {
      * 键盘输入处理
      */
     public void onInput(String input, Key key) {
+    }
+
+    /**
+     * 请求退出当前应用。
+     * 组件内应优先调用此方法，而不是直接 System.exit(0)。
+     */
+    protected void exit() {
+        if (onExit != null) {
+            onExit.run();
+        }
     }
 
     /**

@@ -155,7 +155,7 @@ public class PromptDemo extends Component<PromptDemo.State> {
                 confirmAndExit(selected);
             }
         } else if (key.escape()) {
-            System.exit(0);
+            exit();
         }
     }
 
@@ -163,7 +163,7 @@ public class PromptDemo extends Component<PromptDemo.State> {
         setState(new State(getState().selectedIndex(), Mode.DONE, "", result));
         Thread t = new Thread(() -> {
             try { Thread.sleep(600); } catch (InterruptedException ignored) {}
-            System.exit(0);
+            exit();
         });
         t.setDaemon(true);
         t.start();

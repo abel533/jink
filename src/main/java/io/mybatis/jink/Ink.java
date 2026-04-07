@@ -37,6 +37,14 @@ import java.io.PrintWriter;
  */
 public class Ink {
 
+    private static final String DISABLE_MOUSE_TRACKING_SEQUENCES =
+            "\u001B[?1000l" + // normal mouse tracking off
+            "\u001B[?1002l" + // button-event tracking off
+            "\u001B[?1003l" + // any-event tracking off
+            "\u001B[?1005l" + // UTF-8 extended mouse off
+            "\u001B[?1006l" + // SGR extended mouse off
+            "\u001B[?1015l";  // URXVT extended mouse off
+
     // ===== 静态渲染 API（无终端交互）=====
 
     /**
@@ -173,6 +181,7 @@ public class Ink {
             if (renderable instanceof Component) {
                 Component<?> component = (Component<?>) renderable;
                 component.setOnStateChange(this::markDirty);
+                component.setOnExit(this::exit);
                 component.onMount();
             }
 
@@ -232,12 +241,6 @@ public class Ink {
                 termWriter.print(io.mybatis.jink.ansi.Ansi.ENABLE_BRACKETED_PASTE);
                 termWriter.flush();
 
-                try {
-                    mouseTrackingEnabled = terminal.trackMouse(Terminal.MouseTracking.Normal);
-                } catch (Exception ignored) {
-                    mouseTrackingEnabled = false;
-                }
-
                 // 监听终端尺寸变化
                 terminal.handle(Terminal.Signal.WINCH, signal -> {
                     Size newSize = terminal.getSize();
@@ -252,7 +255,7 @@ public class Ink {
                 // 因此需要在信号处理器中手动分发 Ctrl+C 到组件。
                 terminal.handle(Terminal.Signal.INT, signal -> {
                     if (exitOnCtrlC) {
-                        running = false;
+                        exit();
                     } else {
                         // 手动构造 Ctrl+C 事件并分发到组件
                         if (rootRenderable instanceof Component) {
@@ -291,6 +294,22 @@ public class Ink {
          */
         public Instance maxFps(int fps) {
             this.maxFps = fps;
+            return this;
+        }
+
+        /**
+         * 启用鼠标追踪。
+         * 默认关闭；只有需要滚轮等鼠标事件的应用才应显式开启。
+         */
+        public Instance enableMouseTracking() {
+            if (!interactive || terminal == null || mouseTrackingEnabled) {
+                return this;
+            }
+            try {
+                mouseTrackingEnabled = terminal.trackMouse(Terminal.MouseTracking.Normal);
+            } catch (Exception ignored) {
+                mouseTrackingEnabled = false;
+            }
             return this;
         }
 
@@ -577,6 +596,7 @@ public class Ink {
          * 退出应用
          */
         public void exit() {
+            if (!running) return;
             running = false;
             if (rootRenderable instanceof Component) {
                 ((Component<?>) rootRenderable).onUnmount();
@@ -607,6 +627,24 @@ public class Ink {
             return drained;
         }
 
+        /** 关闭 JLine 鼠标追踪状态。 */
+        private void disableMouseTracking() {
+            if (terminal == null || !mouseTrackingEnabled) {
+                return;
+            }
+            try {
+                terminal.trackMouse(Terminal.MouseTracking.Off);
+            } catch (Exception ignored) {
+            } finally {
+                mouseTrackingEnabled = false;
+            }
+        }
+
+        /** 向 termWriter 发送全部 VT 鼠标追踪禁用序列（不 flush）。 */
+        private void writeMouseTrackingOffSequences() {
+            termWriter.print(DISABLE_MOUSE_TRACKING_SEQUENCES);
+        }
+
         /**
          * 清理终端资源（幂等，可多次调用）
          */
@@ -619,22 +657,18 @@ public class Ink {
 
             if (terminal != null) {
                 try {
-                    if (mouseTrackingEnabled) {
-                        terminal.trackMouse(Terminal.MouseTracking.Off);
-                    }
-                    // 显式禁用所有鼠标跟踪模式（确保 JLine 内部状态与终端一致）
-                    // 部分终端在启用 Normal 模式时同时启用 SGR 扩展，必须单独关闭
-                    termWriter.print("\u001B[?1000l"); // normal mouse tracking off
-                    termWriter.print("\u001B[?1002l"); // button-event tracking off
-                    termWriter.print("\u001B[?1003l"); // any-event tracking off
-                    termWriter.print("\u001B[?1006l"); // SGR extended mouse off
-                    termWriter.print("\u001B[?1015l"); // URXVT extended mouse off
+                    disableMouseTracking();
+                    // 在备用缓冲区内先关闭所有鼠标跟踪模式
+                    writeMouseTrackingOffSequences();
                     // 禁用 Bracketed Paste Mode
                     termWriter.print(io.mybatis.jink.ansi.Ansi.DISABLE_BRACKETED_PASTE);
                     // 显示光标
                     termWriter.print("\u001B[?25h");
                     // 离开备用屏幕缓冲区（恢复原始终端内容）
                     termWriter.print("\u001B[?1049l");
+                    // 部分终端在退出备用缓冲区时会恢复主屏幕保存的状态（可能含鼠标追踪），
+                    // 因此在退出备用缓冲区之后再次显式禁用一遍
+                    writeMouseTrackingOffSequences();
                     termWriter.flush();
 
                     // 恢复终端属性
@@ -646,6 +680,15 @@ public class Ink {
                 } catch (Exception e) {
                     // 忽略清理错误
                 }
+            }
+
+            // terminal.close() / setAttributes() 在 Windows 上可能通过 Console API 恢复了
+            // 鼠标追踪（ENABLE_MOUSE_INPUT），导致 VT 层面的鼠标序列仍被发送给 shell。
+            // 在 JVM 退出前，通过原始 System.out 再发一遍 VT 禁用序列，作为最后保障。
+            try {
+                System.out.print(DISABLE_MOUSE_TRACKING_SEQUENCES);
+                System.out.flush();
+            } catch (Exception ignored) {
             }
         }
 

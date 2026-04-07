@@ -61,7 +61,10 @@ public class SelectInputDemo extends Component<SelectInputDemo.State> {
     @Override
     public void onInput(String input, Key key) {
         State s = getState();
-        if ("q".equals(input)) System.exit(0);
+        if ("q".equals(input)) {
+            exit();
+            return;
+        }
         if (key.upArrow()) {
             int next = s.selectedIndex() == 0 ? ITEMS.length - 1 : s.selectedIndex() - 1;
             setState(new State(next, s.confirmed()));

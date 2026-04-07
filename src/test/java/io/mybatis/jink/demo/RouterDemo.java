@@ -56,7 +56,8 @@ public class RouterDemo extends Component<RouterDemo.State> {
     @Override
     public void onInput(String input, Key key) {
         if ("q".equals(input)) {
-            System.exit(0);
+            exit();
+            return;
         }
         if (key.return_()) {
             Page next = getState().page() == Page.HOME ? Page.ABOUT : Page.HOME;

@@ -346,6 +346,7 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
 
     public static void main(String[] args) {
         Ink.Instance app = Ink.render(new CopilotDemo());
+        app.enableMouseTracking();
         app.waitUntilExit();
     }
 

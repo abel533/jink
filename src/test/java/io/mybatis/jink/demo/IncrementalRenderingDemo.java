@@ -112,7 +112,10 @@ public class IncrementalRenderingDemo extends Component<IncrementalRenderingDemo
     @Override
     public void onInput(String input, Key key) {
         State s = getState();
-        if ("q".equals(input)) System.exit(0);
+        if ("q".equals(input)) {
+            exit();
+            return;
+        }
         int sel = s.selected();
         if (key.upArrow())   sel = sel == 0 ? SERVICES.length - 1 : sel - 1;
         if (key.downArrow()) sel = sel == SERVICES.length - 1 ? 0 : sel + 1;

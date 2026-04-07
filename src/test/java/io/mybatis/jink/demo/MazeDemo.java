@@ -356,7 +356,10 @@ public class MazeDemo extends Component<MazeDemo.State> {
 
     @Override
     public void onInput(String input, Key key) {
-        if ("q".equals(input)) System.exit(0);
+        if ("q".equals(input)) {
+            exit();
+            return;
+        }
 
         State s = getState();
 

@@ -46,7 +46,8 @@ public class UseInputDemo extends Component<UseInputDemo.State> {
     public void onInput(String input, Key key) {
         State s = getState();
         if ("q".equals(input)) {
-            System.exit(0);
+            exit();
+            return;
         }
         int x = s.x(), y = s.y();
         if (key.leftArrow())  x = Math.max(1, x - 1);

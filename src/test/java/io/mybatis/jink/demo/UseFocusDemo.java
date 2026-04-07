@@ -58,7 +58,8 @@ public class UseFocusDemo extends Component<UseFocusDemo.State> {
     public void onInput(String input, Key key) {
         State s = getState();
         if ("q".equals(input)) {
-            System.exit(0);
+            exit();
+            return;
         } else if (key.escape()) {
             setState(new State(-1));
         } else if (key.upArrow()) {
