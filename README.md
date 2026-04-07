@@ -4,7 +4,7 @@
 
 用声明式的方式构建终端界面：组件树 → Flexbox 布局 → ANSI 渲染 → 键盘交互。
 
-![Java 21+](https://img.shields.io/badge/Java-21%2B-blue)
+![Java 8+](https://img.shields.io/badge/Java-8%2B-blue)
 ![JLine 3](https://img.shields.io/badge/JLine-3.28.0-green)
 ![Tests](https://img.shields.io/badge/Tests-146%20passing-brightgreen)
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
@@ -46,7 +46,7 @@
 
 ## 📦 要求
 
-- **Java 21+**
+- **Java 8+**
 - **Maven 3.6+**
 - 真实终端（Windows Terminal / iTerm2 / GNOME Terminal）
 
@@ -376,7 +376,7 @@ io.mybatis.jink
 | 静态内容 | \<Static\> | Static 组件 |
 | CJK 宽度 | string-width | StringWidth |
 | 终端控制 | 内置 | JLine 3 |
-| 最低版本 | Node.js 18+ | Java 21+ |
+| 最低版本 | Node.js 18+ | Java 8+ |
 
 ---
 

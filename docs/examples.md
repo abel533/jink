@@ -421,7 +421,7 @@ ID      Name                                    Email
 | 文本换行 | wrap-ansi | 内置 `TextWrap` |
 | CJK 宽度 | string-width | 内置宽字符计算 |
 | 终端控制 | 自动 | JLine 3 |
-| 最低版本 | Node.js 18+ | Java 21+ |
+| 最低版本 | Node.js 18+ | Java 8+ |
 
 ---
 

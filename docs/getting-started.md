@@ -4,7 +4,7 @@
 
 ## 环境要求
 
-- **Java 21+**
+- **Java 8+**
 - **Maven 3.6+**
 - 真实终端（Windows Terminal / iTerm2 / GNOME Terminal 等）
 
