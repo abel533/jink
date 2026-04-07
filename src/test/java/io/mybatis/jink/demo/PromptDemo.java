@@ -10,6 +10,7 @@ import io.mybatis.jink.style.BorderStyle;
 import io.mybatis.jink.style.Color;
 import io.mybatis.jink.style.FlexDirection;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -43,7 +44,22 @@ public class PromptDemo extends Component<PromptDemo.State> {
 
     enum Mode { SELECT, INPUT, DONE }
 
-    record State(int selectedIndex, Mode mode, String inputText, String result) {}
+    static final class State {
+        private final int selectedIndex;
+        private final Mode mode;
+        private final String inputText;
+        private final String result;
+        State(int selectedIndex, Mode mode, String inputText, String result) {
+            this.selectedIndex = selectedIndex;
+            this.mode = mode;
+            this.inputText = inputText;
+            this.result = result;
+        }
+        int selectedIndex() { return selectedIndex; }
+        Mode mode() { return mode; }
+        String inputText() { return inputText; }
+        String result() { return result; }
+    }
 
     private final String question;
     private final List<String> options;
@@ -155,7 +171,7 @@ public class PromptDemo extends Component<PromptDemo.State> {
 
     public static void main(String[] args) {
         String question = "接下来要做什么？";
-        List<String> options = List.of(
+        List<String> options = Arrays.asList(
                 "继续当前任务",
                 "查看 ink 示例详解",
                 "查看原有 Demo 详解",

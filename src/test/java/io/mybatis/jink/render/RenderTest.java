@@ -13,7 +13,7 @@ class VirtualScreenTest {
 
     @Test
     void basicWrite() {
-        var screen = new VirtualScreen(10, 3);
+        VirtualScreen screen = new VirtualScreen(10, 3);
         screen.write(0, 0, "Hello");
 
         String output = screen.render();
@@ -23,8 +23,8 @@ class VirtualScreenTest {
 
     @Test
     void writeWithStyle() {
-        var screen = new VirtualScreen(20, 1);
-        var style = Style.builder().bold(true).color(Color.GREEN).build();
+        VirtualScreen screen = new VirtualScreen(20, 1);
+        Style style = Style.builder().bold(true).color(Color.GREEN).build();
         screen.write(0, 0, "Bold Green", style);
 
         String output = screen.render();
@@ -35,7 +35,7 @@ class VirtualScreenTest {
 
     @Test
     void fillArea() {
-        var screen = new VirtualScreen(5, 3);
+        VirtualScreen screen = new VirtualScreen(5, 3);
         screen.fill(0, 0, 5, 3, '#', null);
 
         String output = screen.render();
@@ -46,7 +46,7 @@ class VirtualScreenTest {
 
     @Test
     void clipping() {
-        var screen = new VirtualScreen(10, 3);
+        VirtualScreen screen = new VirtualScreen(10, 3);
         screen.pushClip(2, 0, 5, 2);
         screen.write(0, 0, "0123456789");
         screen.popClip();
@@ -66,10 +66,10 @@ class NodeRendererTest {
 
     @Test
     void renderSimpleText() {
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).build());
 
-        var text = ElementNode.createText();
+        ElementNode text = ElementNode.createText();
         text.appendChild(new TextNode("Hello, World!"));
         root.appendChild(text);
 
@@ -83,7 +83,7 @@ class NodeRendererTest {
 
     @Test
     void renderWithBorder() {
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.COLUMN)
                 .borderStyle(BorderStyle.SINGLE)
@@ -91,7 +91,7 @@ class NodeRendererTest {
                 .height(3)
                 .build());
 
-        var text = ElementNode.createText();
+        ElementNode text = ElementNode.createText();
         text.appendChild(new TextNode("Hi"));
         root.appendChild(text);
 
@@ -114,12 +114,12 @@ class NodeRendererTest {
 
     @Test
     void renderColumnLayout() {
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).build());
 
-        var line1 = ElementNode.createText();
+        ElementNode line1 = ElementNode.createText();
         line1.appendChild(new TextNode("Line 1"));
-        var line2 = ElementNode.createText();
+        ElementNode line2 = ElementNode.createText();
         line2.appendChild(new TextNode("Line 2"));
 
         root.appendChild(line1);
@@ -140,7 +140,7 @@ class NodeRendererTest {
 
     @Test
     void renderWithPadding() {
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.COLUMN)
                 .paddingLeft(2)
@@ -148,7 +148,7 @@ class NodeRendererTest {
                 .width(20)
                 .build());
 
-        var text = ElementNode.createText();
+        ElementNode text = ElementNode.createText();
         text.appendChild(new TextNode("Padded"));
         root.appendChild(text);
 
@@ -159,14 +159,14 @@ class NodeRendererTest {
         String[] lines = stripped.split("\n");
 
         // 第一行应该是空的（paddingTop）
-        assertTrue(lines[0].isBlank());
+        assertTrue(lines[0].trim().isEmpty());
         // 第二行应该有左 padding
         assertTrue(lines[1].startsWith("  Padded"));
     }
 
     @Test
     void renderBackgroundColor() {
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.COLUMN)
                 .backgroundColor(Color.BLUE)
@@ -184,20 +184,20 @@ class NodeRendererTest {
 
     @Test
     void renderNestedBoxes() {
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.COLUMN)
                 .borderStyle(BorderStyle.SINGLE)
                 .width(30)
                 .build());
 
-        var inner = ElementNode.createBox();
+        ElementNode inner = ElementNode.createBox();
         inner.setStyle(Style.builder()
                 .flexDirection(FlexDirection.COLUMN)
                 .borderStyle(BorderStyle.ROUND)
                 .build());
 
-        var text = ElementNode.createText();
+        ElementNode text = ElementNode.createText();
         text.appendChild(new TextNode("Nested"));
         inner.appendChild(text);
         root.appendChild(inner);
@@ -215,10 +215,10 @@ class NodeRendererTest {
     @Test
     void renderTextTruncateEnd() {
         // 10 列宽的容器，放超长文本，TRUNCATE_END 应截断末尾加 …
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).width(10).build());
 
-        var text = ElementNode.createText();
+        ElementNode text = ElementNode.createText();
         text.setStyle(Style.builder().textWrap(TextWrap.TRUNCATE_END).build());
         text.appendChild(new TextNode("Hello World 12345"));
         root.appendChild(text);
@@ -236,10 +236,10 @@ class NodeRendererTest {
 
     @Test
     void renderTextTruncateStart() {
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).width(10).build());
 
-        var text = ElementNode.createText();
+        ElementNode text = ElementNode.createText();
         text.setStyle(Style.builder().textWrap(TextWrap.TRUNCATE_START).build());
         text.appendChild(new TextNode("Hello World 12345"));
         root.appendChild(text);
@@ -257,10 +257,10 @@ class NodeRendererTest {
 
     @Test
     void renderTextTruncateMiddle() {
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).width(10).build());
 
-        var text = ElementNode.createText();
+        ElementNode text = ElementNode.createText();
         text.setStyle(Style.builder().textWrap(TextWrap.TRUNCATE_MIDDLE).build());
         text.appendChild(new TextNode("Hello World 12345"));
         root.appendChild(text);
@@ -279,10 +279,10 @@ class NodeRendererTest {
     @Test
     void renderTextTruncateShortTextNoTruncation() {
         // 文本比容器短时不应截断
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).width(20).build());
 
-        var text = ElementNode.createText();
+        ElementNode text = ElementNode.createText();
         text.setStyle(Style.builder().textWrap(TextWrap.TRUNCATE_END).build());
         text.appendChild(new TextNode("Short"));
         root.appendChild(text);
@@ -299,10 +299,10 @@ class NodeRendererTest {
     @Test
     void renderTextTruncateMultiLine() {
         // 多行文本中，每行独立截断
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).width(10).build());
 
-        var text = ElementNode.createText();
+        ElementNode text = ElementNode.createText();
         text.setStyle(Style.builder().textWrap(TextWrap.TRUNCATE_END).build());
         text.appendChild(new TextNode("Long line one\nLong line two"));
         root.appendChild(text);
@@ -321,10 +321,10 @@ class NodeRendererTest {
     @Test
     void renderTextTruncateOneLine() {
         // 截断模式下，文本高度应为逻辑行数（不换行）
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).width(10).build());
 
-        var text = ElementNode.createText();
+        ElementNode text = ElementNode.createText();
         text.setStyle(Style.builder().textWrap(TextWrap.TRUNCATE_END).build());
         text.appendChild(new TextNode("Hello World 12345")); // 17 字符，但不应换行
         root.appendChild(text);
@@ -337,7 +337,7 @@ class NodeRendererTest {
     @Test
     void renderPerSideBorderColor() {
         // 验证每边独立边框颜色正确渲染
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.COLUMN)
                 .borderStyle(BorderStyle.SINGLE)
@@ -363,7 +363,7 @@ class NodeRendererTest {
     @Test
     void renderBorderColorFallback() {
         // borderColor 作为 fallback，未设置独立颜色的边使用 borderColor
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.COLUMN)
                 .borderStyle(BorderStyle.SINGLE)

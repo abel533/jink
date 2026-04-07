@@ -32,7 +32,7 @@ for /f "tokens=3" %%v in ('java -version 2^>^&1 ^| findstr /i "version"') do (
     if not defined JAVA_VER_RAW set "JAVA_VER_RAW=%%v"
 )
 if not defined JAVA_VER_RAW (
-    echo ^> 未找到 Java，请设置 JINK_JAVA_HOME 或通过第二个参数指定 JDK 21+ 路径
+    echo ^> 未找到 Java，请设置 JINK_JAVA_HOME 或通过第二个参数指定 JDK 8+ 路径
     exit /b 1
 )
 set "JAVA_VER=!JAVA_VER_RAW:"=!"
@@ -40,8 +40,8 @@ for /f "tokens=1 delims=." %%m in ("!JAVA_VER!") do set "JAVA_MAJOR=%%m"
 if "!JAVA_MAJOR!"=="1" (
     for /f "tokens=2 delims=." %%m in ("!JAVA_VER!") do set "JAVA_MAJOR=%%m"
 )
-if !JAVA_MAJOR! LSS 21 (
-    echo ^> 当前 Java !JAVA_MAJOR! ^< 21，请设置 JINK_JAVA_HOME 或通过第二个参数指定 JDK 21+ 路径
+if !JAVA_MAJOR! LSS 8 (
+    echo ^> 当前 Java !JAVA_MAJOR! ^< 8，请设置 JINK_JAVA_HOME 或通过第二个参数指定 JDK 8+ 路径
     exit /b 1
 )
 
@@ -63,9 +63,9 @@ echo [jink] starting %MAIN_CLASS% ...
 echo.
 
 if defined DEPS (
-    "!JAVA_BIN!" --enable-native-access=ALL-UNNAMED -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8 -cp "target\classes;target\test-classes;!DEPS!" %MAIN_CLASS%
+    "!JAVA_BIN!" -Dfile.encoding=UTF-8 -cp "target\classes;target\test-classes;!DEPS!" %MAIN_CLASS%
 ) else (
-    "!JAVA_BIN!" --enable-native-access=ALL-UNNAMED -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8 -cp "target\classes;target\test-classes" %MAIN_CLASS%
+    "!JAVA_BIN!" -Dfile.encoding=UTF-8 -cp "target\classes;target\test-classes" %MAIN_CLASS%
 )
 exit /b %errorlevel%
 

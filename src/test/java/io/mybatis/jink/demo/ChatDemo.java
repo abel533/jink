@@ -25,7 +25,16 @@ import java.util.List;
  */
 public class ChatDemo extends Component<ChatDemo.State> {
 
-    record State(String input, List<String> messages) {}
+    static final class State {
+        private final String input;
+        private final List<String> messages;
+        State(String input, List<String> messages) {
+            this.input = input;
+            this.messages = messages;
+        }
+        String input() { return input; }
+        List<String> messages() { return messages; }
+    }
 
     public ChatDemo() {
         super(new State("", new ArrayList<>()));

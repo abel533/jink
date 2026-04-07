@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # jink 交互式 Demo 启动器
 # 用法: ./run.sh [JDK_HOME]
-#   ./run.sh                        # 使用系统 java（须 >= 21）
-#   ./run.sh /path/to/jdk21         # 指定 JDK 路径
+#   ./run.sh                        # 使用系统 java（须 >= 8）
+#   ./run.sh /path/to/jdk8          # 指定 JDK 路径
 set -euo pipefail
 
 get_java_major() {
@@ -31,15 +31,15 @@ if [[ -n "$JDK_HOME" ]]; then
     echo "[jink] 使用指定 JDK: $JDK_HOME"
 else
     major=$(get_java_major "java" 2>/dev/null || echo 0)
-    if [[ "$major" -ge 21 ]]; then
+    if [[ "$major" -ge 8 ]]; then
         echo "[jink] 使用系统 Java $major"
     else
         if [[ "$major" -eq 0 ]]; then
-            echo "❌ 未找到 Java，请安装 JDK 21+ 或通过参数指定路径："
+            echo "❌ 未找到 Java，请安装 JDK 8+ 或通过参数指定路径："
         else
-            echo "❌ 当前 Java 版本 $major < 21，请通过参数指定 JDK 21+ 路径："
+            echo "❌ 当前 Java 版本 $major < 8，请通过参数指定 JDK 8+ 路径："
         fi
-        echo "   ./run.sh /path/to/jdk21"
+        echo "   ./run.sh /path/to/jdk8"
         exit 1
     fi
 fi
@@ -103,9 +103,6 @@ echo ""
 echo "[jink] 启动 $MAIN_CLASS ..."
 echo ""
 exec "$JAVA_BIN" \
-    --enable-native-access=ALL-UNNAMED \
     -Dfile.encoding=UTF-8 \
-    -Dstdout.encoding=UTF-8 \
-    -Dstderr.encoding=UTF-8 \
     -cp "$CP" \
     "$MAIN_CLASS"

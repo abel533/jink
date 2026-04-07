@@ -85,8 +85,8 @@ public class NodeRenderer {
         } else {
             // 递归渲染子节点
             for (Node child : node.getChildNodes()) {
-                if (child instanceof ElementNode childElem) {
-                    renderNode(childElem, screen, x, y);
+                if (child instanceof ElementNode) {
+                    renderNode((ElementNode) child, screen, x, y);
                 }
             }
         }
@@ -249,81 +249,77 @@ public class NodeRenderer {
         // 容器太窄，只能放省略号
         if (contentW <= 1) {
             if (contentW == 1 && !line.isEmpty()) {
-                screen.write(contentX, curY, ELLIPSIS, line.getFirst().style);
+                screen.write(contentX, curY, ELLIPSIS, line.get(0).style);
             }
             return;
         }
 
         int availW = contentW - ELLIPSIS_WIDTH; // 留 1 列给 "…"
 
-        switch (mode) {
-            case TRUNCATE, TRUNCATE_END -> {
-                // 从头开始取字符，末尾加 …
-                int curX = contentX;
-                Style lastStyle = null;
-                for (StyledCodePoint sc : line) {
-                    if (curX - contentX + sc.displayWidth > availW) break;
-                    screen.write(curX, curY, new String(Character.toChars(sc.codePoint)), sc.style);
-                    lastStyle = sc.style;
-                    curX += sc.displayWidth;
-                }
-                screen.write(curX, curY, ELLIPSIS, lastStyle);
+        if (mode == TextWrap.TRUNCATE || mode == TextWrap.TRUNCATE_END) {
+            // 从头开始取字符，末尾加 …
+            int curX = contentX;
+            Style lastStyle = null;
+            for (StyledCodePoint sc : line) {
+                if (curX - contentX + sc.displayWidth > availW) break;
+                screen.write(curX, curY, new String(Character.toChars(sc.codePoint)), sc.style);
+                lastStyle = sc.style;
+                curX += sc.displayWidth;
             }
-            case TRUNCATE_START -> {
-                // 从末尾取字符，开头加 …
-                int startIdx = line.size();
-                int accWidth = 0;
-                for (int i = line.size() - 1; i >= 0; i--) {
-                    if (accWidth + line.get(i).displayWidth > availW) break;
-                    accWidth += line.get(i).displayWidth;
-                    startIdx = i;
-                }
-                int curX = contentX;
-                screen.write(curX, curY, ELLIPSIS, line.get(startIdx).style);
-                curX += ELLIPSIS_WIDTH;
-                for (int i = startIdx; i < line.size(); i++) {
-                    screen.write(curX, curY, new String(Character.toChars(line.get(i).codePoint)), line.get(i).style);
-                    curX += line.get(i).displayWidth;
-                }
+            screen.write(curX, curY, ELLIPSIS, lastStyle);
+        } else if (mode == TextWrap.TRUNCATE_START) {
+            // 从末尾取字符，开头加 …
+            int startIdx = line.size();
+            int accWidth = 0;
+            for (int i = line.size() - 1; i >= 0; i--) {
+                if (accWidth + line.get(i).displayWidth > availW) break;
+                accWidth += line.get(i).displayWidth;
+                startIdx = i;
             }
-            case TRUNCATE_MIDDLE -> {
-                // 保留首尾，中间加 …
-                int firstHalfW = availW / 2;
-                int secondHalfW = availW - firstHalfW;
-
-                // 前半部分
-                int curX = contentX;
-                int firstEndIdx = 0;
-                int accWidth = 0;
-                for (int i = 0; i < line.size(); i++) {
-                    if (accWidth + line.get(i).displayWidth > firstHalfW) break;
-                    accWidth += line.get(i).displayWidth;
-                    firstEndIdx = i + 1;
-                }
-                for (int i = 0; i < firstEndIdx; i++) {
-                    screen.write(curX, curY, new String(Character.toChars(line.get(i).codePoint)), line.get(i).style);
-                    curX += line.get(i).displayWidth;
-                }
-
-                // 省略号
-                Style midStyle = firstEndIdx > 0 ? line.get(firstEndIdx - 1).style : line.getFirst().style;
-                screen.write(curX, curY, ELLIPSIS, midStyle);
-                curX += ELLIPSIS_WIDTH;
-
-                // 后半部分
-                int lastStartIdx = line.size();
-                accWidth = 0;
-                for (int i = line.size() - 1; i >= 0; i--) {
-                    if (accWidth + line.get(i).displayWidth > secondHalfW) break;
-                    accWidth += line.get(i).displayWidth;
-                    lastStartIdx = i;
-                }
-                for (int i = lastStartIdx; i < line.size(); i++) {
-                    screen.write(curX, curY, new String(Character.toChars(line.get(i).codePoint)), line.get(i).style);
-                    curX += line.get(i).displayWidth;
-                }
+            int curX = contentX;
+            screen.write(curX, curY, ELLIPSIS, line.get(startIdx).style);
+            curX += ELLIPSIS_WIDTH;
+            for (int i = startIdx; i < line.size(); i++) {
+                screen.write(curX, curY, new String(Character.toChars(line.get(i).codePoint)), line.get(i).style);
+                curX += line.get(i).displayWidth;
             }
-            default -> {}
+        } else if (mode == TextWrap.TRUNCATE_MIDDLE) {
+            // 保留首尾，中间加 …
+            int firstHalfW = availW / 2;
+            int secondHalfW = availW - firstHalfW;
+
+            // 前半部分
+            int curX = contentX;
+            int firstEndIdx = 0;
+            int accWidth = 0;
+            for (int i = 0; i < line.size(); i++) {
+                if (accWidth + line.get(i).displayWidth > firstHalfW) break;
+                accWidth += line.get(i).displayWidth;
+                firstEndIdx = i + 1;
+            }
+            for (int i = 0; i < firstEndIdx; i++) {
+                screen.write(curX, curY, new String(Character.toChars(line.get(i).codePoint)), line.get(i).style);
+                curX += line.get(i).displayWidth;
+            }
+
+            // 省略号
+            Style midStyle = firstEndIdx > 0 ? line.get(firstEndIdx - 1).style
+                    : (line.isEmpty() ? null : line.get(0).style);
+            screen.write(curX, curY, ELLIPSIS, midStyle);
+            curX += ELLIPSIS_WIDTH;
+
+            // 后半部分
+            int lastStartIdx = line.size();
+            accWidth = 0;
+            for (int i = line.size() - 1; i >= 0; i--) {
+                if (accWidth + line.get(i).displayWidth > secondHalfW) break;
+                accWidth += line.get(i).displayWidth;
+                lastStartIdx = i;
+            }
+            for (int i = lastStartIdx; i < line.size(); i++) {
+                screen.write(curX, curY, new String(Character.toChars(line.get(i).codePoint)), line.get(i).style);
+                curX += line.get(i).displayWidth;
+            }
         }
     }
 
@@ -334,7 +330,16 @@ public class NodeRenderer {
     /**
      * 带样式的字符（code point + 显示宽度 + 样式）
      */
-    private record StyledCodePoint(int codePoint, int displayWidth, Style style) {}
+    private static final class StyledCodePoint {
+        final int codePoint;
+        final int displayWidth;
+        final Style style;
+        StyledCodePoint(int codePoint, int displayWidth, Style style) {
+            this.codePoint = codePoint;
+            this.displayWidth = displayWidth;
+            this.style = style;
+        }
+    }
 
     /**
      * 将文本片段列表转换为按换行符分割的逻辑行
@@ -367,12 +372,14 @@ public class NodeRenderer {
      */
     private static void collectStyledSpans(Node node, Style inheritedStyle,
                                            List<StyledSpan> spans) {
-        if (node instanceof TextNode tn) {
+        if (node instanceof TextNode) {
+            TextNode tn = (TextNode) node;
             String text = tn.getNodeValue();
             if (text != null && !text.isEmpty()) {
                 spans.add(new StyledSpan(text, inheritedStyle));
             }
-        } else if (node instanceof ElementNode en) {
+        } else if (node instanceof ElementNode) {
+            ElementNode en = (ElementNode) node;
             Style merged = mergeTextStyles(inheritedStyle, en.getStyle());
             for (Node child : en.getChildNodes()) {
                 collectStyledSpans(child, merged, spans);
@@ -400,7 +407,14 @@ public class NodeRenderer {
     /**
      * 文本片段（带样式信息）
      */
-    private record StyledSpan(String text, Style style) {}
+    private static final class StyledSpan {
+        final String text;
+        final Style style;
+        StyledSpan(String text, Style style) {
+            this.text = text;
+            this.style = style;
+        }
+    }
 
     private static boolean isOverflowHidden(Style style) {
         if (style.overflow() == io.mybatis.jink.style.Overflow.HIDDEN) return true;
@@ -419,8 +433,8 @@ public class NodeRenderer {
         // 创建临时屏幕渲染子节点
         VirtualScreen tempScreen = new VirtualScreen(w, h);
         for (Node child : node.getChildNodes()) {
-            if (child instanceof ElementNode childElem) {
-                renderNode(childElem, tempScreen, 0, 0);
+            if (child instanceof ElementNode) {
+                renderNode((ElementNode) child, tempScreen, 0, 0);
             }
         }
 

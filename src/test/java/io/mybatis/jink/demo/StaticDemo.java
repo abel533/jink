@@ -23,7 +23,16 @@ import java.util.concurrent.TimeUnit;
  */
 public class StaticDemo extends Component<StaticDemo.State> {
 
-    record State(List<String> tests, int previousCount) {}
+    static final class State {
+        private final List<String> tests;
+        private final int previousCount;
+        State(List<String> tests, int previousCount) {
+            this.tests = tests;
+            this.previousCount = previousCount;
+        }
+        List<String> tests() { return tests; }
+        int previousCount() { return previousCount; }
+    }
 
     private final ScheduledExecutorService scheduler =
             Executors.newSingleThreadScheduledExecutor(r -> {

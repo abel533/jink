@@ -6,6 +6,7 @@ import io.mybatis.jink.input.Key;
 import io.mybatis.jink.style.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -22,17 +23,39 @@ import java.util.List;
  */
 public class FeatureShowcase extends Component<FeatureShowcase.State> {
 
-    record State(
-            int tab,
-            int counter,
-            String lastKeyName,
-            String lastInput,
-            boolean lastCtrl,
-            boolean lastShift,
-            boolean lastMeta,
-            List<String> logs,
-            boolean consolePatched
-    ) {}
+    static final class State {
+        private final int tab;
+        private final int counter;
+        private final String lastKeyName;
+        private final String lastInput;
+        private final boolean lastCtrl;
+        private final boolean lastShift;
+        private final boolean lastMeta;
+        private final List<String> logs;
+        private final boolean consolePatched;
+        State(int tab, int counter, String lastKeyName, String lastInput,
+              boolean lastCtrl, boolean lastShift, boolean lastMeta,
+              List<String> logs, boolean consolePatched) {
+            this.tab = tab;
+            this.counter = counter;
+            this.lastKeyName = lastKeyName;
+            this.lastInput = lastInput;
+            this.lastCtrl = lastCtrl;
+            this.lastShift = lastShift;
+            this.lastMeta = lastMeta;
+            this.logs = logs;
+            this.consolePatched = consolePatched;
+        }
+        int tab() { return tab; }
+        int counter() { return counter; }
+        String lastKeyName() { return lastKeyName; }
+        String lastInput() { return lastInput; }
+        boolean lastCtrl() { return lastCtrl; }
+        boolean lastShift() { return lastShift; }
+        boolean lastMeta() { return lastMeta; }
+        List<String> logs() { return logs; }
+        boolean consolePatched() { return consolePatched; }
+    }
 
     public FeatureShowcase() {
         super(new State(0, 0, "-", "", false, false, false, new ArrayList<>(), false));
@@ -40,7 +63,7 @@ public class FeatureShowcase extends Component<FeatureShowcase.State> {
 
     @Override
     public void onInput(String input, Key key) {
-        var s = getState();
+        State s = getState();
         // 解析按键名称
         String keyName = resolveKeyName(input, key);
 
@@ -70,7 +93,7 @@ public class FeatureShowcase extends Component<FeatureShowcase.State> {
             newLogs.add("切换到: " + tabLabel(newTab));
         }
         // 保持日志不超过 5 条
-        while (newLogs.size() > 5) newLogs.removeFirst();
+        while (newLogs.size() > 5) newLogs.remove(0);
 
         setState(new State(newTab, newCounter, keyName, input,
                 key.ctrl(), key.shift(), key.meta(), newLogs, patched));
@@ -97,13 +120,13 @@ public class FeatureShowcase extends Component<FeatureShowcase.State> {
     }
 
     private String tabLabel(int tab) {
-        return switch (tab) {
-            case 0 -> "布局";
-            case 1 -> "样式";
-            case 2 -> "交互";
-            case 3 -> "高级";
-            default -> "?";
-        };
+        switch (tab) {
+            case 0: return "布局";
+            case 1: return "样式";
+            case 2: return "交互";
+            case 3: return "高级";
+            default: return "?";
+        }
     }
 
     @Override
@@ -121,7 +144,7 @@ public class FeatureShowcase extends Component<FeatureShowcase.State> {
     // ======================== 页头 ========================
 
     private Renderable renderHeader(int w) {
-        var s = getState();
+        State s = getState();
         String[] labels = {"1:布局", "2:样式", "3:交互", "4:高级"};
         List<Renderable> items = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
@@ -157,13 +180,14 @@ public class FeatureShowcase extends Component<FeatureShowcase.State> {
     // ======================== 页体 ========================
 
     private Renderable renderBody(int w, int h) {
-        Renderable content = switch (getState().tab()) {
-            case 0 -> renderLayoutTab(w);
-            case 1 -> renderStyleTab(w);
-            case 2 -> renderInteractiveTab(w);
-            case 3 -> renderAdvancedTab(w);
-            default -> Box.of();
-        };
+        Renderable content;
+        switch (getState().tab()) {
+            case 0: content = renderLayoutTab(w); break;
+            case 1: content = renderStyleTab(w); break;
+            case 2: content = renderInteractiveTab(w); break;
+            case 3: content = renderAdvancedTab(w); break;
+            default: content = Box.of(); break;
+        }
         return Box.of(content).flexGrow(1);
     }
 
@@ -412,7 +436,7 @@ public class FeatureShowcase extends Component<FeatureShowcase.State> {
     // ================================================================
 
     private Renderable renderInteractiveTab(int w) {
-        var s = getState();
+        State s = getState();
         int half = (w - 2) / 2;
         return Box.of(
                 // 上半部分：计数器 + 按键显示
@@ -428,7 +452,9 @@ public class FeatureShowcase extends Component<FeatureShowcase.State> {
     private Renderable renderCounter(int w, State s) {
         // 构建计数条
         int barLen = Math.min(s.counter(), w - 10);
-        String bar = "█".repeat(barLen);
+        StringBuilder barSb = new StringBuilder();
+        for (int i = 0; i < barLen; i++) barSb.append("█");
+        String bar = barSb.toString();
 
         return Box.of(
                 Text.of("  计数器 (↑↓ 或 +/-)").color(Color.BRIGHT_CYAN).bold(),
@@ -595,7 +621,7 @@ public class FeatureShowcase extends Component<FeatureShowcase.State> {
     }
 
     private Renderable renderStaticDemo(int w) {
-        var s = getState();
+        State s = getState();
         List<String> staticItems = new ArrayList<>();
         staticItems.add("框架名称: jink");
         staticItems.add("当前标签: " + tabLabel(s.tab()));
@@ -642,25 +668,25 @@ public class FeatureShowcase extends Component<FeatureShowcase.State> {
      */
     public static void preview(int width, int height) {
         System.out.println("=== Tab 1: 布局 ===");
-        var demo1 = new FeatureShowcase();
+        FeatureShowcase demo1 = new FeatureShowcase();
         demo1.setTerminalSize(width, height);
         System.out.println(Ink.renderToString(demo1, width, height));
 
         System.out.println("\n=== Tab 2: 样式 ===");
-        var demo2 = new FeatureShowcase();
+        FeatureShowcase demo2 = new FeatureShowcase();
         demo2.setTerminalSize(width, height);
         demo2.setState(new State(1, 0, "-", "", false, false, false, new ArrayList<>(), false));
         System.out.println(Ink.renderToString(demo2, width, height));
 
         System.out.println("\n=== Tab 3: 交互 ===");
-        var demo3 = new FeatureShowcase();
+        FeatureShowcase demo3 = new FeatureShowcase();
         demo3.setTerminalSize(width, height);
         demo3.setState(new State(2, 5, "↑ Up", "+", false, false, false,
-                List.of("切换到: 交互", "按下 +"), false));
+                Arrays.asList("切换到: 交互", "按下 +"), false));
         System.out.println(Ink.renderToString(demo3, width, height));
 
         System.out.println("\n=== Tab 4: 高级 ===");
-        var demo4 = new FeatureShowcase();
+        FeatureShowcase demo4 = new FeatureShowcase();
         demo4.setTerminalSize(width, height);
         demo4.setState(new State(3, 0, "-", "", false, false, false, new ArrayList<>(), false));
         System.out.println(Ink.renderToString(demo4, width, height));

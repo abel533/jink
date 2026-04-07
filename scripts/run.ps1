@@ -1,7 +1,7 @@
 # jink 交互式 Demo 启动器
 # 用法: .\run.ps1 [JDK_HOME]
-#   .\run.ps1                           # 使用系统 java（须 >= 21）
-#   .\run.ps1 C:\Dev\jdk-21.0.10        # 指定 JDK 路径
+#   .\run.ps1                           # 使用系统 java（须 >= 8）
+#   .\run.ps1 C:\Dev\jdk-8              # 指定 JDK 路径
 param([string]$JdkHome = "")
 
 Set-StrictMode -Version Latest
@@ -30,7 +30,7 @@ if ($JdkHome -ne "") {
     Write-Host ("[jink] 使用指定 JDK: {0}" -f $JdkHome) -ForegroundColor Cyan
 } else {
     $major = Get-JavaMajorVersion "java"
-    if ($major -ge 21) {
+    if ($major -ge 8) {
         Write-Host ("[jink] 使用系统 Java {0}" -f $major) -ForegroundColor Green
         # 从 java.exe 路径推导 JAVA_HOME（供 Maven 使用）
         $javaExe = (Get-Command java -ErrorAction SilentlyContinue)?.Source
@@ -41,11 +41,11 @@ if ($JdkHome -ne "") {
         }
     } else {
         if ($major -eq 0) {
-            Write-Host "❌ 未找到 Java，请安装 JDK 21+ 或通过参数指定路径：" -ForegroundColor Red
+            Write-Host "❌ 未找到 Java，请安装 JDK 8+ 或通过参数指定路径：" -ForegroundColor Red
         } else {
-            Write-Host ("❌ 当前 Java 版本 {0} < 21，请通过参数指定 JDK 21+ 路径：" -f $major) -ForegroundColor Red
+            Write-Host ("❌ 当前 Java 版本 {0} < 8，请通过参数指定 JDK 8+ 路径：" -f $major) -ForegroundColor Red
         }
-        Write-Host "   .\run.ps1 C:\path\to\jdk21" -ForegroundColor Yellow
+        Write-Host "   .\run.ps1 C:\path\to\jdk8" -ForegroundColor Yellow
         exit 1
     }
 }
@@ -101,10 +101,7 @@ $mainClass = $classes[$idx]
 Write-Host ("`n[jink] 启动 {0} ..." -f $mainClass) -ForegroundColor Cyan
 Write-Host ''
 & $javaBin `
-    '--enable-native-access=ALL-UNNAMED' `
     '-Dfile.encoding=UTF-8' `
-    '-Dstdout.encoding=UTF-8' `
-    '-Dstderr.encoding=UTF-8' `
     '-cp' $cp `
     $mainClass
 

@@ -85,7 +85,8 @@ public class FlexLayout {
         List<ElementNode> children = new ArrayList<>();
         List<ElementNode> absoluteChildren = new ArrayList<>();
         for (Node child : node.getChildNodes()) {
-            if (child instanceof ElementNode elem) {
+            if (child instanceof ElementNode) {
+                ElementNode elem = (ElementNode) child;
                 if (elem.getStyle().display() != Display.NONE) {
                     if (elem.getStyle().position() == Position.ABSOLUTE) {
                         absoluteChildren.add(elem);
@@ -592,26 +593,25 @@ public class FlexLayout {
         int startOffset = 0;
         int spaceBetweenLines = 0;
 
-        switch (alignContent) {
-            case FLEX_START, STRETCH -> startOffset = 0;
-            case FLEX_END -> startOffset = freeSpace;
-            case CENTER -> startOffset = freeSpace / 2;
-            case SPACE_BETWEEN -> {
-                if (lineCount > 1) spaceBetweenLines = freeSpace / (lineCount - 1);
+        if (alignContent == AlignContent.FLEX_START || alignContent == AlignContent.STRETCH) {
+            startOffset = 0;
+        } else if (alignContent == AlignContent.FLEX_END) {
+            startOffset = freeSpace;
+        } else if (alignContent == AlignContent.CENTER) {
+            startOffset = freeSpace / 2;
+        } else if (alignContent == AlignContent.SPACE_BETWEEN) {
+            if (lineCount > 1) spaceBetweenLines = freeSpace / (lineCount - 1);
+        } else if (alignContent == AlignContent.SPACE_AROUND) {
+            if (lineCount > 0) {
+                int eachSide = freeSpace / (lineCount * 2);
+                startOffset = eachSide;
+                spaceBetweenLines = eachSide * 2;
             }
-            case SPACE_AROUND -> {
-                if (lineCount > 0) {
-                    int eachSide = freeSpace / (lineCount * 2);
-                    startOffset = eachSide;
-                    spaceBetweenLines = eachSide * 2;
-                }
-            }
-            case SPACE_EVENLY -> {
-                if (lineCount > 0) {
-                    int each = freeSpace / (lineCount + 1);
-                    startOffset = each;
-                    spaceBetweenLines = each;
-                }
+        } else if (alignContent == AlignContent.SPACE_EVENLY) {
+            if (lineCount > 0) {
+                int each = freeSpace / (lineCount + 1);
+                startOffset = each;
+                spaceBetweenLines = each;
             }
         }
 
@@ -645,18 +645,16 @@ public class FlexLayout {
                 int lineFreeSpace = Math.max(0, lineSize - childCross);
 
                 AlignItems itemAlign = cs.alignSelf() != null ? cs.alignSelf() : alignItems;
-                int crossOffset = switch (itemAlign) {
-                    case FLEX_START -> 0;
-                    case CENTER -> lineFreeSpace / 2;
-                    case FLEX_END -> lineFreeSpace;
-                    case STRETCH -> 0;
-                    case BASELINE -> {
-                        if (lineHasBaseline && crossAxisIsVertical) {
-                            yield lineMaxBaseline - computeBaseline(child);
-                        }
-                        yield 0;
-                    }
-                };
+                int crossOffset;
+                if (itemAlign == AlignItems.CENTER) {
+                    crossOffset = lineFreeSpace / 2;
+                } else if (itemAlign == AlignItems.FLEX_END) {
+                    crossOffset = lineFreeSpace;
+                } else if (itemAlign == AlignItems.BASELINE && lineHasBaseline && crossAxisIsVertical) {
+                    crossOffset = lineMaxBaseline - computeBaseline(child);
+                } else {
+                    crossOffset = 0;
+                }
 
                 if (crossAxisIsVertical) {
                     child.setComputedTop(pos + crossOffset + cs.marginTop());
@@ -684,28 +682,25 @@ public class FlexLayout {
         int offset = 0;
         int spaceBetween = 0;
 
-        switch (justify) {
-            case FLEX_START -> offset = 0;
-            case FLEX_END -> offset = freeSpace;
-            case CENTER -> offset = freeSpace / 2;
-            case SPACE_BETWEEN -> {
-                if (children.size() > 1) {
-                    spaceBetween = freeSpace / (children.size() - 1);
-                }
+        if (justify == JustifyContent.FLEX_END) {
+            offset = freeSpace;
+        } else if (justify == JustifyContent.CENTER) {
+            offset = freeSpace / 2;
+        } else if (justify == JustifyContent.SPACE_BETWEEN) {
+            if (children.size() > 1) {
+                spaceBetween = freeSpace / (children.size() - 1);
             }
-            case SPACE_AROUND -> {
-                if (!children.isEmpty()) {
-                    int space = freeSpace / children.size();
-                    offset = space / 2;
-                    spaceBetween = space;
-                }
+        } else if (justify == JustifyContent.SPACE_AROUND) {
+            if (!children.isEmpty()) {
+                int space = freeSpace / children.size();
+                offset = space / 2;
+                spaceBetween = space;
             }
-            case SPACE_EVENLY -> {
-                if (!children.isEmpty()) {
-                    int space = freeSpace / (children.size() + 1);
-                    offset = space;
-                    spaceBetween = space;
-                }
+        } else if (justify == JustifyContent.SPACE_EVENLY) {
+            if (!children.isEmpty()) {
+                int space = freeSpace / (children.size() + 1);
+                offset = space;
+                spaceBetween = space;
             }
         }
 
@@ -771,29 +766,26 @@ public class FlexLayout {
             int availCross = crossSize > 0 ? crossSize : childCrossSize;
             int freeSpace = Math.max(0, availCross - childCrossSize - childMargin);
 
-            int crossPos = switch (selfAlign) {
-                case FLEX_START -> marginBefore;
-                case CENTER -> marginBefore + freeSpace / 2;
-                case FLEX_END -> marginBefore + freeSpace;
-                case STRETCH -> {
-                    if (crossSize > 0) {
-                        if (crossAxisIsVertical) {
-                            child.setComputedHeight(crossSize - childMargin);
-                        } else {
-                            child.setComputedWidth(crossSize - childMargin);
-                        }
+            int crossPos;
+            if (selfAlign == AlignItems.CENTER) {
+                crossPos = marginBefore + freeSpace / 2;
+            } else if (selfAlign == AlignItems.FLEX_END) {
+                crossPos = marginBefore + freeSpace;
+            } else if (selfAlign == AlignItems.STRETCH) {
+                if (crossSize > 0) {
+                    if (crossAxisIsVertical) {
+                        child.setComputedHeight(crossSize - childMargin);
+                    } else {
+                        child.setComputedWidth(crossSize - childMargin);
                     }
-                    yield marginBefore;
                 }
-                case BASELINE -> {
-                    if (hasBaseline && crossAxisIsVertical) {
-                        // 对齐基线：child.top = maxBaseline - childBaseline + marginTop
-                        int childBaseline = computeBaseline(child);
-                        yield marginBefore + (maxBaseline - childBaseline);
-                    }
-                    yield marginBefore;
-                }
-            };
+                crossPos = marginBefore;
+            } else if (selfAlign == AlignItems.BASELINE && hasBaseline && crossAxisIsVertical) {
+                int childBaseline = computeBaseline(child);
+                crossPos = marginBefore + (maxBaseline - childBaseline);
+            } else {
+                crossPos = marginBefore;
+            }
 
             if (crossAxisIsVertical) {
                 child.setComputedTop(crossPos);
@@ -919,10 +911,11 @@ public class FlexLayout {
      * 递归收集文本节点的所有文本内容（对应 ink 的 squashTextNodes）
      */
     public static String squashTextContent(Node node) {
-        if (node instanceof TextNode textNode) {
-            return textNode.getNodeValue();
+        if (node instanceof TextNode) {
+            return ((TextNode) node).getNodeValue();
         }
-        if (node instanceof ElementNode elem) {
+        if (node instanceof ElementNode) {
+            ElementNode elem = (ElementNode) node;
             StringBuilder sb = new StringBuilder();
             for (Node child : elem.getChildNodes()) {
                 sb.append(squashTextContent(child));
@@ -964,7 +957,8 @@ public class FlexLayout {
         int maxChild = 0;
         int childCount = 0;
         for (Node child : node.getChildNodes()) {
-            if (child instanceof ElementNode elem && elem.getStyle().display() != Display.NONE) {
+            if (child instanceof ElementNode && ((ElementNode)child).getStyle().display() != Display.NONE) {
+                ElementNode elem = (ElementNode) child;
                 int childIntrinsic = measureIntrinsicWidth(elem) + elem.getStyle().horizontalMargin();
                 if (isColumn) {
                     maxChild = Math.max(maxChild, childIntrinsic);
@@ -1003,7 +997,8 @@ public class FlexLayout {
 
         // Box 节点：查找第一个子 ElementNode 并递归
         for (Node child : node.getChildNodes()) {
-            if (child instanceof ElementNode elem && elem.getStyle().display() != Display.NONE) {
+            if (child instanceof ElementNode && ((ElementNode)child).getStyle().display() != Display.NONE) {
+                ElementNode elem = (ElementNode) child;
                 return borderTop + paddingTop + elem.getComputedTop() + computeBaseline(elem);
             }
         }

@@ -7,6 +7,7 @@ import io.mybatis.jink.style.*;
 import io.mybatis.jink.util.StringWidth;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -18,11 +19,19 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
     /** 提示符宽度（"❯ " = 2 字符），续行缩进用 */
     private static final int PROMPT_WIDTH = 2;
 
-    record State(
-            String inputText,
-            List<String> messages,
-            int scrollOffset
-    ) {}
+    static final class State {
+        private final String inputText;
+        private final List<String> messages;
+        private final int scrollOffset;
+        State(String inputText, List<String> messages, int scrollOffset) {
+            this.inputText = inputText;
+            this.messages = messages;
+            this.scrollOffset = scrollOffset;
+        }
+        String inputText() { return inputText; }
+        List<String> messages() { return messages; }
+        int scrollOffset() { return scrollOffset; }
+    }
 
     /** 输入历史记录 */
     private final List<String> inputHistory = new ArrayList<>();
@@ -32,7 +41,7 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
     private String savedInput = "";
 
     public CopilotDemo() {
-        super(new State("", List.of(), 0));
+        super(new State("", Collections.emptyList(), 0));
     }
 
     @Override
@@ -168,7 +177,9 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
         String left = System.getProperty("user.dir", ".") + " (" + w + "x" + h + ")";
         String right = "Jink 0.1.0 (Java 21)";
         int pad = w - left.length() - right.length() - 2;
-        String middle = pad > 0 ? " ".repeat(pad) : " ";
+        StringBuilder middleSb = new StringBuilder();
+        for (int i = 0; i < (pad > 0 ? pad : 1); i++) middleSb.append(" ");
+        String middle = middleSb.toString();
 
         return Box.of(
                 Text.of(left).dimmed(),
@@ -201,8 +212,10 @@ public class CopilotDemo extends Component<CopilotDemo.State> {
      * 水平分隔线（浅灰色 ─ 线）
      */
     private Renderable separator(int w) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < Math.max(0, w - 2); i++) sb.append("─");
         return Box.of(
-                Text.of("─".repeat(Math.max(0, w - 2))).color(Color.BRIGHT_BLACK)
+                Text.of(sb.toString()).color(Color.BRIGHT_BLACK)
         ).paddingX(1);
     }
 

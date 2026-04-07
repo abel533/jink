@@ -126,7 +126,7 @@ class ComponentTest {
 
     @Test
     void testStatefulComponent() {
-        var counter = new Component<Integer>(0) {
+        Component<Integer> counter = new Component<Integer>(0) {
             @Override
             public Renderable render() {
                 return Box.of(
@@ -186,10 +186,10 @@ class ComponentTest {
 
     @Test
     void testComponentLifecycle() {
-        var mounted = new boolean[]{false};
-        var unmounted = new boolean[]{false};
+        boolean[] mounted = new boolean[]{false};
+        boolean[] unmounted = new boolean[]{false};
 
-        var component = new Component<String>("test") {
+        Component<String> component = new Component<String>("test") {
             @Override
             public Renderable render() {
                 return Text.of(getState());
@@ -216,9 +216,9 @@ class ComponentTest {
 
     @Test
     void testStateChangeTriggersRerender() {
-        var renderCount = new int[]{0};
+        int[] renderCount = new int[]{0};
 
-        var component = new Component<Integer>(0) {
+        Component<Integer> component = new Component<Integer>(0) {
             @Override
             public Renderable render() {
                 renderCount[0]++;

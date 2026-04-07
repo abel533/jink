@@ -170,14 +170,15 @@ public class Ink {
             }
 
             // 注册有状态组件的回调
-            if (renderable instanceof Component<?> component) {
+            if (renderable instanceof Component) {
+                Component<?> component = (Component<?>) renderable;
                 component.setOnStateChange(this::markDirty);
                 component.onMount();
             }
 
             // 注册可聚焦组件
-            if (renderable instanceof Focusable focusable) {
-                focusManager.register(focusable);
+            if (renderable instanceof Focusable) {
+                focusManager.register((Focusable) renderable);
             }
 
             // 首次渲染
@@ -254,9 +255,9 @@ public class Ink {
                         running = false;
                     } else {
                         // 手动构造 Ctrl+C 事件并分发到组件
-                        if (rootRenderable instanceof Component<?> component) {
-                            var result = KeyParser.parseControlChar(0x03);
-                            component.onInput(result.inputText(), result.toKey());
+                        if (rootRenderable instanceof Component) {
+                            KeyParser.ParseResult result = KeyParser.parseControlChar(0x03);
+                            ((Component<?>) rootRenderable).onInput(result.inputText(), result.toKey());
                         }
                     }
                 });
@@ -318,8 +319,8 @@ public class Ink {
             if (!running) return;
 
             // 通知组件当前终端尺寸
-            if (rootRenderable instanceof Component<?> component) {
-                component.setTerminalSize(width, height);
+            if (rootRenderable instanceof Component) {
+                ((Component<?>) rootRenderable).setTerminalSize(width, height);
             }
 
             ElementNode root = buildDomTree(rootRenderable, width);
@@ -336,7 +337,8 @@ public class Ink {
             }
 
             // 光标定位（每次渲染后都需要更新，即使输出没变）
-            if (interactive && termWriter != null && rootRenderable instanceof Component<?> comp) {
+            if (interactive && termWriter != null && rootRenderable instanceof Component) {
+                Component<?> comp = (Component<?>) rootRenderable;
                 int cRow = comp.getCursorRow();
                 int cCol = comp.getCursorCol();
                 if (cRow >= 0 && cCol >= 0) {
@@ -561,7 +563,8 @@ public class Ink {
             }
 
             // 分发到组件
-            if (rootRenderable instanceof Component<?> component) {
+            if (rootRenderable instanceof Component) {
+                Component<?> component = (Component<?>) rootRenderable;
                 if (result.isPaste()) {
                     component.onPaste(input);
                 } else {
@@ -575,8 +578,8 @@ public class Ink {
          */
         public void exit() {
             running = false;
-            if (rootRenderable instanceof Component<?> component) {
-                component.onUnmount();
+            if (rootRenderable instanceof Component) {
+                ((Component<?>) rootRenderable).onUnmount();
             }
         }
 

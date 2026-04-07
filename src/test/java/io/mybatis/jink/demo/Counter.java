@@ -36,7 +36,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class Counter extends Component<Counter.State> {
 
-    record State(int count) {}
+    static final class State {
+        private final int count;
+        State(int count) { this.count = count; }
+        int count() { return count; }
+    }
 
     private final ScheduledExecutorService scheduler =
             Executors.newSingleThreadScheduledExecutor(r -> {

@@ -27,7 +27,11 @@ import java.util.List;
  */
 public class SubprocessOutputDemo extends Component<SubprocessOutputDemo.State> {
 
-    record State(List<String> lines) {}
+    static final class State {
+        private final List<String> lines;
+        State(List<String> lines) { this.lines = lines; }
+        List<String> lines() { return lines; }
+    }
 
     public SubprocessOutputDemo() {
         super(new State(new ArrayList<>()));

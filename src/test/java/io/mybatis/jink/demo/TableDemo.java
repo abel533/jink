@@ -19,7 +19,19 @@ import io.mybatis.jink.style.FlexDirection;
  */
 public class TableDemo {
 
-    record User(int id, String name, String email) {}
+    static final class User {
+        private final int id;
+        private final String name;
+        private final String email;
+        User(int id, String name, String email) {
+            this.id = id;
+            this.name = name;
+            this.email = email;
+        }
+        int id() { return id; }
+        String name() { return name; }
+        String email() { return email; }
+    }
 
     private static final User[] USERS = {
         new User(0, "alice_dev",    "alice@example.com"),

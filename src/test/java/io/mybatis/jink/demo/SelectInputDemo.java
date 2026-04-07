@@ -27,7 +27,16 @@ public class SelectInputDemo extends Component<SelectInputDemo.State> {
 
     private static final String[] ITEMS = {"Red", "Green", "Blue", "Yellow", "Magenta", "Cyan"};
 
-    record State(int selectedIndex, String confirmed) {}
+    static final class State {
+        private final int selectedIndex;
+        private final String confirmed;
+        State(int selectedIndex, String confirmed) {
+            this.selectedIndex = selectedIndex;
+            this.confirmed = confirmed;
+        }
+        int selectedIndex() { return selectedIndex; }
+        String confirmed() { return confirmed; }
+    }
 
     public SelectInputDemo() {
         super(new State(0, null));

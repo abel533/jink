@@ -40,7 +40,28 @@ public class IncrementalRenderingDemo extends Component<IncrementalRenderingDemo
     private static final String[] ACTIONS = {"PROCESSING", "COMPLETED", "UPDATING", "SYNCING"};
     private static final Random RAND = new Random();
 
-    record State(int p1, int p2, int p3, int counter, int selected, List<String> logs) {}
+    static final class State {
+        private final int p1;
+        private final int p2;
+        private final int p3;
+        private final int counter;
+        private final int selected;
+        private final List<String> logs;
+        State(int p1, int p2, int p3, int counter, int selected, List<String> logs) {
+            this.p1 = p1;
+            this.p2 = p2;
+            this.p3 = p3;
+            this.counter = counter;
+            this.selected = selected;
+            this.logs = logs;
+        }
+        int p1() { return p1; }
+        int p2() { return p2; }
+        int p3() { return p3; }
+        int counter() { return counter; }
+        int selected() { return selected; }
+        List<String> logs() { return logs; }
+    }
 
     private final ScheduledExecutorService scheduler =
             Executors.newSingleThreadScheduledExecutor(r -> {
@@ -100,7 +121,10 @@ public class IncrementalRenderingDemo extends Component<IncrementalRenderingDemo
 
     private static String bar(int v) {
         int filled = v / 5;
-        return "█".repeat(filled) + "░".repeat(20 - filled);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < filled; i++) sb.append("█");
+        for (int i = 0; i < 20 - filled; i++) sb.append("░");
+        return sb.toString();
     }
 
     @Override

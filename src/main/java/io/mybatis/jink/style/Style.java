@@ -2,86 +2,204 @@ package io.mybatis.jink.style;
 
 /**
  * 样式定义，对应 ink 的 Styles。
- * 使用不可变 record 模式，通过 Builder 构建。
+ * 使用不可变类模式，通过 Builder 构建。
  * 包含所有 Flexbox 布局属性和文本样式属性。
  */
-public record Style(
-        // Flex 容器属性
-        FlexDirection flexDirection,
-        JustifyContent justifyContent,
-        AlignItems alignItems,
-        AlignItems alignSelf,
-        AlignContent alignContent,
-        FlexWrap flexWrap,
+public final class Style {
+    // Flex 容器属性
+    private final FlexDirection flexDirection;
+    private final JustifyContent justifyContent;
+    private final AlignItems alignItems;
+    private final AlignItems alignSelf;
+    private final AlignContent alignContent;
+    private final FlexWrap flexWrap;
 
-        // Flex 项目属性
-        int flexGrow,
-        int flexShrink,
-        int flexBasis,
+    // Flex 项目属性
+    private final int flexGrow;
+    private final int flexShrink;
+    private final int flexBasis;
 
-        // 尺寸
-        int width,
-        int height,
-        int minWidth,
-        int minHeight,
-        int maxWidth,
-        int maxHeight,
-        float aspectRatio,
+    // 尺寸
+    private final int width;
+    private final int height;
+    private final int minWidth;
+    private final int minHeight;
+    private final int maxWidth;
+    private final int maxHeight;
+    private final float aspectRatio;
 
-        // 定位
-        Position position,
-        int posTop,
-        int posRight,
-        int posBottom,
-        int posLeft,
+    // 定位
+    private final Position position;
+    private final int posTop;
+    private final int posRight;
+    private final int posBottom;
+    private final int posLeft;
 
-        // 内边距
-        int paddingTop,
-        int paddingRight,
-        int paddingBottom,
-        int paddingLeft,
+    // 内边距
+    private final int paddingTop;
+    private final int paddingRight;
+    private final int paddingBottom;
+    private final int paddingLeft;
 
-        // 外边距
-        int marginTop,
-        int marginRight,
-        int marginBottom,
-        int marginLeft,
+    // 外边距
+    private final int marginTop;
+    private final int marginRight;
+    private final int marginBottom;
+    private final int marginLeft;
 
-        // 间距
-        int gap,
-        int columnGap,
-        int rowGap,
+    // 间距
+    private final int gap;
+    private final int columnGap;
+    private final int rowGap;
 
-        // 边框
-        BorderStyle borderStyle,
-        Color borderColor,
-        Color borderTopColor,
-        Color borderRightColor,
-        Color borderBottomColor,
-        Color borderLeftColor,
-        boolean borderDimColor,
-        boolean borderTopDimColor,
-        boolean borderRightDimColor,
-        boolean borderBottomDimColor,
-        boolean borderLeftDimColor,
+    // 边框
+    private final BorderStyle borderStyle;
+    private final Color borderColor;
+    private final Color borderTopColor;
+    private final Color borderRightColor;
+    private final Color borderBottomColor;
+    private final Color borderLeftColor;
+    private final boolean borderDimColor;
+    private final boolean borderTopDimColor;
+    private final boolean borderRightDimColor;
+    private final boolean borderBottomDimColor;
+    private final boolean borderLeftDimColor;
 
-        // 显示
-        Display display,
-        Overflow overflow,
-        Overflow overflowX,
-        Overflow overflowY,
+    // 显示
+    private final Display display;
+    private final Overflow overflow;
+    private final Overflow overflowX;
+    private final Overflow overflowY;
 
-        // 文本
-        TextWrap textWrap,
-        Color color,
-        Color backgroundColor,
-        boolean bold,
-        boolean italic,
-        boolean underline,
-        boolean strikethrough,
-        boolean inverse,
-        boolean dimmed
-) {
+    // 文本
+    private final TextWrap textWrap;
+    private final Color color;
+    private final Color backgroundColor;
+    private final boolean bold;
+    private final boolean italic;
+    private final boolean underline;
+    private final boolean strikethrough;
+    private final boolean inverse;
+    private final boolean dimmed;
+
+    // 全参构造器（由 Builder 调用）
+    private Style(Builder b) {
+        this.flexDirection = b.flexDirection;
+        this.justifyContent = b.justifyContent;
+        this.alignItems = b.alignItems;
+        this.alignSelf = b.alignSelf;
+        this.alignContent = b.alignContent;
+        this.flexWrap = b.flexWrap;
+        this.flexGrow = b.flexGrow;
+        this.flexShrink = b.flexShrink;
+        this.flexBasis = b.flexBasis;
+        this.width = b.width;
+        this.height = b.height;
+        this.minWidth = b.minWidth;
+        this.minHeight = b.minHeight;
+        this.maxWidth = b.maxWidth;
+        this.maxHeight = b.maxHeight;
+        this.aspectRatio = b.aspectRatio;
+        this.position = b.position;
+        this.posTop = b.posTop;
+        this.posRight = b.posRight;
+        this.posBottom = b.posBottom;
+        this.posLeft = b.posLeft;
+        this.paddingTop = b.paddingTop;
+        this.paddingRight = b.paddingRight;
+        this.paddingBottom = b.paddingBottom;
+        this.paddingLeft = b.paddingLeft;
+        this.marginTop = b.marginTop;
+        this.marginRight = b.marginRight;
+        this.marginBottom = b.marginBottom;
+        this.marginLeft = b.marginLeft;
+        this.gap = b.gap;
+        this.columnGap = b.columnGap;
+        this.rowGap = b.rowGap;
+        this.borderStyle = b.borderStyle;
+        this.borderColor = b.borderColor;
+        this.borderTopColor = b.borderTopColor;
+        this.borderRightColor = b.borderRightColor;
+        this.borderBottomColor = b.borderBottomColor;
+        this.borderLeftColor = b.borderLeftColor;
+        this.borderDimColor = b.borderDimColor;
+        this.borderTopDimColor = b.borderTopDimColor;
+        this.borderRightDimColor = b.borderRightDimColor;
+        this.borderBottomDimColor = b.borderBottomDimColor;
+        this.borderLeftDimColor = b.borderLeftDimColor;
+        this.display = b.display;
+        this.overflow = b.overflow;
+        this.overflowX = b.overflowX;
+        this.overflowY = b.overflowY;
+        this.textWrap = b.textWrap;
+        this.color = b.color;
+        this.backgroundColor = b.backgroundColor;
+        this.bold = b.bold;
+        this.italic = b.italic;
+        this.underline = b.underline;
+        this.strikethrough = b.strikethrough;
+        this.inverse = b.inverse;
+        this.dimmed = b.dimmed;
+    }
+
+    // ===== Getters =====
+
+    public FlexDirection flexDirection()   { return flexDirection; }
+    public JustifyContent justifyContent() { return justifyContent; }
+    public AlignItems alignItems()         { return alignItems; }
+    public AlignItems alignSelf()          { return alignSelf; }
+    public AlignContent alignContent()     { return alignContent; }
+    public FlexWrap flexWrap()             { return flexWrap; }
+    public int flexGrow()                  { return flexGrow; }
+    public int flexShrink()                { return flexShrink; }
+    public int flexBasis()                 { return flexBasis; }
+    public int width()                     { return width; }
+    public int height()                    { return height; }
+    public int minWidth()                  { return minWidth; }
+    public int minHeight()                 { return minHeight; }
+    public int maxWidth()                  { return maxWidth; }
+    public int maxHeight()                 { return maxHeight; }
+    public float aspectRatio()             { return aspectRatio; }
+    public Position position()             { return position; }
+    public int posTop()                    { return posTop; }
+    public int posRight()                  { return posRight; }
+    public int posBottom()                 { return posBottom; }
+    public int posLeft()                   { return posLeft; }
+    public int paddingTop()                { return paddingTop; }
+    public int paddingRight()              { return paddingRight; }
+    public int paddingBottom()             { return paddingBottom; }
+    public int paddingLeft()               { return paddingLeft; }
+    public int marginTop()                 { return marginTop; }
+    public int marginRight()               { return marginRight; }
+    public int marginBottom()              { return marginBottom; }
+    public int marginLeft()                { return marginLeft; }
+    public int gap()                       { return gap; }
+    public int columnGap()                 { return columnGap; }
+    public int rowGap()                    { return rowGap; }
+    public BorderStyle borderStyle()       { return borderStyle; }
+    public Color borderColor()             { return borderColor; }
+    public Color borderTopColor()          { return borderTopColor; }
+    public Color borderRightColor()        { return borderRightColor; }
+    public Color borderBottomColor()       { return borderBottomColor; }
+    public Color borderLeftColor()         { return borderLeftColor; }
+    public boolean borderDimColor()        { return borderDimColor; }
+    public boolean borderTopDimColor()     { return borderTopDimColor; }
+    public boolean borderRightDimColor()   { return borderRightDimColor; }
+    public boolean borderBottomDimColor()  { return borderBottomDimColor; }
+    public boolean borderLeftDimColor()    { return borderLeftDimColor; }
+    public Display display()               { return display; }
+    public Overflow overflow()             { return overflow; }
+    public Overflow overflowX()            { return overflowX; }
+    public Overflow overflowY()            { return overflowY; }
+    public TextWrap textWrap()             { return textWrap; }
+    public Color color()                   { return color; }
+    public Color backgroundColor()         { return backgroundColor; }
+    public boolean bold()                  { return bold; }
+    public boolean italic()                { return italic; }
+    public boolean underline()             { return underline; }
+    public boolean strikethrough()         { return strikethrough; }
+    public boolean inverse()               { return inverse; }
+    public boolean dimmed()                { return dimmed; }
     /** 使用 -1 表示 "auto"（未设置） */
     public static final int AUTO = -1;
 
@@ -414,20 +532,7 @@ public record Style(
         public Builder dimmed(boolean v) { this.dimmed = v; return this; }
 
         public Style build() {
-            return new Style(
-                    flexDirection, justifyContent, alignItems, alignSelf, alignContent, flexWrap,
-                    flexGrow, flexShrink, flexBasis,
-                    width, height, minWidth, minHeight, maxWidth, maxHeight, aspectRatio,
-                    position, posTop, posRight, posBottom, posLeft,
-                    paddingTop, paddingRight, paddingBottom, paddingLeft,
-                    marginTop, marginRight, marginBottom, marginLeft,
-                    gap, columnGap, rowGap,
-                    borderStyle, borderColor, borderTopColor, borderRightColor, borderBottomColor, borderLeftColor,
-                    borderDimColor, borderTopDimColor, borderRightDimColor, borderBottomDimColor, borderLeftDimColor,
-                    display, overflow, overflowX, overflowY,
-                    textWrap, color, backgroundColor,
-                    bold, italic, underline, strikethrough, inverse, dimmed
-            );
+            return new Style(this);
         }
     }
 }

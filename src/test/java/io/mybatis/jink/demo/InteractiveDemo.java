@@ -9,6 +9,7 @@ import io.mybatis.jink.input.Key;
 import io.mybatis.jink.style.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -20,15 +21,25 @@ import java.util.List;
  */
 public class InteractiveDemo extends Component<InteractiveDemo.State> {
 
-    record State(
-            String inputText,
-            int cursorPos,
-            List<String> messages,
-            int selectedIndex
-    ) {}
+    static final class State {
+        private final String inputText;
+        private final int cursorPos;
+        private final List<String> messages;
+        private final int selectedIndex;
+        State(String inputText, int cursorPos, List<String> messages, int selectedIndex) {
+            this.inputText = inputText;
+            this.cursorPos = cursorPos;
+            this.messages = messages;
+            this.selectedIndex = selectedIndex;
+        }
+        String inputText() { return inputText; }
+        int cursorPos() { return cursorPos; }
+        List<String> messages() { return messages; }
+        int selectedIndex() { return selectedIndex; }
+    }
 
     public InteractiveDemo() {
-        super(new State("", 0, List.of(
+        super(new State("", 0, Arrays.asList(
                 "● Welcome to Jink Interactive Demo!",
                 "● Type something and press Enter to add a message",
                 "● Use ↑↓ to select messages, Backspace to delete",

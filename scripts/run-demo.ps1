@@ -2,7 +2,7 @@
 # Usage: .\run-demo.ps1 [main-class] [JDK_HOME]
 # Example: .\run-demo.ps1
 #          .\run-demo.ps1 io.mybatis.jink.demo.SimpleDemo
-#          .\run-demo.ps1 io.mybatis.jink.demo.SimpleDemo C:\Dev\jdk-21
+#          .\run-demo.ps1 io.mybatis.jink.demo.SimpleDemo C:\Dev\jdk-8
 param(
     [string]$MainClass = 'io.mybatis.jink.demo.Counter',
     [string]$JdkHome   = ''
@@ -43,11 +43,11 @@ if ($JdkHome -ne "") {
     $env:PATH = "$env:JINK_JAVA_HOME\bin;$env:PATH"
 } else {
     $major = Get-JavaMajorVersion "java"
-    if ($major -lt 21) {
+    if ($major -lt 8) {
         if ($major -eq 0) {
-            Write-Host "❌ 未找到 Java，请设置 JINK_JAVA_HOME 或通过第二个参数指定 JDK 21+ 路径" -ForegroundColor Red
+            Write-Host "❌ 未找到 Java，请设置 JINK_JAVA_HOME 或通过第二个参数指定 JDK 8+ 路径" -ForegroundColor Red
         } else {
-            Write-Host ("❌ 当前 Java {0} < 21，请设置 JINK_JAVA_HOME 或通过第二个参数指定 JDK 21+ 路径" -f $major) -ForegroundColor Red
+            Write-Host ("❌ 当前 Java {0} < 8，请设置 JINK_JAVA_HOME 或通过第二个参数指定 JDK 8+ 路径" -f $major) -ForegroundColor Red
         }
         exit 1
     }
@@ -83,10 +83,7 @@ Write-Host ('[jink] starting {0} ...' -f $MainClass) -ForegroundColor Cyan
 Write-Host ''
 
 & $javaBin `
-    '--enable-native-access=ALL-UNNAMED' `
     '-Dfile.encoding=UTF-8' `
-    '-Dstdout.encoding=UTF-8' `
-    '-Dstderr.encoding=UTF-8' `
     '-cp' $cp `
     $MainClass
 

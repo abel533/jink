@@ -32,13 +32,13 @@ public class Text implements Renderable {
     public static Text of(Object... contents) {
         Text text = new Text();
         for (Object content : contents) {
-            if (content instanceof String s) {
-                text.children.add(s);
-            } else if (content instanceof Text t) {
-                text.children.add(t);
-            } else if (content instanceof Renderable r) {
+            if (content instanceof String) {
+                text.children.add((String) content);
+            } else if (content instanceof Text) {
+                text.children.add((Text) content);
+            } else if (content instanceof Renderable) {
                 // 其他 Renderable（如 Newline）直接作为子元素
-                text.children.add(r);
+                text.children.add((Renderable) content);
             } else {
                 text.children.add(String.valueOf(content));
             }
@@ -114,12 +114,12 @@ public class Text implements Renderable {
         node.setStyle(style.build());
 
         for (Object child : children) {
-            if (child instanceof String s) {
-                node.appendChild(new TextNode(s));
-            } else if (child instanceof Text text) {
-                node.appendChild(text.toNode(true));
-            } else if (child instanceof Renderable r) {
-                node.appendChild(r.toNode());
+            if (child instanceof String) {
+                node.appendChild(new TextNode((String) child));
+            } else if (child instanceof Text) {
+                node.appendChild(((Text) child).toNode(true));
+            } else if (child instanceof Renderable) {
+                node.appendChild(((Renderable) child).toNode());
             }
         }
         return node;

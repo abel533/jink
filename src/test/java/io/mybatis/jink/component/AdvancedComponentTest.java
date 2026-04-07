@@ -5,6 +5,7 @@ import io.mybatis.jink.style.Color;
 import io.mybatis.jink.style.FlexDirection;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,7 +20,7 @@ class AdvancedComponentTest {
     @Test
     void spacerPushesToEdges() {
         // Spacer 应把两个 Text 推到左右两端
-        var ui = Box.of(
+        Box ui = Box.of(
                 Text.of("L"),
                 Spacer.create(),
                 Text.of("R")
@@ -28,13 +29,13 @@ class AdvancedComponentTest {
         String output = Ink.renderToString(ui, 10, 1);
         String stripped = output.replaceAll("\u001B\\[[^m]*m", "");
         assertTrue(stripped.startsWith("L"), "应以 L 开头: " + stripped);
-        assertTrue(stripped.stripTrailing().endsWith("R"), "应以 R 结尾: " + stripped);
+        assertTrue(stripped.replaceAll("\\s+$", "").endsWith("R"), "应以 R 结尾: " + stripped);
         assertEquals(10, stripped.length(), "宽度应为10");
     }
 
     @Test
     void spacerInColumn() {
-        var ui = Box.of(
+        Box ui = Box.of(
                 Text.of("Top"),
                 Spacer.create(),
                 Text.of("Bottom")
@@ -52,7 +53,7 @@ class AdvancedComponentTest {
 
     @Test
     void newlineInsertsLineBreak() {
-        var ui = Text.of("A", Newline.create(), "B");
+        Text ui = Text.of("A", Newline.create(), "B");
         String output = Ink.renderToString(ui, 20, 3);
         String stripped = output.replaceAll("\u001B\\[[^m]*m", "");
         assertTrue(stripped.contains("A"), "应包含 A");
@@ -63,7 +64,7 @@ class AdvancedComponentTest {
 
     @Test
     void newlineMultipleCount() {
-        var ui = Text.of("A", Newline.create(3), "B");
+        Text ui = Text.of("A", Newline.create(3), "B");
         String output = Ink.renderToString(ui, 20, 6);
         String stripped = output.replaceAll("\u001B\\[[^m]*m", "");
         String[] lines = stripped.split("\n", -1);
@@ -75,7 +76,7 @@ class AdvancedComponentTest {
 
     @Test
     void transformUpperCase() {
-        var ui = Transform.of(Text.of("hello world"))
+        Transform ui = Transform.of(Text.of("hello world"))
                 .transform((line, idx) -> line.toUpperCase());
 
         String output = Ink.renderToString(ui, 20, 1);
@@ -86,7 +87,7 @@ class AdvancedComponentTest {
 
     @Test
     void transformWithIndex() {
-        var ui = Transform.of(
+        Transform ui = Transform.of(
                 Box.of(
                         Text.of("line0"),
                         Text.of("line1"),
@@ -104,8 +105,8 @@ class AdvancedComponentTest {
 
     @Test
     void staticRendersAllItems() {
-        var items = List.of("log1", "log2", "log3");
-        var ui = Static.<String>of(items)
+        List<String> items = Arrays.asList("log1", "log2", "log3");
+        Static<String> ui = Static.<String>of(items)
                 .render((item, idx) -> Text.of("[" + idx + "] " + item));
 
         String output = Ink.renderToString(ui, 30, 5);
@@ -117,9 +118,9 @@ class AdvancedComponentTest {
 
     @Test
     void staticSkipsPreviousItems() {
-        var items = List.of("old1", "old2", "new1");
+        List<String> items = Arrays.asList("old1", "old2", "new1");
         // previousCount=2: 只渲染索引 2 开始的项
-        var ui = Static.<String>of(items, 2)
+        Static<String> ui = Static.<String>of(items, 2)
                 .render((item, idx) -> Text.of(item));
 
         String output = Ink.renderToString(ui, 20, 3);
@@ -131,8 +132,8 @@ class AdvancedComponentTest {
 
     @Test
     void staticItemCount() {
-        var items = List.of("a", "b", "c");
-        var staticComp = Static.<String>of(items)
+        List<String> items = Arrays.asList("a", "b", "c");
+        Static<String> staticComp = Static.<String>of(items)
                 .render((item, idx) -> Text.of(item));
         assertEquals(3, staticComp.getItemCount());
     }
@@ -141,11 +142,11 @@ class AdvancedComponentTest {
 
     @Test
     void focusManagerRegisterAndNavigate() {
-        var fm = new FocusManager();
+        FocusManager fm = new FocusManager();
 
-        var f1 = new TestFocusable("input1", false);
-        var f2 = new TestFocusable("input2", false);
-        var f3 = new TestFocusable("input3", false);
+        TestFocusable f1 = new TestFocusable("input1", false);
+        TestFocusable f2 = new TestFocusable("input2", false);
+        TestFocusable f3 = new TestFocusable("input3", false);
 
         fm.register(f1);
         fm.register(f2);
@@ -174,7 +175,7 @@ class AdvancedComponentTest {
 
     @Test
     void focusManagerPrevious() {
-        var fm = new FocusManager();
+        FocusManager fm = new FocusManager();
         fm.register(new TestFocusable("a", false));
         fm.register(new TestFocusable("b", false));
         fm.register(new TestFocusable("c", false));
@@ -196,7 +197,7 @@ class AdvancedComponentTest {
 
     @Test
     void focusManagerAutoFocus() {
-        var fm = new FocusManager();
+        FocusManager fm = new FocusManager();
         fm.register(new TestFocusable("normal", false));
         assertNull(fm.getActiveFocusId());
 
@@ -206,7 +207,7 @@ class AdvancedComponentTest {
 
     @Test
     void focusManagerDeactivate() {
-        var fm = new FocusManager();
+        FocusManager fm = new FocusManager();
         fm.register(new TestFocusable("a", false));
         fm.register(new TestFocusable("b", false));
         fm.register(new TestFocusable("c", false));
@@ -227,7 +228,7 @@ class AdvancedComponentTest {
 
     @Test
     void focusManagerUnregister() {
-        var fm = new FocusManager();
+        FocusManager fm = new FocusManager();
         fm.register(new TestFocusable("x", false));
         fm.register(new TestFocusable("y", false));
 
@@ -241,7 +242,7 @@ class AdvancedComponentTest {
 
     @Test
     void focusManagerDisable() {
-        var fm = new FocusManager();
+        FocusManager fm = new FocusManager();
         fm.register(new TestFocusable("a", false));
 
         fm.disableFocus();
@@ -256,7 +257,7 @@ class AdvancedComponentTest {
     @Test
     void shiftTabParsedCorrectly() {
         // ESC[Z 是 Shift+Tab 的转义序列
-        var result = io.mybatis.jink.input.KeyParser.parseEscapeSequence("[Z");
+        io.mybatis.jink.input.KeyParser.ParseResult result = io.mybatis.jink.input.KeyParser.parseEscapeSequence("[Z");
         assertEquals("tab", result.name());
         assertTrue(result.shift(), "应包含 shift 修饰");
     }

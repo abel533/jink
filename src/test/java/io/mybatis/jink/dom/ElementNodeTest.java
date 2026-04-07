@@ -9,7 +9,7 @@ class ElementNodeTest {
 
     @Test
     void createRoot() {
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         assertEquals("ink-root", root.nodeName());
         assertEquals(NodeType.INK_ROOT, root.getNodeType());
         assertEquals(0, root.getChildCount());
@@ -18,9 +18,9 @@ class ElementNodeTest {
 
     @Test
     void appendChild() {
-        var parent = ElementNode.createBox();
-        var child1 = ElementNode.createBox();
-        var child2 = ElementNode.createText();
+        ElementNode parent = ElementNode.createBox();
+        ElementNode child1 = ElementNode.createBox();
+        ElementNode child2 = ElementNode.createText();
 
         parent.appendChild(child1);
         parent.appendChild(child2);
@@ -34,10 +34,10 @@ class ElementNodeTest {
 
     @Test
     void insertBefore() {
-        var parent = ElementNode.createBox();
-        var child1 = ElementNode.createBox();
-        var child2 = ElementNode.createBox();
-        var child3 = ElementNode.createBox();
+        ElementNode parent = ElementNode.createBox();
+        ElementNode child1 = ElementNode.createBox();
+        ElementNode child2 = ElementNode.createBox();
+        ElementNode child3 = ElementNode.createBox();
 
         parent.appendChild(child1);
         parent.appendChild(child3);
@@ -51,8 +51,8 @@ class ElementNodeTest {
 
     @Test
     void removeChild() {
-        var parent = ElementNode.createBox();
-        var child = ElementNode.createText();
+        ElementNode parent = ElementNode.createBox();
+        ElementNode child = ElementNode.createText();
 
         parent.appendChild(child);
         assertEquals(1, parent.getChildCount());
@@ -64,7 +64,7 @@ class ElementNodeTest {
 
     @Test
     void clearChildren() {
-        var parent = ElementNode.createBox();
+        ElementNode parent = ElementNode.createBox();
         parent.appendChild(ElementNode.createBox());
         parent.appendChild(new TextNode("hello"));
         parent.appendChild(ElementNode.createText());
@@ -76,9 +76,9 @@ class ElementNodeTest {
 
     @Test
     void reparenting() {
-        var parent1 = ElementNode.createBox();
-        var parent2 = ElementNode.createBox();
-        var child = ElementNode.createBox();
+        ElementNode parent1 = ElementNode.createBox();
+        ElementNode parent2 = ElementNode.createBox();
+        ElementNode child = ElementNode.createBox();
 
         parent1.appendChild(child);
         assertSame(parent1, child.getParentNode());
@@ -93,16 +93,16 @@ class ElementNodeTest {
 
     @Test
     void walk() {
-        var root = ElementNode.createRoot();
-        var box = ElementNode.createBox();
-        var text = ElementNode.createText();
-        var textNode = new TextNode("hello");
+        ElementNode root = ElementNode.createRoot();
+        ElementNode box = ElementNode.createBox();
+        ElementNode text = ElementNode.createText();
+        TextNode textNode = new TextNode("hello");
 
         root.appendChild(box);
         box.appendChild(text);
         text.appendChild(textNode);
 
-        var visited = new java.util.ArrayList<Node>();
+        java.util.ArrayList<Node> visited = new java.util.ArrayList<Node>();
         root.walk(visited::add);
 
         assertEquals(3, visited.size());
@@ -113,14 +113,14 @@ class ElementNodeTest {
 
     @Test
     void attributes() {
-        var node = ElementNode.createBox();
+        ElementNode node = ElementNode.createBox();
         node.setAttribute("key", "value");
         assertEquals("value", node.getAttribute("key"));
     }
 
     @Test
     void computedLayout() {
-        var node = ElementNode.createBox();
+        ElementNode node = ElementNode.createBox();
         node.setComputedWidth(80);
         node.setComputedHeight(24);
         node.setComputedLeft(5);
@@ -134,8 +134,8 @@ class ElementNodeTest {
 
     @Test
     void layoutListeners() {
-        var node = ElementNode.createRoot();
-        var called = new boolean[]{false};
+        ElementNode node = ElementNode.createRoot();
+        boolean[] called = new boolean[]{false};
 
         node.addLayoutListener(() -> called[0] = true);
         assertFalse(called[0]);
@@ -146,10 +146,10 @@ class ElementNodeTest {
 
     @Test
     void isInsideText() {
-        var root = ElementNode.createRoot();
-        var text = ElementNode.createText();
-        var virtualText = ElementNode.createVirtualText();
-        var textNode = new TextNode("hello");
+        ElementNode root = ElementNode.createRoot();
+        ElementNode text = ElementNode.createText();
+        ElementNode virtualText = ElementNode.createVirtualText();
+        TextNode textNode = new TextNode("hello");
 
         root.appendChild(text);
         text.appendChild(virtualText);

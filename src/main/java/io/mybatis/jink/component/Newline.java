@@ -28,7 +28,11 @@ public class Newline implements Renderable {
     @Override
     public ElementNode toNode() {
         ElementNode node = ElementNode.createVirtualText();
-        node.appendChild(new TextNode("\n".repeat(count)));
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < count; i++) {
+            sb.append('\n');
+        }
+        node.appendChild(new TextNode(sb.toString()));
         return node;
     }
 }

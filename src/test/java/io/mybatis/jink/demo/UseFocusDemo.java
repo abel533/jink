@@ -27,7 +27,11 @@ public class UseFocusDemo extends Component<UseFocusDemo.State> {
 
     private static final String[] ITEMS = {"First", "Second", "Third"};
 
-    record State(int focusIndex) {}
+    static final class State {
+        private final int focusIndex;
+        State(int focusIndex) { this.focusIndex = focusIndex; }
+        int focusIndex() { return focusIndex; }
+    }
 
     public UseFocusDemo() {
         super(new State(-1));

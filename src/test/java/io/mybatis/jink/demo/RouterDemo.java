@@ -24,7 +24,11 @@ public class RouterDemo extends Component<RouterDemo.State> {
 
     enum Page { HOME, ABOUT }
 
-    record State(Page page) {}
+    static final class State {
+        private final Page page;
+        State(Page page) { this.page = page; }
+        Page page() { return page; }
+    }
 
     public RouterDemo() {
         super(new State(Page.HOME));

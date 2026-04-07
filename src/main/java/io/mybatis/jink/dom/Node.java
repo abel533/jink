@@ -11,7 +11,7 @@ import java.util.Objects;
  * 虚拟 DOM 节点基类，对应 ink 的 InkNode。
  * 所有节点（元素节点、文本节点）的公共父类。
  */
-public abstract sealed class Node permits ElementNode, TextNode {
+public abstract class Node {
 
     protected ElementNode parentNode;
     protected Style style;

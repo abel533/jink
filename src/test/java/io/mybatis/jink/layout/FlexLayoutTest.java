@@ -11,8 +11,8 @@ class FlexLayoutTest {
 
     @Test
     void singleBoxFullWidth() {
-        var root = ElementNode.createRoot();
-        var box = ElementNode.createBox();
+        ElementNode root = ElementNode.createRoot();
+        ElementNode box = ElementNode.createBox();
         root.appendChild(box);
 
         FlexLayout.calculateLayout(root, 80);
@@ -23,12 +23,12 @@ class FlexLayoutTest {
 
     @Test
     void columnDirectionStacksVertically() {
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).build());
 
-        var child1 = ElementNode.createBox();
+        ElementNode child1 = ElementNode.createBox();
         child1.setStyle(Style.builder().height(3).build());
-        var child2 = ElementNode.createBox();
+        ElementNode child2 = ElementNode.createBox();
         child2.setStyle(Style.builder().height(5).build());
 
         root.appendChild(child1);
@@ -45,12 +45,12 @@ class FlexLayoutTest {
 
     @Test
     void rowDirectionSideBySide() {
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder().flexDirection(FlexDirection.ROW).build());
 
-        var child1 = ElementNode.createBox();
+        ElementNode child1 = ElementNode.createBox();
         child1.setStyle(Style.builder().width(20).height(3).build());
-        var child2 = ElementNode.createBox();
+        ElementNode child2 = ElementNode.createBox();
         child2.setStyle(Style.builder().width(30).height(5).build());
 
         root.appendChild(child1);
@@ -66,12 +66,12 @@ class FlexLayoutTest {
 
     @Test
     void flexGrowDistribution() {
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder().flexDirection(FlexDirection.ROW).build());
 
-        var child1 = ElementNode.createBox();
+        ElementNode child1 = ElementNode.createBox();
         child1.setStyle(Style.builder().flexGrow(1).height(3).build());
-        var child2 = ElementNode.createBox();
+        ElementNode child2 = ElementNode.createBox();
         child2.setStyle(Style.builder().flexGrow(1).height(3).build());
 
         root.appendChild(child1);
@@ -86,13 +86,13 @@ class FlexLayoutTest {
 
     @Test
     void paddingAffectsContentArea() {
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.COLUMN)
                 .padding(2)
                 .build());
 
-        var child = ElementNode.createBox();
+        ElementNode child = ElementNode.createBox();
         child.setStyle(Style.builder().height(3).build());
         root.appendChild(child);
 
@@ -107,13 +107,13 @@ class FlexLayoutTest {
 
     @Test
     void borderAffectsLayout() {
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.COLUMN)
                 .borderStyle(BorderStyle.SINGLE)
                 .build());
 
-        var child = ElementNode.createBox();
+        ElementNode child = ElementNode.createBox();
         child.setStyle(Style.builder().height(3).build());
         root.appendChild(child);
 
@@ -128,14 +128,14 @@ class FlexLayoutTest {
 
     @Test
     void displayNoneSkipsLayout() {
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).build());
 
-        var child1 = ElementNode.createBox();
+        ElementNode child1 = ElementNode.createBox();
         child1.setStyle(Style.builder().height(3).build());
-        var hidden = ElementNode.createBox();
+        ElementNode hidden = ElementNode.createBox();
         hidden.setStyle(Style.builder().display(Display.NONE).height(5).build());
-        var child2 = ElementNode.createBox();
+        ElementNode child2 = ElementNode.createBox();
         child2.setStyle(Style.builder().height(4).build());
 
         root.appendChild(child1);
@@ -152,10 +152,10 @@ class FlexLayoutTest {
 
     @Test
     void textNodeMeasurement() {
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).build());
 
-        var text = ElementNode.createText();
+        ElementNode text = ElementNode.createText();
         text.appendChild(new TextNode("Hello, World!"));
         root.appendChild(text);
 
@@ -166,11 +166,11 @@ class FlexLayoutTest {
 
     @Test
     void textNodeWrapping() {
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).build());
 
         // 创建超长文本
-        var text = ElementNode.createText();
+        ElementNode text = ElementNode.createText();
         text.appendChild(new TextNode("A".repeat(200)));
         root.appendChild(text);
 
@@ -182,13 +182,13 @@ class FlexLayoutTest {
 
     @Test
     void justifyContentCenter() {
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.ROW)
                 .justifyContent(JustifyContent.CENTER)
                 .build());
 
-        var child = ElementNode.createBox();
+        ElementNode child = ElementNode.createBox();
         child.setStyle(Style.builder().width(20).height(3).build());
         root.appendChild(child);
 
@@ -199,15 +199,15 @@ class FlexLayoutTest {
 
     @Test
     void justifyContentSpaceBetween() {
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.ROW)
                 .justifyContent(JustifyContent.SPACE_BETWEEN)
                 .build());
 
-        var child1 = ElementNode.createBox();
+        ElementNode child1 = ElementNode.createBox();
         child1.setStyle(Style.builder().width(10).height(3).build());
-        var child2 = ElementNode.createBox();
+        ElementNode child2 = ElementNode.createBox();
         child2.setStyle(Style.builder().width(10).height(3).build());
 
         root.appendChild(child1);
@@ -221,15 +221,15 @@ class FlexLayoutTest {
 
     @Test
     void gapBetweenChildren() {
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.COLUMN)
                 .gap(1)
                 .build());
 
-        var child1 = ElementNode.createBox();
+        ElementNode child1 = ElementNode.createBox();
         child1.setStyle(Style.builder().height(3).build());
-        var child2 = ElementNode.createBox();
+        ElementNode child2 = ElementNode.createBox();
         child2.setStyle(Style.builder().height(4).build());
 
         root.appendChild(child1);
@@ -243,9 +243,9 @@ class FlexLayoutTest {
 
     @Test
     void squashTextContent() {
-        var text = ElementNode.createText();
+        ElementNode text = ElementNode.createText();
         text.appendChild(new TextNode("Hello"));
-        var virtualText = ElementNode.createVirtualText();
+        ElementNode virtualText = ElementNode.createVirtualText();
         virtualText.appendChild(new TextNode(" World"));
         text.appendChild(virtualText);
 
@@ -254,19 +254,19 @@ class FlexLayoutTest {
 
     @Test
     void nestedLayout() {
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).build());
 
-        var header = ElementNode.createBox();
+        ElementNode header = ElementNode.createBox();
         header.setStyle(Style.builder()
                 .height(3)
                 .borderStyle(BorderStyle.SINGLE)
                 .build());
-        var headerText = ElementNode.createText();
+        ElementNode headerText = ElementNode.createText();
         headerText.appendChild(new TextNode("Header"));
         header.appendChild(headerText);
 
-        var body = ElementNode.createBox();
+        ElementNode body = ElementNode.createBox();
         body.setStyle(Style.builder().flexGrow(1).build());
 
         root.appendChild(header);
@@ -285,10 +285,10 @@ class FlexLayoutTest {
     @Test
     void percentWidth() {
         // 子节点宽度 50%，容器 100 列
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder().flexDirection(FlexDirection.ROW).build());
 
-        var child = ElementNode.createBox();
+        ElementNode child = ElementNode.createBox();
         child.setStyle(Style.builder().widthPercent(50).height(1).build());
         root.appendChild(child);
 
@@ -300,12 +300,12 @@ class FlexLayoutTest {
     @Test
     void percentWidthTwoChildren() {
         // 两个子节点各 30%，容器 100 列
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder().flexDirection(FlexDirection.ROW).build());
 
-        var child1 = ElementNode.createBox();
+        ElementNode child1 = ElementNode.createBox();
         child1.setStyle(Style.builder().widthPercent(30).height(1).build());
-        var child2 = ElementNode.createBox();
+        ElementNode child2 = ElementNode.createBox();
         child2.setStyle(Style.builder().widthPercent(30).height(1).build());
 
         root.appendChild(child1);
@@ -334,13 +334,13 @@ class FlexLayoutTest {
     @Test
     void percentHeight() {
         // 容器高度 20，子节点高度 50%
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.COLUMN)
                 .height(20)
                 .build());
 
-        var child = ElementNode.createBox();
+        ElementNode child = ElementNode.createBox();
         child.setStyle(Style.builder().heightPercent(50).build());
         root.appendChild(child);
 
@@ -354,13 +354,13 @@ class FlexLayoutTest {
     @Test
     void absolutePositionLeft() {
         // 绝对定位子节点，left=5, top=3
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.COLUMN)
                 .width(40).height(20)
                 .build());
 
-        var absChild = ElementNode.createBox();
+        ElementNode absChild = ElementNode.createBox();
         absChild.setStyle(Style.builder()
                 .position(Position.ABSOLUTE)
                 .posLeft(5).posTop(3)
@@ -379,13 +379,13 @@ class FlexLayoutTest {
     @Test
     void absolutePositionRight() {
         // right=0 → 贴右边
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.COLUMN)
                 .width(40).height(20)
                 .build());
 
-        var absChild = ElementNode.createBox();
+        ElementNode absChild = ElementNode.createBox();
         absChild.setStyle(Style.builder()
                 .position(Position.ABSOLUTE)
                 .posRight(0).posBottom(0)
@@ -404,23 +404,23 @@ class FlexLayoutTest {
     @Test
     void absoluteDoesNotAffectFlexLayout() {
         // 绝对定位子节点不影响 flex 布局
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.COLUMN)
                 .width(40)
                 .build());
 
-        var flexChild = ElementNode.createBox();
+        ElementNode flexChild = ElementNode.createBox();
         flexChild.setStyle(Style.builder().height(5).build());
 
-        var absChild = ElementNode.createBox();
+        ElementNode absChild = ElementNode.createBox();
         absChild.setStyle(Style.builder()
                 .position(Position.ABSOLUTE)
                 .posLeft(0).posTop(0)
                 .width(20).height(20)
                 .build());
 
-        var flexChild2 = ElementNode.createBox();
+        ElementNode flexChild2 = ElementNode.createBox();
         flexChild2.setStyle(Style.builder().height(3).build());
 
         root.appendChild(flexChild);
@@ -442,18 +442,18 @@ class FlexLayoutTest {
     @Test
     void flexWrapRowBasic() {
         // 3 个 15 列宽子节点在 40 列容器中，第 3 个应换行
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.ROW)
                 .flexWrap(Style.FlexWrap.WRAP)
                 .width(40)
                 .build());
 
-        var c1 = ElementNode.createBox();
+        ElementNode c1 = ElementNode.createBox();
         c1.setStyle(Style.builder().width(15).height(3).build());
-        var c2 = ElementNode.createBox();
+        ElementNode c2 = ElementNode.createBox();
         c2.setStyle(Style.builder().width(15).height(3).build());
-        var c3 = ElementNode.createBox();
+        ElementNode c3 = ElementNode.createBox();
         c3.setStyle(Style.builder().width(15).height(4).build());
 
         root.appendChild(c1);
@@ -476,18 +476,18 @@ class FlexLayoutTest {
     @Test
     void flexWrapRowAllFit() {
         // 所有子节点都在一行内，不应换行
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.ROW)
                 .flexWrap(Style.FlexWrap.WRAP)
                 .width(40)
                 .build());
 
-        var c1 = ElementNode.createBox();
+        ElementNode c1 = ElementNode.createBox();
         c1.setStyle(Style.builder().width(10).height(3).build());
-        var c2 = ElementNode.createBox();
+        ElementNode c2 = ElementNode.createBox();
         c2.setStyle(Style.builder().width(10).height(3).build());
-        var c3 = ElementNode.createBox();
+        ElementNode c3 = ElementNode.createBox();
         c3.setStyle(Style.builder().width(10).height(3).build());
 
         root.appendChild(c1);
@@ -508,16 +508,16 @@ class FlexLayoutTest {
     @Test
     void flexWrapRowHeight() {
         // 验证换行后容器高度正确
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.ROW)
                 .flexWrap(Style.FlexWrap.WRAP)
                 .width(30)
                 .build());
 
-        var c1 = ElementNode.createBox();
+        ElementNode c1 = ElementNode.createBox();
         c1.setStyle(Style.builder().width(20).height(5).build());
-        var c2 = ElementNode.createBox();
+        ElementNode c2 = ElementNode.createBox();
         c2.setStyle(Style.builder().width(20).height(3).build());
 
         root.appendChild(c1);
@@ -534,7 +534,7 @@ class FlexLayoutTest {
     @Test
     void alignContentCenter() {
         // 容器高 20，两行总高 6 (3+3)，CENTER 应使起始偏移 = (20-6)/2 = 7
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.ROW)
                 .flexWrap(Style.FlexWrap.WRAP)
@@ -543,9 +543,9 @@ class FlexLayoutTest {
                 .height(20)
                 .build());
 
-        var c1 = ElementNode.createBox();
+        ElementNode c1 = ElementNode.createBox();
         c1.setStyle(Style.builder().width(15).height(3).build());
-        var c2 = ElementNode.createBox();
+        ElementNode c2 = ElementNode.createBox();
         c2.setStyle(Style.builder().width(15).height(3).build());
 
         root.appendChild(c1);
@@ -561,7 +561,7 @@ class FlexLayoutTest {
     @Test
     void alignContentSpaceBetween() {
         // 容器高 20，两行总高 6，SPACE_BETWEEN: 第一行 top=0，第二行 top=20-3=17
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.ROW)
                 .flexWrap(Style.FlexWrap.WRAP)
@@ -570,9 +570,9 @@ class FlexLayoutTest {
                 .height(20)
                 .build());
 
-        var c1 = ElementNode.createBox();
+        ElementNode c1 = ElementNode.createBox();
         c1.setStyle(Style.builder().width(15).height(3).build());
-        var c2 = ElementNode.createBox();
+        ElementNode c2 = ElementNode.createBox();
         c2.setStyle(Style.builder().width(15).height(3).build());
 
         root.appendChild(c1);
@@ -588,7 +588,7 @@ class FlexLayoutTest {
     @Test
     void alignContentStretch() {
         // 容器高 20，两行总高 6，STRETCH: 每行多分 7 高度
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.ROW)
                 .flexWrap(Style.FlexWrap.WRAP)
@@ -598,9 +598,9 @@ class FlexLayoutTest {
                 .height(20)
                 .build());
 
-        var c1 = ElementNode.createBox();
+        ElementNode c1 = ElementNode.createBox();
         c1.setStyle(Style.builder().width(15).height(3).build());
-        var c2 = ElementNode.createBox();
+        ElementNode c2 = ElementNode.createBox();
         c2.setStyle(Style.builder().width(15).height(3).build());
 
         root.appendChild(c1);
@@ -624,18 +624,18 @@ class FlexLayoutTest {
         // c1: paddingTop=2, 文本 "A" → baseline=3 (padding 2 + 行高 1)
         // c2: paddingTop=0, 文本 "B" → baseline=1
         // 最大基线=3，c2 应下移 2
-        var root = ElementNode.createRoot();
+        ElementNode root = ElementNode.createRoot();
         root.setStyle(Style.builder()
                 .flexDirection(FlexDirection.ROW)
                 .alignItems(AlignItems.BASELINE)
                 .width(40)
                 .build());
 
-        var c1 = ElementNode.createText();
+        ElementNode c1 = ElementNode.createText();
         c1.setStyle(Style.builder().paddingTop(2).build());
         c1.appendChild(new TextNode("A"));
 
-        var c2 = ElementNode.createText();
+        ElementNode c2 = ElementNode.createText();
         c2.setStyle(Style.builder().paddingTop(0).build());
         c2.appendChild(new TextNode("B"));
 
@@ -654,7 +654,7 @@ class FlexLayoutTest {
     @Test
     void computeBaselineTextNode() {
         // 直接测试 computeBaseline 方法
-        var text = ElementNode.createText();
+        ElementNode text = ElementNode.createText();
         text.setStyle(Style.builder().paddingTop(3).build());
         text.appendChild(new TextNode("Hello"));
 

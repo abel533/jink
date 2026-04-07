@@ -2,8 +2,8 @@
 setlocal enabledelayedexpansion
 :: jink 交互式 Demo 启动器
 :: 用法: run.cmd [JDK_HOME]
-::   run.cmd                     （使用系统 java，须 >= 21）
-::   run.cmd C:\Dev\jdk-21       （指定 JDK 路径）
+::   run.cmd                     （使用系统 java，须 >= 8）
+::   run.cmd C:\Dev\jdk-8        （指定 JDK 路径）
 
 chcp 65001 >nul 2>&1
 cd /d "%~dp0\.."
@@ -26,11 +26,11 @@ for /f "tokens=3" %%v in ('java -version 2^>^&1 ^| findstr /i "version"') do (
     if not defined JAVA_VER_RAW set "JAVA_VER_RAW=%%v"
 )
 if not defined JAVA_VER_RAW (
-    echo ^> 未找到 Java，请安装 JDK 21+ 或通过参数指定路径：
-    echo    run.cmd C:\path\to\jdk21
+    echo ^> 未找到 Java，请安装 JDK 8+ 或通过参数指定路径：
+    echo    run.cmd C:\path\to\jdk8
     exit /b 1
 )
-:: 去除引号：1.8.0_xxx 或 21.0.10
+:: 去除引号：1.8.0_xxx 或 11.0.x
 set "JAVA_VER=!JAVA_VER_RAW:"=!"
 :: 提取主版本号
 for /f "tokens=1 delims=." %%m in ("!JAVA_VER!") do set "JAVA_MAJOR=%%m"
@@ -38,9 +38,9 @@ for /f "tokens=1 delims=." %%m in ("!JAVA_VER!") do set "JAVA_MAJOR=%%m"
 if "!JAVA_MAJOR!"=="1" (
     for /f "tokens=2 delims=." %%m in ("!JAVA_VER!") do set "JAVA_MAJOR=%%m"
 )
-if !JAVA_MAJOR! LSS 21 (
-    echo ^> 当前 Java 版本 !JAVA_MAJOR! ^< 21，请通过参数指定 JDK 21+ 路径：
-    echo    run.cmd C:\path\to\jdk21
+if !JAVA_MAJOR! LSS 8 (
+    echo ^> 当前 Java 版本 !JAVA_MAJOR! ^< 8，请通过参数指定 JDK 8+ 路径：
+    echo    run.cmd C:\path\to\jdk8
     exit /b 1
 )
 echo [jink] 使用系统 Java !JAVA_MAJOR!
@@ -103,9 +103,9 @@ echo.
 
 :: 6. 启动
 if defined DEPS (
-    "!JAVA_BIN!" --enable-native-access=ALL-UNNAMED -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8 -cp "target\classes;target\test-classes;!DEPS!" !MAIN_CLASS!
+    "!JAVA_BIN!" -Dfile.encoding=UTF-8 -cp "target\classes;target\test-classes;!DEPS!" !MAIN_CLASS!
 ) else (
-    "!JAVA_BIN!" --enable-native-access=ALL-UNNAMED -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8 -cp "target\classes;target\test-classes" !MAIN_CLASS!
+    "!JAVA_BIN!" -Dfile.encoding=UTF-8 -cp "target\classes;target\test-classes" !MAIN_CLASS!
 )
 exit /b %errorlevel%
 

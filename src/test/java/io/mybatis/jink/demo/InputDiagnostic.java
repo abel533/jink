@@ -17,7 +17,7 @@ public class InputDiagnostic {
                 .build();
 
         Attributes saved = terminal.enterRawMode();
-        var writer = terminal.writer();
+        java.io.PrintWriter writer = terminal.writer();
         NonBlockingReader reader = terminal.reader();
         boolean trackingEnabled = false;
 

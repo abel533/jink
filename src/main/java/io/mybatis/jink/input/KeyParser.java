@@ -229,22 +229,25 @@ public class KeyParser {
      * 解析单个控制字符
      */
     public static ParseResult parseControlChar(int ch) {
-        return switch (ch) {
-            case '\r', '\n' -> new ParseResult("return", "", false, false, false);
-            case '\t' -> new ParseResult("tab", "", false, false, false);
-            case 0x1b -> new ParseResult("escape", "", false, false, false);
-            case 0x7f -> new ParseResult("backspace", "", false, false, false);
-            case 0x08 -> new ParseResult("backspace", "", true, false, false);
-            default -> {
-                // Ctrl+letter: 0x01-0x1a 对应 a-z
-                if (ch >= 1 && ch <= 26) {
-                    char letter = (char) ('a' + ch - 1);
-                    yield new ParseResult(String.valueOf(letter), "", true, false, false);
-                }
-                yield new ParseResult(String.valueOf((char) ch), String.valueOf((char) ch),
-                        false, false, false);
+        if (ch == '\r' || ch == '\n') {
+            return new ParseResult("return", "", false, false, false);
+        } else if (ch == '\t') {
+            return new ParseResult("tab", "", false, false, false);
+        } else if (ch == 0x1b) {
+            return new ParseResult("escape", "", false, false, false);
+        } else if (ch == 0x7f) {
+            return new ParseResult("backspace", "", false, false, false);
+        } else if (ch == 0x08) {
+            return new ParseResult("backspace", "", true, false, false);
+        } else {
+            // Ctrl+letter: 0x01-0x1a 对应 a-z
+            if (ch >= 1 && ch <= 26) {
+                char letter = (char) ('a' + ch - 1);
+                return new ParseResult(String.valueOf(letter), "", true, false, false);
             }
-        };
+            return new ParseResult(String.valueOf((char) ch), String.valueOf((char) ch),
+                    false, false, false);
+        }
     }
 
     /**
@@ -291,7 +294,26 @@ public class KeyParser {
     /**
      * 解析结果
      */
-    public record ParseResult(String name, String input, boolean ctrl, boolean shift, boolean meta) {
+    public static final class ParseResult {
+        private final String name;
+        private final String input;
+        private final boolean ctrl;
+        private final boolean shift;
+        private final boolean meta;
+
+        public ParseResult(String name, String input, boolean ctrl, boolean shift, boolean meta) {
+            this.name = name;
+            this.input = input;
+            this.ctrl = ctrl;
+            this.shift = shift;
+            this.meta = meta;
+        }
+
+        public String name()   { return name; }
+        public String input()  { return input; }
+        public boolean ctrl()  { return ctrl; }
+        public boolean shift() { return shift; }
+        public boolean meta()  { return meta; }
 
         /**
          * 转换为 Key 事件
@@ -324,20 +346,22 @@ public class KeyParser {
         public String inputText() {
             // 粘贴事件返回完整粘贴文本
             if ("paste".equals(name)) return input;
-            return switch (name) {
-                case "up", "down", "left", "right",
-                        "pageup", "pagedown", "home", "end",
-                        "return", "escape", "tab", "backspace", "delete",
-                        "scrollUp", "scrollDown",
-                        "f1", "f2", "f3", "f4", "f5", "f6",
-                        "f7", "f8", "f9", "f10", "f11", "f12",
-                        "f13", "f14", "f15", "f16", "f17", "f18",
-                        "f19", "f20", "f21", "f22", "f23", "f24",
-                        "f25", "f26", "f27", "f28", "f29", "f30",
-                        "f31", "f32", "f33", "f34", "f35", "f36",
-                        "insert" -> "";
-                default -> input.isEmpty() ? name : input;
-            };
+            switch (name) {
+                case "up": case "down": case "left": case "right":
+                case "pageup": case "pagedown": case "home": case "end":
+                case "return": case "escape": case "tab": case "backspace": case "delete":
+                case "scrollUp": case "scrollDown":
+                case "f1": case "f2": case "f3": case "f4": case "f5": case "f6":
+                case "f7": case "f8": case "f9": case "f10": case "f11": case "f12":
+                case "f13": case "f14": case "f15": case "f16": case "f17": case "f18":
+                case "f19": case "f20": case "f21": case "f22": case "f23": case "f24":
+                case "f25": case "f26": case "f27": case "f28": case "f29": case "f30":
+                case "f31": case "f32": case "f33": case "f34": case "f35": case "f36":
+                case "insert":
+                    return "";
+                default:
+                    return input.isEmpty() ? name : input;
+            }
         }
 
         /** 是否为粘贴事件 */

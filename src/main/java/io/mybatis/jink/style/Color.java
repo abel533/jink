@@ -3,7 +3,7 @@ package io.mybatis.jink.style;
 /**
  * 终端颜色定义，支持基础16色和256色及RGB真彩色。
  */
-public sealed interface Color {
+public interface Color {
 
     /** 生成前景色 ANSI 转义码 */
     String toForeground();
@@ -75,7 +75,11 @@ public sealed interface Color {
 
     // ===== 实现类 =====
 
-    record Basic(int code) implements Color {
+    final class Basic implements Color {
+        private final int code;
+        public Basic(int code) { this.code = code; }
+        public int code() { return code; }
+
         @Override
         public String toForeground() {
             return "\u001B[" + code + "m";
@@ -87,7 +91,11 @@ public sealed interface Color {
         }
     }
 
-    record Ansi256(int code) implements Color {
+    final class Ansi256 implements Color {
+        private final int code;
+        public Ansi256(int code) { this.code = code; }
+        public int code() { return code; }
+
         @Override
         public String toForeground() {
             return "\u001B[38;5;" + code + "m";
@@ -99,7 +107,13 @@ public sealed interface Color {
         }
     }
 
-    record Rgb(int r, int g, int b) implements Color {
+    final class Rgb implements Color {
+        private final int r, g, b;
+        public Rgb(int r, int g, int b) { this.r = r; this.g = g; this.b = b; }
+        public int r() { return r; }
+        public int g() { return g; }
+        public int b() { return b; }
+
         @Override
         public String toForeground() {
             return "\u001B[38;2;" + r + ";" + g + ";" + b + "m";

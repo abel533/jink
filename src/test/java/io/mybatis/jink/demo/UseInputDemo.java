@@ -21,7 +21,13 @@ import io.mybatis.jink.style.FlexDirection;
  */
 public class UseInputDemo extends Component<UseInputDemo.State> {
 
-    record State(int x, int y) {}
+    static final class State {
+        private final int x;
+        private final int y;
+        State(int x, int y) { this.x = x; this.y = y; }
+        int x() { return x; }
+        int y() { return y; }
+    }
 
     public UseInputDemo() {
         super(new State(1, 1));

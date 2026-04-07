@@ -97,7 +97,9 @@ public class SimpleDemo {
      * 分隔线（用文本模拟）
      */
     static Renderable separator(int width) {
-        return Text.of("─".repeat(width));
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < width; i++) sb.append("─");
+        return Text.of(sb.toString());
     }
 
     /**

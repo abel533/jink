@@ -224,8 +224,8 @@ public final class ElementNode extends Node {
     public void walk(Consumer<Node> visitor) {
         for (Node child : childNodes) {
             visitor.accept(child);
-            if (child instanceof ElementNode element) {
-                element.walk(visitor);
+            if (child instanceof ElementNode) {
+                ((ElementNode) child).walk(visitor);
             }
         }
     }

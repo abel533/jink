@@ -8,32 +8,32 @@ class KeyParserTest {
 
     @Test
     void testArrowKeys() {
-        var up = KeyParser.parseEscapeSequence("[A");
+        KeyParser.ParseResult up = KeyParser.parseEscapeSequence("[A");
         assertEquals("up", up.name());
         assertTrue(up.toKey().upArrow());
 
-        var down = KeyParser.parseEscapeSequence("[B");
+        KeyParser.ParseResult down = KeyParser.parseEscapeSequence("[B");
         assertEquals("down", down.name());
         assertTrue(down.toKey().downArrow());
 
-        var right = KeyParser.parseEscapeSequence("[C");
+        KeyParser.ParseResult right = KeyParser.parseEscapeSequence("[C");
         assertEquals("right", right.name());
         assertTrue(right.toKey().rightArrow());
 
-        var left = KeyParser.parseEscapeSequence("[D");
+        KeyParser.ParseResult left = KeyParser.parseEscapeSequence("[D");
         assertEquals("left", left.name());
         assertTrue(left.toKey().leftArrow());
     }
 
     @Test
     void testSs3ArrowSequences() {
-        var up = KeyParser.parseEscapeSequence("OA");
+        KeyParser.ParseResult up = KeyParser.parseEscapeSequence("OA");
         assertEquals("up", up.name());
         assertTrue(up.toKey().upArrow());
         assertFalse(up.toKey().scrollUp());
         assertEquals("", up.inputText());
 
-        var down = KeyParser.parseEscapeSequence("OB");
+        KeyParser.ParseResult down = KeyParser.parseEscapeSequence("OB");
         assertEquals("down", down.name());
         assertTrue(down.toKey().downArrow());
         assertFalse(down.toKey().scrollDown());
@@ -42,13 +42,13 @@ class KeyParserTest {
 
     @Test
     void testX10WheelSequences() {
-        var scrollUp = KeyParser.parseEscapeSequence("[M`!!");
+        KeyParser.ParseResult scrollUp = KeyParser.parseEscapeSequence("[M`!!");
         assertEquals("scrollUp", scrollUp.name());
         assertTrue(scrollUp.toKey().scrollUp());
         assertFalse(scrollUp.toKey().upArrow());
         assertEquals("", scrollUp.inputText());
 
-        var scrollDown = KeyParser.parseEscapeSequence("[Ma!!");
+        KeyParser.ParseResult scrollDown = KeyParser.parseEscapeSequence("[Ma!!");
         assertEquals("scrollDown", scrollDown.name());
         assertTrue(scrollDown.toKey().scrollDown());
         assertFalse(scrollDown.toKey().downArrow());
@@ -77,42 +77,42 @@ class KeyParserTest {
 
     @Test
     void testControlChars() {
-        var enter = KeyParser.parseControlChar('\r');
+        KeyParser.ParseResult enter = KeyParser.parseControlChar('\r');
         assertEquals("return", enter.name());
         assertTrue(enter.toKey().return_());
 
-        var tab = KeyParser.parseControlChar('\t');
+        KeyParser.ParseResult tab = KeyParser.parseControlChar('\t');
         assertEquals("tab", tab.name());
         assertTrue(tab.toKey().tab());
 
-        var backspace = KeyParser.parseControlChar(0x7f);
+        KeyParser.ParseResult backspace = KeyParser.parseControlChar(0x7f);
         assertEquals("backspace", backspace.name());
         assertTrue(backspace.toKey().backspace());
 
-        var escape = KeyParser.parseControlChar(0x1b);
+        KeyParser.ParseResult escape = KeyParser.parseControlChar(0x1b);
         assertEquals("escape", escape.name());
         assertTrue(escape.toKey().escape());
     }
 
     @Test
     void testCtrlLetter() {
-        var ctrlA = KeyParser.parseControlChar(1);
+        KeyParser.ParseResult ctrlA = KeyParser.parseControlChar(1);
         assertEquals("a", ctrlA.name());
         assertTrue(ctrlA.ctrl());
         assertTrue(ctrlA.toKey().ctrl());
 
-        var ctrlC = KeyParser.parseControlChar(3);
+        KeyParser.ParseResult ctrlC = KeyParser.parseControlChar(3);
         assertEquals("c", ctrlC.name());
         assertTrue(ctrlC.ctrl());
 
-        var ctrlZ = KeyParser.parseControlChar(26);
+        KeyParser.ParseResult ctrlZ = KeyParser.parseControlChar(26);
         assertEquals("z", ctrlZ.name());
         assertTrue(ctrlZ.ctrl());
     }
 
     @Test
     void testMetaLetter() {
-        var metaA = KeyParser.parseEscapeSequence("a");
+        KeyParser.ParseResult metaA = KeyParser.parseEscapeSequence("a");
         assertEquals("a", metaA.name());
         assertTrue(metaA.meta());
         assertTrue(metaA.toKey().meta());
@@ -120,13 +120,13 @@ class KeyParserTest {
 
     @Test
     void testRegularChars() {
-        var a = KeyParser.parseChar('a');
+        KeyParser.ParseResult a = KeyParser.parseChar('a');
         assertEquals("a", a.name());
         assertFalse(a.ctrl());
         assertFalse(a.meta());
         assertEquals("a", a.inputText());
 
-        var space = KeyParser.parseChar(' ');
+        KeyParser.ParseResult space = KeyParser.parseChar(' ');
         assertEquals(" ", space.name());
         assertEquals(" ", space.inputText());
     }
@@ -155,7 +155,7 @@ class KeyParserTest {
 
     @Test
     void testShiftArrows() {
-        var shiftUp = KeyParser.parseEscapeSequence("[1;2A");
+        KeyParser.ParseResult shiftUp = KeyParser.parseEscapeSequence("[1;2A");
         assertEquals("up", shiftUp.name());
         assertTrue(shiftUp.shift());
         assertTrue(shiftUp.toKey().shift());
@@ -163,7 +163,7 @@ class KeyParserTest {
 
     @Test
     void testPasteResult() {
-        var paste = KeyParser.pasteResult("Hello World\nLine 2");
+        KeyParser.ParseResult paste = KeyParser.pasteResult("Hello World\nLine 2");
         assertEquals("paste", paste.name());
         assertTrue(paste.isPaste());
         assertEquals("Hello World\nLine 2", paste.inputText());
@@ -174,7 +174,7 @@ class KeyParserTest {
 
     @Test
     void testPasteResultEmpty() {
-        var paste = KeyParser.pasteResult("");
+        KeyParser.ParseResult paste = KeyParser.pasteResult("");
         assertEquals("paste", paste.name());
         assertTrue(paste.isPaste());
         assertEquals("", paste.inputText());
@@ -182,28 +182,28 @@ class KeyParserTest {
 
     @Test
     void testNonPasteResultNotPaste() {
-        var arrow = KeyParser.parseEscapeSequence("[A");
+        KeyParser.ParseResult arrow = KeyParser.parseEscapeSequence("[A");
         assertFalse(arrow.isPaste());
-        var ch = KeyParser.parseChar('a');
+        KeyParser.ParseResult ch = KeyParser.parseChar('a');
         assertFalse(ch.isPaste());
     }
 
     @Test
     void testF13ToF24ShiftFunctionKeys() {
         // F13 = Shift+F1
-        var f13 = KeyParser.parseEscapeSequence("[1;2P");
+        KeyParser.ParseResult f13 = KeyParser.parseEscapeSequence("[1;2P");
         assertEquals("f13", f13.name());
         assertTrue(f13.shift());
         assertFalse(f13.ctrl());
         assertEquals("", f13.inputText());
 
         // F17 = Shift+F5
-        var f17 = KeyParser.parseEscapeSequence("[15;2~");
+        KeyParser.ParseResult f17 = KeyParser.parseEscapeSequence("[15;2~");
         assertEquals("f17", f17.name());
         assertTrue(f17.shift());
 
         // F24 = Shift+F12
-        var f24 = KeyParser.parseEscapeSequence("[24;2~");
+        KeyParser.ParseResult f24 = KeyParser.parseEscapeSequence("[24;2~");
         assertEquals("f24", f24.name());
         assertTrue(f24.shift());
     }
@@ -211,19 +211,19 @@ class KeyParserTest {
     @Test
     void testF25ToF36CtrlFunctionKeys() {
         // F25 = Ctrl+F1
-        var f25 = KeyParser.parseEscapeSequence("[1;5P");
+        KeyParser.ParseResult f25 = KeyParser.parseEscapeSequence("[1;5P");
         assertEquals("f25", f25.name());
         assertTrue(f25.ctrl());
         assertFalse(f25.shift());
         assertEquals("", f25.inputText());
 
         // F29 = Ctrl+F5
-        var f29 = KeyParser.parseEscapeSequence("[15;5~");
+        KeyParser.ParseResult f29 = KeyParser.parseEscapeSequence("[15;5~");
         assertEquals("f29", f29.name());
         assertTrue(f29.ctrl());
 
         // F36 = Ctrl+F12
-        var f36 = KeyParser.parseEscapeSequence("[24;5~");
+        KeyParser.ParseResult f36 = KeyParser.parseEscapeSequence("[24;5~");
         assertEquals("f36", f36.name());
         assertTrue(f36.ctrl());
     }

@@ -232,9 +232,39 @@ public class VirtualScreen {
     /**
      * 带样式的字符
      */
-    public record StyledChar(String ch, Style style) {
+    public static final class StyledChar {
+        private final String ch;
+        private final Style style;
+
+        public StyledChar(String ch, Style style) {
+            this.ch = ch;
+            this.style = style;
+        }
+
+        public String ch()    { return ch; }
+        public Style style()  { return style; }
+
         public static final StyledChar SPACE = new StyledChar(" ", null);
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof StyledChar)) return false;
+            StyledChar that = (StyledChar) o;
+            return java.util.Objects.equals(ch, that.ch)
+                    && java.util.Objects.equals(style, that.style);
+        }
+
+        @Override
+        public int hashCode() {
+            return java.util.Objects.hash(ch, style);
+        }
     }
 
-    private record ClipRegion(int x1, int y1, int x2, int y2) {}
+    private static final class ClipRegion {
+        final int x1, y1, x2, y2;
+        ClipRegion(int x1, int y1, int x2, int y2) {
+            this.x1 = x1; this.y1 = y1; this.x2 = x2; this.y2 = y2;
+        }
+    }
 }

@@ -27,7 +27,11 @@ public class CursorImeDemo extends Component<CursorImeDemo.State> {
 
     private static final String PROMPT = "> ";
 
-    record State(String text) {}
+    static final class State {
+        private final String text;
+        State(String text) { this.text = text; }
+        String text() { return text; }
+    }
 
     public CursorImeDemo() {
         super(new State(""));

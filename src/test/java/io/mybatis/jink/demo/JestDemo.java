@@ -23,14 +23,33 @@ import java.util.concurrent.*;
  */
 public class JestDemo extends Component<JestDemo.State> {
 
-    record TestResult(String path, String status) {}
+    static final class TestResult {
+        private final String path;
+        private final String status;
+        TestResult(String path, String status) {
+            this.path = path;
+            this.status = status;
+        }
+        String path() { return path; }
+        String status() { return status; }
+    }
 
-    record State(
-            List<TestResult> completed,
-            List<TestResult> running,
-            int staticPrevCount,
-            long startTime
-    ) {}
+    static final class State {
+        private final List<TestResult> completed;
+        private final List<TestResult> running;
+        private final int staticPrevCount;
+        private final long startTime;
+        State(List<TestResult> completed, List<TestResult> running, int staticPrevCount, long startTime) {
+            this.completed = completed;
+            this.running = running;
+            this.staticPrevCount = staticPrevCount;
+            this.startTime = startTime;
+        }
+        List<TestResult> completed() { return completed; }
+        List<TestResult> running() { return running; }
+        int staticPrevCount() { return staticPrevCount; }
+        long startTime() { return startTime; }
+    }
 
     private static final String[] PATHS = {
         "tests/login.js", "tests/signup.js", "tests/forgot-password.js",
@@ -94,12 +113,13 @@ public class JestDemo extends Component<JestDemo.State> {
     }
 
     static Renderable testRow(TestResult t) {
-        Color bg = switch (t.status()) {
-            case "runs" -> Color.YELLOW;
-            case "pass" -> Color.GREEN;
-            case "fail" -> Color.RED;
-            default -> Color.DEFAULT;
-        };
+        Color bg;
+        switch (t.status()) {
+            case "runs": bg = Color.YELLOW; break;
+            case "pass": bg = Color.GREEN; break;
+            case "fail": bg = Color.RED; break;
+            default: bg = Color.DEFAULT; break;
+        }
         String[] parts = t.path().split("/");
         String dir = parts.length > 1 ? parts[0] + "/" : "";
         String file = parts.length > 1 ? parts[1] : t.path();
