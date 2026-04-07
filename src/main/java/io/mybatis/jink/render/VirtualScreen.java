@@ -210,6 +210,14 @@ public class VirtualScreen {
 
     private void putChar(int x, int y, String ch, Style style) {
         if (x >= 0 && x < width && y >= 0 && y < height) {
+            // 若新样式没有背景色，继承原有格子的背景色（实现"透明"效果）。
+            // 这确保父容器的 backgroundColor 在子节点写入文字时不被清除。
+            if (style != null && style.backgroundColor() == null) {
+                StyledChar existing = grid[y][x];
+                if (existing.style() != null && existing.style().backgroundColor() != null) {
+                    style = style.toBuilder().backgroundColor(existing.style().backgroundColor()).build();
+                }
+            }
             grid[y][x] = new StyledChar(ch, style);
         }
     }

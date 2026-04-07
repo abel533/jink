@@ -298,39 +298,30 @@ public class TopDemo extends Component<TopDemo.AppState> {
         }
     }
 
-    /** Windows：tasklist /V /FO CSV /NH 双采样 CPU */
+    /**
+     * Windows：tasklist /FO CSV /NH 获取进程名、PID、内存。
+     * 不使用 /V（verbose）标志，因为该标志需要枚举所有窗口标题，极慢（可能超过30秒）。
+     * 进程级 CPU% 在 Windows 下无法通过 tasklist 快速获取，显示为 0%。
+     * 系统整体 CPU% 由 com.sun.management.OperatingSystemMXBean 单独提供。
+     */
     private void collectProcessesWindows(List<ProcessInfo> result) throws Exception {
-        long nowNanos = System.nanoTime();
-        Process proc = Runtime.getRuntime().exec("tasklist /V /FO CSV /NH");
+        // 5字段：Image Name, PID, Session Name, Session#, Mem Usage
+        Process proc = Runtime.getRuntime().exec("tasklist /FO CSV /NH");
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
                 if (line.isEmpty()) continue;
-                // "java.exe","12345","Console","1","256,128 K","Running","user","0:00:01","Title"
+                // "java.exe","12345","Console","1","256,128 K"
                 String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
-                if (parts.length < 8) continue;
+                if (parts.length < 5) continue;
                 try {
                     String nameRaw = parts[0].replace("\"", "").trim();
                     String name = nameRaw.endsWith(".exe") ? nameRaw.substring(0, nameRaw.length() - 4) : nameRaw;
                     long pid = Long.parseLong(parts[1].replace("\"", "").trim());
-                    String cpuTimeStr = parts[7].replace("\"", "").trim();
-                    long cpuSec = parseCpuTime(cpuTimeStr);
                     String memStr = parts[4].replaceAll("[\"\\sK,]", "").trim();
                     long memBytes = memStr.isEmpty() ? -1L : Long.parseLong(memStr) * 1024L;
-
-                    double cpuPct = 0;
-                    if (cpuSec >= 0) {
-                        long[] prev = cpuSamples.get(pid);
-                        if (prev != null && cpuSec >= prev[0]) {
-                            long deltaCpu = (cpuSec - prev[0]) * 1_000_000_000L;
-                            long deltaWall = nowNanos - prev[1];
-                            if (deltaWall > 0) cpuPct = (double) deltaCpu / deltaWall * 100.0;
-                        }
-                        cpuSamples.put(pid, new long[]{cpuSec, nowNanos});
-                    }
-
-                    result.add(new ProcessInfo(pid, name, cpuPct, memBytes));
+                    result.add(new ProcessInfo(pid, name, 0.0, memBytes));
                 } catch (NumberFormatException ignored) {}
             }
         }
@@ -391,30 +382,12 @@ public class TopDemo extends Component<TopDemo.AppState> {
         }
     }
 
-    /** Windows：tasklist /FO CSV /NH 批量获取工作集大小 */
-    private void refreshMemoryWindows() throws Exception {
-        Process proc = Runtime.getRuntime().exec("tasklist /FO CSV /NH");
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(proc.getInputStream()))) {
-            // 输出格式: "image.exe","pid","Session","#","Mem Usage"
-            // 示例:    "java.exe","12345","Console","1","256,128 K"
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.trim().isEmpty()) continue;
-                // 按引号外的逗号切分
-                String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
-                if (parts.length >= 5) {
-                    try {
-                        long pid = Long.parseLong(parts[1].replaceAll("\"", "").trim());
-                        // "256,128 K" -> 去除引号/空格/逗号/K 后取数字
-                        String memStr = parts[4].replaceAll("[\"\\sK,]", "").trim();
-                        if (!memStr.isEmpty()) {
-                            memCache.put(pid, Long.parseLong(memStr) * 1024L);
-                        }
-                    } catch (NumberFormatException ignored) {}
-                }
-            }
-        }
+    /**
+     * Windows 内存刷新：collectProcessesWindows 已在每次刷新中获取内存，此方法为空操作。
+     * Windows 上的进程内存数据由 collectProcessesWindows 中的 tasklist /FO CSV /NH 直接提供。
+     */
+    private void refreshMemoryWindows() {
+        // collectProcessesWindows 已包含内存数据，无需额外刷新
     }
 
     /** macOS / 其他 Unix：ps -A -o pid,rss 批量获取（RSS 单位 KB） */
@@ -565,6 +538,9 @@ public class TopDemo extends Component<TopDemo.AppState> {
     /**
      * 单条进度条。
      * 颜色编码：绿(&lt;50%) → 黄(&lt;80%) → 红(≥80%)
+     *
+     * <p>将填充字符和空白字符合并为一个嵌套 Text，避免 filled=0 时产生空字符串节点，
+     * 防止 ROW 布局中零宽节点触发 flexShrink 导致相邻节点换行（高度变 2）。
      */
     private Renderable progressBar(String label, double percent, int barWidth, String info) {
         percent = Math.max(0, Math.min(100, percent));
@@ -578,8 +554,10 @@ public class TopDemo extends Component<TopDemo.AppState> {
         return Box.of(
                 Text.of(label).color(Color.BRIGHT_WHITE).bold(),
                 Text.of("[").color(Color.BRIGHT_BLACK),
-                Text.of(rep("█", filled)).color(barColor),
-                Text.of(rep("░", empty)).color(Color.BRIGHT_BLACK),
+                Text.of(
+                        Text.of(rep("█", filled)).color(barColor),
+                        Text.of(rep("░", empty)).color(Color.BRIGHT_BLACK)
+                ),
                 Text.of("] ").color(Color.BRIGHT_BLACK),
                 Text.of(info).color(barColor)
         );

@@ -66,6 +66,8 @@ scripts\run.cmd          # CMD
 | `InputDiagnostic` | 诊断方向键/滚轮/ESC 序列 | ✅ | `.\scripts\run-demo.ps1 io.mybatis.jink.demo.InputDiagnostic` |
 | `FeatureShowcase` | 综合功能展示（4 个标签页）| ✅ | `.\scripts\run-demo.ps1 io.mybatis.jink.demo.FeatureShowcase` |
 | `PromptDemo` | 选项列表 + 自由输入交互提示 | ✅ | `.\scripts\run-demo.ps1 io.mybatis.jink.demo.PromptDemo` |
+| `TopDemo` | 类似 top/htop 的系统监控 TUI | ✅ | `.\scripts\run-demo.ps1 io.mybatis.jink.demo.TopDemo` |
+| `MazeDemo` | 控制台迷宫游戏（Prim 算法，自适应尺寸）| ✅ | `.\scripts\run-demo.ps1 io.mybatis.jink.demo.MazeDemo` |
 
 ---
 
@@ -425,6 +427,88 @@ ID      Name                                    Email
 
 ## 原有 Demo 详解
 
+### FeatureShowcase — 综合功能展示
+
+### 展示功能
+- ✅ 4 标签页多视图切换
+- ✅ **Tab 1 - 布局**：flexDirection(ROW/COLUMN)、justifyContent、alignItems、flexWrap、gap、百分比宽度、Spacer
+- ✅ **Tab 2 - 样式**：文本效果(粗体/斜体/下划线/删除线/暗淡/反转)、16色/256色/RGB 色彩、8种边框样式、每边独立边框色、textWrap 截断(END/MIDDLE/START)
+- ✅ **Tab 3 - 交互**：setState 计数器、按键事件实时显示(键名/输入/修饰键)、patchConsole 实际拦截演示
+- ✅ **Tab 4 - 高级**：Transform 文本变换、overflow:hidden 裁剪、position:absolute 绝对定位、Newline 内联换行、Static 增量内容
+
+### 运行步骤
+
+```powershell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.FeatureShowcase
+```
+
+<table style="width:80%">
+  <tr>
+    <td><img src="imgs/1.png" alt="布局" width="100%"/></td>
+    <td><img src="imgs/2.png" alt="样式" width="100%"/></td>
+  </tr>
+  <tr>
+    <td><img src="imgs/3.png" alt="交互" width="100%"/></td>
+    <td><img src="imgs/4.png" alt="高级" width="100%"/></td>
+  </tr>
+</table>
+
+### 快捷键
+
+| 按键 | 功能 |
+|:-----|:-----|
+| `1` / `2` / `3` / `4` | 切换标签页 |
+| `↑` / `↓` / `+` / `-` | Tab 3 计数器加减 |
+| `p` | Tab 3 开关 patchConsole（拦截 System.out/err） |
+| `Ctrl+C` | 退出 |
+
+### 核心代码片段
+
+```java
+public class FeatureShowcase extends Component<FeatureShowcase.State> {
+
+    static final class State {
+        final int tab;
+        final int counter;
+        final String lastKeyName;
+        final List<String> logs;
+        final boolean consolePatched;
+        final List<String> interceptedLogs;
+        // ... 构造器/getter 省略
+    }
+
+    @Override
+    public Renderable render() {
+        int w = getColumns() > 0 ? getColumns() : 80;
+        int h = getRows() > 0 ? getRows() : 24;
+        return Box.of(
+                renderHeader(w),
+                renderBody(w, h - 6),
+                renderFooter(w)
+        ).flexDirection(FlexDirection.COLUMN)
+                .width(w).height(h);
+    }
+
+    @Override
+    public void onInput(String input, Key key) {
+        // 标签切换：1-4
+        if ("p".equals(input) && getState().tab() == 2) {
+            // 实际启用 / 关闭 patchConsole
+            if (!getState().consolePatched()) {
+                ConsolePatcher.patch(text -> {
+                    // 拦截到输出，更新 state 显示
+                    setState(...);
+                });
+            } else {
+                ConsolePatcher.restore();
+            }
+        }
+    }
+}
+```
+
+---
+
 ### SimpleDemo — 静态渲染
 ### 展示功能
 - ✅ 圆角边框 (BorderStyle.ROUND)
@@ -749,3 +833,171 @@ Box.of(a, b, c).justifyContent(JustifyContent.CENTER)
 Box.of(tall, short_).alignItems(AlignItems.CENTER)
 // tall 居中对齐 short_
 ```
+
+---
+
+### TopDemo — 系统监控 TUI
+
+### 展示功能
+- ✅ **系统 CPU 进度条**：实时 CPU 使用率（来自 `com.sun.management.OperatingSystemMXBean`），颜色告警（绿/黄/红）
+- ✅ **系统内存进度条**：物理内存使用率（总量/已用，单位 GB）
+- ✅ **JVM 堆进度条**：当前 JVM 堆内存使用（已用/最大，单位 MB）
+- ✅ **线程数进度条**：JVM 活跃线程计数
+- ✅ **进程列表**：跨平台进程名、PID、内存（Linux: `ps`，macOS: `ps`，Windows: `tasklist`）
+- ✅ **可排序列**：按 CPU%（默认）/ MEM / PID / 名称排序，按键切换
+- ✅ **实时搜索过滤**：`/` 键进入搜索模式，按进程名或 PID 过滤
+- ✅ **键盘导航**：方向键、PageUp/Down、Home/End 快速定位
+- ✅ **动态尺寸自适应**：终端 resize 即重排
+
+> **注意**：Windows 平台进程级 CPU% 显示为 0%（系统整体 CPU% 正常）。
+> 精确的进程级 CPU% 需要 Windows 性能计数器 API，超出了此 Demo 的范围。
+
+### 运行步骤
+
+```powershell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.TopDemo
+```
+
+![TopDemo 效果预览](imgs/TopDemo.png)
+
+### 快捷键
+
+| 按键 | 功能 |
+|:-----|:-----|
+| `q` | 退出 |
+| `↑` / `↓` | 上下移动选中行 |
+| `PageUp` / `PageDown` | 快速翻页（每次 10 行） |
+| `Home` / `End` | 跳到第一行 / 最后一行 |
+| `p` | 按 CPU% 排序 |
+| `m` | 按内存排序 |
+| `n` | 按 PID 排序 |
+| `N` | 按进程名排序 |
+| `/` | 进入搜索模式（实时过滤进程名/PID） |
+| `ESC` | 清除搜索词 / 退出搜索输入 |
+| `r` | 立即刷新进程列表 |
+| 鼠标滚轮 | 上下滚动进程列表 |
+
+### 核心代码片段
+
+```java
+public class TopDemo extends Component<TopDemo.AppState> {
+
+    static final class AppState {
+        final SystemInfo sysInfo;          // CPU%、内存、JVM堆、线程数
+        final List<ProcessInfo> processes; // 进程列表
+        final int selectedIndex;
+        final SortField sortField;
+        final String searchQuery;
+        final boolean searchMode;
+    }
+
+    @Override
+    public void onMount() {
+        // 每秒刷新 CPU + 进程列表
+        scheduler.scheduleAtFixedRate(() -> refresh(), 0, 1, TimeUnit.SECONDS);
+        // 每5秒刷新内存（跨平台命令较慢）
+        scheduler.scheduleAtFixedRate(() -> refreshMemory(), 0, 5, TimeUnit.SECONDS);
+    }
+
+    private void refresh() {
+        // 系统 CPU：com.sun.management.OperatingSystemMXBean
+        double cpuPct = extOsMBean.getSystemCpuLoad() * 100;
+        // 跨平台进程列表
+        List<ProcessInfo> procs = collectProcesses(); // ps / tasklist
+        setState(new AppState(sysInfo, procs, ...));
+    }
+}
+```
+
+---
+
+### MazeDemo — 控制台迷宫游戏
+
+### 展示功能
+- ✅ **自适应尺寸**：迷宫大小自动适配终端尺寸（`logicRows = (h-5)/2, logicCols = (w-2)/2`），resize 即重新生成
+- ✅ **随机化 Prim 算法**：生成完美迷宫（无环路），密集分支、多死胡同，难度高于 DFS
+- ✅ **玩家移动**：方向键或 WASD 控制玩家 `@`，从左上角(0,0)移动到右下角出口 `E`
+- ✅ **移动轨迹**：前进路径（绿色 `·`），回退路径（灰色 `·`），实时更新
+- ✅ **完美迷宫路径判断**：利用无环特性，走廊颜色判断唯一正确
+- ✅ **通关检测**：到达出口显示成功画面 + 路径步数统计
+- ✅ **快捷键**：`r` 重新生成、`q` 退出
+
+### 运行步骤
+
+```powershell
+.\scripts\run-demo.ps1 io.mybatis.jink.demo.MazeDemo
+```
+
+![MazeDemo 效果预览](imgs/MazeDemo.png)
+
+### 快捷键
+
+| 按键 | 功能 |
+|:-----|:-----|
+| `↑` / `↓` / `←` / `→` | 移动玩家 |
+| `W` / `A` / `S` / `D` | 移动玩家（WASD） |
+| `r` | 重新生成迷宫（适应当前终端大小） |
+| `q` / `Ctrl+C` | 退出 |
+
+### 迷宫渲染格式
+
+```
+████████████████████
+@  ·  ·           █
+██ █████████████ ██
+   ·              E
+```
+
+- `█` 墙壁（深灰）
+- `@` 玩家（绿色/黄色闪光）
+- `E` 出口（青色 + ROUND 边框）
+- `·` 前进路径（绿色）/ 回退路径（灰色）
+
+### 核心代码片段
+
+```java
+public class MazeDemo extends Component<MazeDemo.State> {
+
+    static final class State {
+        final boolean[][] grid;      // 平铺网格（true=墙）
+        final int logicRows, logicCols;
+        final int playerR, playerC;
+        final List<int[]> pathHistory;
+        final Set<Long> backtrackedSet;
+        final boolean won;
+    }
+
+    @Override
+    public Renderable render() {
+        int w = getColumns() > 0 ? getColumns() : 80;
+        int h = getRows() > 0 ? getRows() : 24;
+        // Resize 检测：尺寸变化时重新生成迷宫
+        int targetRows = (h - 5) / 2;
+        int targetCols = (w - 2) / 2;
+        if (targetRows != lastTargetRows || targetCols != lastTargetCols) {
+            lastTargetRows = targetRows;
+            lastTargetCols = targetCols;
+            setState(buildState(targetRows, targetCols));
+        }
+        return Box.of(renderMaze(getState(), w), renderFooter(w))
+                .flexDirection(FlexDirection.COLUMN).width(w).height(h);
+    }
+
+    // Prim 随机化算法生成迷宫
+    private static State buildState(int rows, int cols) {
+        boolean[][] grid = new boolean[rows * 2 + 1][cols * 2 + 1];
+        // 初始化全为墙
+        for (boolean[] row : grid) Arrays.fill(row, true);
+        // 从 (0,0) 开始，随机扩展边界
+        List<int[]> frontiers = new ArrayList<>();
+        addFrontier(0, 0, grid, frontiers);
+        while (!frontiers.isEmpty()) {
+            int idx = (int)(Math.random() * frontiers.size());
+            // ... 打通墙壁，扩展新边界
+        }
+        return new State(grid, rows, cols, 0, 0, new ArrayList<>(), new HashSet<>(), false);
+    }
+}
+```
+
+---

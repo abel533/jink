@@ -310,10 +310,17 @@ public class FlexLayout {
                 // 使用固有宽度（基于内容测量）
                 int intrinsicWidth = measureIntrinsicWidth(child);
                 int maxChildWidth = contentWidth - childMarginH;
-                if (intrinsicWidth > 0 || cs.flexGrow() > 0) {
+                if (intrinsicWidth > 0) {
                     childWidth = Math.min(intrinsicWidth, maxChildWidth);
+                } else if (cs.flexGrow() > 0) {
+                    // 无固有宽度但有 grow：起始宽度为 0，由 flexGrow 阶段分配
+                    childWidth = 0;
                 } else {
-                    childWidth = maxChildWidth;
+                    // 区分空 Text 节点（宽度为 0）和空 Box 容器（保持占满行为）
+                    NodeType childType = child.getNodeType();
+                    boolean isEmptyText = childType == NodeType.INK_TEXT
+                            || childType == NodeType.INK_VIRTUAL_TEXT;
+                    childWidth = isEmptyText ? 0 : maxChildWidth;
                 }
                 child.setComputedWidth(childWidth);
                 layoutNode(child, childWidth, availableHeight,

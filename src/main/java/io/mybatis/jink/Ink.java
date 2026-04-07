@@ -622,6 +622,13 @@ public class Ink {
                     if (mouseTrackingEnabled) {
                         terminal.trackMouse(Terminal.MouseTracking.Off);
                     }
+                    // 显式禁用所有鼠标跟踪模式（确保 JLine 内部状态与终端一致）
+                    // 部分终端在启用 Normal 模式时同时启用 SGR 扩展，必须单独关闭
+                    termWriter.print("\u001B[?1000l"); // normal mouse tracking off
+                    termWriter.print("\u001B[?1002l"); // button-event tracking off
+                    termWriter.print("\u001B[?1003l"); // any-event tracking off
+                    termWriter.print("\u001B[?1006l"); // SGR extended mouse off
+                    termWriter.print("\u001B[?1015l"); // URXVT extended mouse off
                     // 禁用 Bracketed Paste Mode
                     termWriter.print(io.mybatis.jink.ansi.Ansi.DISABLE_BRACKETED_PASTE);
                     // 显示光标

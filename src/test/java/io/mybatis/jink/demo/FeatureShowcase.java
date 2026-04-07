@@ -4,6 +4,7 @@ import io.mybatis.jink.Ink;
 import io.mybatis.jink.component.*;
 import io.mybatis.jink.input.Key;
 import io.mybatis.jink.style.*;
+import io.mybatis.jink.util.ConsolePatcher;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,9 +34,10 @@ public class FeatureShowcase extends Component<FeatureShowcase.State> {
         private final boolean lastMeta;
         private final List<String> logs;
         private final boolean consolePatched;
+        private final List<String> interceptedLogs;
         State(int tab, int counter, String lastKeyName, String lastInput,
               boolean lastCtrl, boolean lastShift, boolean lastMeta,
-              List<String> logs, boolean consolePatched) {
+              List<String> logs, boolean consolePatched, List<String> interceptedLogs) {
             this.tab = tab;
             this.counter = counter;
             this.lastKeyName = lastKeyName;
@@ -45,6 +47,7 @@ public class FeatureShowcase extends Component<FeatureShowcase.State> {
             this.lastMeta = lastMeta;
             this.logs = logs;
             this.consolePatched = consolePatched;
+            this.interceptedLogs = interceptedLogs;
         }
         int tab() { return tab; }
         int counter() { return counter; }
@@ -55,10 +58,11 @@ public class FeatureShowcase extends Component<FeatureShowcase.State> {
         boolean lastMeta() { return lastMeta; }
         List<String> logs() { return logs; }
         boolean consolePatched() { return consolePatched; }
+        List<String> interceptedLogs() { return interceptedLogs; }
     }
 
     public FeatureShowcase() {
-        super(new State(0, 0, "-", "", false, false, false, new ArrayList<>(), false));
+        super(new State(0, 0, "-", "", false, false, false, new ArrayList<>(), false, new ArrayList<>()));
     }
 
     @Override
@@ -85,6 +89,23 @@ public class FeatureShowcase extends Component<FeatureShowcase.State> {
         boolean patched = s.consolePatched();
         if ("p".equals(input) && s.tab() == 2) {
             patched = !patched;
+            // 实际调用 ConsolePatcher
+            if (patched) {
+                ConsolePatcher.patch(text -> {
+                    // 把拦截到的输出追加到 interceptedLogs
+                    List<String> newLogs = new ArrayList<>(getState().interceptedLogs());
+                    newLogs.add(text.trim());
+                    while (newLogs.size() > 5) newLogs.remove(0);
+                    setState(new State(
+                            getState().tab(), getState().counter(), getState().lastKeyName(),
+                            getState().lastInput(), getState().lastCtrl(), getState().lastShift(),
+                            getState().lastMeta(), getState().logs(), true, newLogs));
+                });
+                // 演示：主动打一条输出证明拦截已启用
+                System.out.println("[Demo] patchConsole 已启用，此行被拦截");
+            } else {
+                ConsolePatcher.restore();
+            }
         }
 
         // 日志
@@ -96,7 +117,7 @@ public class FeatureShowcase extends Component<FeatureShowcase.State> {
         while (newLogs.size() > 5) newLogs.remove(0);
 
         setState(new State(newTab, newCounter, keyName, input,
-                key.ctrl(), key.shift(), key.meta(), newLogs, patched));
+                key.ctrl(), key.shift(), key.meta(), newLogs, patched, new ArrayList<>(s.interceptedLogs())));
     }
 
     private String resolveKeyName(String input, Key key) {
@@ -156,7 +177,7 @@ public class FeatureShowcase extends Component<FeatureShowcase.State> {
         }
         items.add(Spacer.create());
         items.add(Text.of("jink 功能展示").color(Color.CYAN).bold());
-        return Box.of(items.toArray(Renderable[]::new))
+        return Box.of(items.toArray(new Renderable[0]))
                 .borderStyle(BorderStyle.ROUND)
                 .borderColor(Color.CYAN);
     }
@@ -484,7 +505,7 @@ public class FeatureShowcase extends Component<FeatureShowcase.State> {
         if (blocks.isEmpty()) {
             blocks.add(Text.of("(按 ↑ 或 + 增加)").dimmed());
         }
-        return Box.of(blocks.toArray(Renderable[]::new));
+        return Box.of(blocks.toArray(new Renderable[0]));
     }
 
     private Renderable renderKeyDisplay(int w, State s) {
@@ -540,7 +561,18 @@ public class FeatureShowcase extends Component<FeatureShowcase.State> {
             }
         }
 
-        return Box.of(logItems.toArray(Renderable[]::new))
+        if (s.consolePatched()) {
+            logItems.add(Text.of("  拦截的 console 输出:").color(Color.BRIGHT_CYAN).bold());
+            if (s.interceptedLogs().isEmpty()) {
+                logItems.add(Text.of("  (暂无拦截输出)").dimmed());
+            } else {
+                for (String log : s.interceptedLogs()) {
+                    logItems.add(Text.of("  > " + log).color(Color.BRIGHT_GREEN));
+                }
+            }
+        }
+
+        return Box.of(logItems.toArray(new Renderable[0]))
                 .flexDirection(FlexDirection.COLUMN)
                 .borderStyle(BorderStyle.SINGLE)
                 .borderColor(Color.GRAY)
@@ -675,20 +707,20 @@ public class FeatureShowcase extends Component<FeatureShowcase.State> {
         System.out.println("\n=== Tab 2: 样式 ===");
         FeatureShowcase demo2 = new FeatureShowcase();
         demo2.setTerminalSize(width, height);
-        demo2.setState(new State(1, 0, "-", "", false, false, false, new ArrayList<>(), false));
+        demo2.setState(new State(1, 0, "-", "", false, false, false, new ArrayList<>(), false, new ArrayList<>()));
         System.out.println(Ink.renderToString(demo2, width, height));
 
         System.out.println("\n=== Tab 3: 交互 ===");
         FeatureShowcase demo3 = new FeatureShowcase();
         demo3.setTerminalSize(width, height);
         demo3.setState(new State(2, 5, "↑ Up", "+", false, false, false,
-                Arrays.asList("切换到: 交互", "按下 +"), false));
+                Arrays.asList("切换到: 交互", "按下 +"), false, new ArrayList<>()));
         System.out.println(Ink.renderToString(demo3, width, height));
 
         System.out.println("\n=== Tab 4: 高级 ===");
         FeatureShowcase demo4 = new FeatureShowcase();
         demo4.setTerminalSize(width, height);
-        demo4.setState(new State(3, 0, "-", "", false, false, false, new ArrayList<>(), false));
+        demo4.setState(new State(3, 0, "-", "", false, false, false, new ArrayList<>(), false, new ArrayList<>()));
         System.out.println(Ink.renderToString(demo4, width, height));
     }
 }
