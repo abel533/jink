@@ -255,12 +255,27 @@ public class FlexLayout {
         int totalFixedHeight = 0;
         int totalGrow = 0;
 
+        AlignItems parentAlign = parent.getStyle().alignItems();
+
         for (ElementNode child : children) {
             Style cs = child.getStyle();
             int childMarginH = cs.horizontalMargin();
 
+            // 子节点的有效 alignSelf（自身优先，否则继承父容器 alignItems）
+            AlignItems selfAlign = cs.alignSelf() != null ? cs.alignSelf() : parentAlign;
+
+            // 非 STRETCH 时（FLEX_START / CENTER / FLEX_END）：子节点宽度由内容决定，
+            // 将 availableWidth 限定为子节点的 intrinsicWidth，不强制拉伸到父容器宽度
+            int childAvailableWidth;
+            if (selfAlign != null && selfAlign != AlignItems.STRETCH) {
+                int intrinsic = measureIntrinsicWidth(child);
+                childAvailableWidth = Math.min(intrinsic, contentWidth - childMarginH);
+            } else {
+                childAvailableWidth = contentWidth - childMarginH;
+            }
+
             // 先递归布局子节点（百分比以父容器 content 区域为基准）
-            layoutNode(child, contentWidth - childMarginH, Style.AUTO,
+            layoutNode(child, childAvailableWidth, Style.AUTO,
                     contentWidth, availableHeight);
 
             totalFixedHeight += child.getComputedHeight() + cs.verticalMargin();

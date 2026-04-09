@@ -105,6 +105,14 @@ public abstract class Component<S> implements Renderable {
     }
 
     /**
+     * 鼠标点击事件处理。
+     * 当用户点击终端时触发，x/y 为 0-indexed 终端坐标（列/行）。
+     * 默认空实现，子类可覆盖。
+     */
+    public void onMouseClick(int x, int y) {
+    }
+
+    /**
      * 粘贴事件处理（Bracketed Paste Mode）。
      * 当用户在终端中粘贴文本时触发，text 包含完整的粘贴内容。
      * 默认实现将粘贴文本逐字符作为 onInput 分发。

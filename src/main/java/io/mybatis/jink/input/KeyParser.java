@@ -206,16 +206,35 @@ public class KeyParser {
                         ? new ParseResult("scrollUp", "", false, false, false)
                         : new ParseResult("scrollDown", "", false, false, false);
             }
+            // 左键按下（button & 0x03 == 0，且 button & 0x20 == 0 = 非拖动）
+            if ((button & 0x23) == 0) {
+                int cx = (suffix.charAt(3) & 0xFF) - 32 - 1; // 0-based col
+                int cy = (suffix.charAt(4) & 0xFF) - 32 - 1; // 0-based row
+                return new ParseResult("mouseClick", "", false, false, false, cx, cy);
+            }
             return null;
         }
 
         // 去掉 [< 前缀和 M/m 结尾
         String body = suffix.substring(2, suffix.length() - 1);
         String[] parts = body.split(";");
-        if (parts.length >= 1) {
+        if (parts.length >= 3) {
             try {
                 int button = Integer.parseInt(parts[0]);
-                // button 64=scrollUp, 65=scrollDown
+                int col = Integer.parseInt(parts[1]) - 1; // 转 0-based
+                int row = Integer.parseInt(parts[2]) - 1; // 转 0-based
+                char action = suffix.charAt(suffix.length() - 1);
+                if (button == 64) return new ParseResult("scrollUp", "", false, false, false);
+                if (button == 65) return new ParseResult("scrollDown", "", false, false, false);
+                // 左键按下（button=0，action='M'）
+                if (button == 0 && action == 'M') {
+                    return new ParseResult("mouseClick", "", false, false, false, col, row);
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        } else if (parts.length >= 1) {
+            try {
+                int button = Integer.parseInt(parts[0]);
                 if (button == 64) return new ParseResult("scrollUp", "", false, false, false);
                 if (button == 65) return new ParseResult("scrollDown", "", false, false, false);
             } catch (NumberFormatException ignored) {
@@ -300,13 +319,22 @@ public class KeyParser {
         private final boolean ctrl;
         private final boolean shift;
         private final boolean meta;
+        private final int mouseX;  // -1 = 非鼠标事件
+        private final int mouseY;  // -1 = 非鼠标事件
 
         public ParseResult(String name, String input, boolean ctrl, boolean shift, boolean meta) {
+            this(name, input, ctrl, shift, meta, -1, -1);
+        }
+
+        public ParseResult(String name, String input, boolean ctrl, boolean shift, boolean meta,
+                           int mouseX, int mouseY) {
             this.name = name;
             this.input = input;
             this.ctrl = ctrl;
             this.shift = shift;
             this.meta = meta;
+            this.mouseX = mouseX;
+            this.mouseY = mouseY;
         }
 
         public String name()   { return name; }
@@ -314,6 +342,11 @@ public class KeyParser {
         public boolean ctrl()  { return ctrl; }
         public boolean shift() { return shift; }
         public boolean meta()  { return meta; }
+        public int mouseX()    { return mouseX; }
+        public int mouseY()    { return mouseY; }
+
+        /** 是否为鼠标点击事件 */
+        public boolean isMouseClick() { return "mouseClick".equals(name); }
 
         /**
          * 转换为 Key 事件

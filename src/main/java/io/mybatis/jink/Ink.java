@@ -300,6 +300,7 @@ public class Ink {
         /**
          * 启用鼠标追踪。
          * 默认关闭；只有需要滚轮等鼠标事件的应用才应显式开启。
+         * 启用后同时启用 SGR 扩展格式（支持 > 223 列坐标），并支持点击事件传递给组件的 onMouseClick。
          */
         public Instance enableMouseTracking() {
             if (!interactive || terminal == null || mouseTrackingEnabled) {
@@ -307,6 +308,11 @@ public class Ink {
             }
             try {
                 mouseTrackingEnabled = terminal.trackMouse(Terminal.MouseTracking.Normal);
+                // 额外启用 SGR 扩展鼠标格式（避免 X10 格式的坐标 < 223 限制，且可区分按下/释放）
+                if (mouseTrackingEnabled && termWriter != null) {
+                    termWriter.print("\u001B[?1006h");
+                    termWriter.flush();
+                }
             } catch (Exception ignored) {
                 mouseTrackingEnabled = false;
             }
@@ -570,14 +576,29 @@ public class Ink {
                 // exitOnCtrlC=false 时，将 Ctrl+C 传递给组件处理
             }
 
-            // 内置处理：Tab 焦点导航
-            if ("tab".equals(result.name())) {
-                if (key.shift()) {
-                    focusManager.focusPrevious();
-                } else {
-                    focusManager.focusNext();
+            // 鼠标点击：分发给组件的 onMouseClick
+            if (result.isMouseClick()) {
+                if (rootRenderable instanceof Component) {
+                    ((Component<?>) rootRenderable).onMouseClick(result.mouseX(), result.mouseY());
                 }
-                markDirty();
+                return;
+            }
+
+            // Tab 焦点导航：有注册 Focusable 时由框架处理；否则传给根组件
+            if ("tab".equals(result.name())) {
+                if (focusManager.getFocusableCount() > 0) {
+                    if (key.shift()) {
+                        focusManager.focusPrevious();
+                    } else {
+                        focusManager.focusNext();
+                    }
+                    markDirty();
+                } else {
+                    // 无 Focusable 注册，将 Tab 传给根组件自行处理
+                    if (rootRenderable instanceof Component) {
+                        ((Component<?>) rootRenderable).onInput(input, key);
+                    }
+                }
                 return;
             }
 
