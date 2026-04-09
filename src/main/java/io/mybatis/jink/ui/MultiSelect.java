@@ -32,8 +32,8 @@ public class MultiSelect extends Component<MultiSelect.State> {
     // ── 颜色常量 ───────────────────────────────────────────────────────────────
 
     private static final Color C_FOCUS_ARROW   = Color.ansi256(51);   // 聚焦箭头（青蓝）
-    private static final Color C_CHECK_ON      = Color.ansi256(46);   // 已选中 ✓（绿）
-    private static final Color C_CHECK_OFF     = Color.ansi256(240);  // 未选中 ○（灰）
+    private static final Color C_CHECK_ON      = Color.ansi256(46);   // 已选中 [x]（绿）
+    private static final Color C_CHECK_OFF     = Color.ansi256(240);  // 未选中 [ ]（灰）
     private static final Color C_FOCUSED_LABEL = Color.ansi256(255);  // 高亮行标签（白/粗）
     private static final Color C_NORMAL_LABEL  = Color.ansi256(252);  // 普通行标签（浅灰）
     private static final Color C_ARROW         = Color.ansi256(240);  // 滚动箭头（灰）
@@ -140,7 +140,7 @@ public class MultiSelect extends Component<MultiSelect.State> {
 
         // 向上滚动提示
         if (start > 0) {
-            container.add(Text.of("  ↑ ").color(C_ARROW));
+            container.add(Text.of("  ^ ").color(C_ARROW));
         }
 
         for (int i = start; i < end; i++) {
@@ -148,8 +148,8 @@ public class MultiSelect extends Component<MultiSelect.State> {
             boolean isCursor = (i == s.cursor);
             boolean isChosen = (i < s.selected.length && s.selected[i]);
 
-            String arrow = isCursor ? "❯ " : "  ";
-            String check = isChosen  ? "✓ " : "○ ";
+            String arrow = isCursor ? "> " : "  ";
+            String check = isChosen  ? "[x] " : "[ ] ";
 
             container.add(Box.of(
                     Text.of(arrow).color(isCursor ? C_FOCUS_ARROW : C_CHECK_OFF),
@@ -161,7 +161,7 @@ public class MultiSelect extends Component<MultiSelect.State> {
 
         // 向下滚动提示
         if (end < total) {
-            container.add(Text.of("  ↓ ").color(C_ARROW));
+            container.add(Text.of("  v ").color(C_ARROW));
         }
 
         return container;

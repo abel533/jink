@@ -71,6 +71,14 @@ class AnsiStringUtilsTest {
     }
 
     @Test
+    void visibleWidthAmbiguousSymbolsUsesDefaultWidth() {
+        assertEquals(1, AnsiStringUtils.visibleWidth("✓"));
+        assertEquals(1, AnsiStringUtils.visibleWidth("✗"));
+        assertEquals(1, AnsiStringUtils.visibleWidth("⚠"));
+        assertEquals(1, AnsiStringUtils.visibleWidth("ℹ"));
+    }
+
+    @Test
     void visibleWidthEmpty() {
         assertEquals(0, AnsiStringUtils.visibleWidth(""));
         assertEquals(0, AnsiStringUtils.visibleWidth(null));
@@ -86,6 +94,8 @@ class AnsiStringUtilsTest {
     void isWideChar() {
         assertTrue(AnsiStringUtils.isWideChar('你'));
         assertTrue(AnsiStringUtils.isWideChar('好'));
+        assertFalse(AnsiStringUtils.isWideChar('✓'));
+        assertFalse(AnsiStringUtils.isWideChar('⚠'));
         assertFalse(AnsiStringUtils.isWideChar('A'));
         assertFalse(AnsiStringUtils.isWideChar(' '));
     }

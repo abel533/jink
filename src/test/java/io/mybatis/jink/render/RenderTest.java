@@ -5,6 +5,10 @@ import io.mybatis.jink.dom.ElementNode;
 import io.mybatis.jink.dom.TextNode;
 import io.mybatis.jink.layout.FlexLayout;
 import io.mybatis.jink.style.*;
+import io.mybatis.jink.ui.Alert;
+import io.mybatis.jink.ui.MultiSelect;
+import io.mybatis.jink.ui.StatusMessage;
+import io.mybatis.jink.ui.UnorderedList;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,6 +35,16 @@ class VirtualScreenTest {
         assertTrue(output.contains("\u001B[1m"));   // bold
         assertTrue(output.contains("\u001B[32m"));  // green
         assertTrue(output.contains("Bold Green"));
+    }
+
+    @Test
+    void writeAsciiTextAsSingleWidth() {
+        VirtualScreen screen = new VirtualScreen(4, 1);
+        screen.write(0, 0, "+A");
+
+        assertEquals("+", screen.charAt(0, 0).ch());
+        assertEquals("A", screen.charAt(1, 0).ch());
+        assertEquals(" ", screen.charAt(2, 0).ch());
     }
 
     @Test
@@ -79,6 +93,78 @@ class NodeRendererTest {
         String stripped = AnsiStringUtils.stripAnsi(output);
 
         assertTrue(stripped.contains("Hello, World!"));
+    }
+
+    @Test
+    void renderStatusMessageUsesAsciiPrefix() {
+        ElementNode root = ElementNode.createRoot();
+        root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).build());
+        root.appendChild(StatusMessage.of("操作成功").variant(StatusMessage.Variant.SUCCESS).toNode());
+
+        FlexLayout.calculateLayout(root, 40);
+        VirtualScreen screen = NodeRenderer.render(root);
+
+        assertEquals("+", screen.charAt(0, 0).ch());
+        assertEquals(" ", screen.charAt(1, 0).ch());
+        assertEquals("操", screen.charAt(2, 0).ch());
+    }
+
+    @Test
+    void renderMultiSelectUsesAsciiMarkers() {
+        MultiSelect multiSelect = MultiSelect.builder()
+                .option("Java", "java", true)
+                .visibleRows(1)
+                .build();
+
+        ElementNode root = ElementNode.createRoot();
+        root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).build());
+        root.appendChild(multiSelect.render().toNode());
+
+        FlexLayout.calculateLayout(root, 40);
+        VirtualScreen screen = NodeRenderer.render(root);
+
+        assertEquals(">", screen.charAt(0, 0).ch());
+        assertEquals("[", screen.charAt(2, 0).ch());
+        assertEquals("x", screen.charAt(3, 0).ch());
+        assertEquals("]", screen.charAt(4, 0).ch());
+        assertEquals("J", screen.charAt(6, 0).ch());
+    }
+
+    @Test
+    void renderUnorderedListUsesAsciiBullets() {
+        ElementNode root = ElementNode.createRoot();
+        root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).build());
+        root.appendChild(UnorderedList.of()
+                .item("前端")
+                .item("后端", UnorderedList.of().item("Java"))
+                .toNode());
+
+        FlexLayout.calculateLayout(root, 40);
+        VirtualScreen screen = NodeRenderer.render(root);
+
+        assertEquals("*", screen.charAt(0, 0).ch());
+        assertEquals(" ", screen.charAt(1, 0).ch());
+        assertEquals("前", screen.charAt(2, 0).ch());
+
+        assertEquals("-", screen.charAt(2, 2).ch());
+        assertEquals(" ", screen.charAt(3, 2).ch());
+        assertEquals("J", screen.charAt(4, 2).ch());
+    }
+
+    @Test
+    void renderAlertBorderKeepsSameWidthAcrossAllLines() {
+        ElementNode root = ElementNode.createRoot();
+        root.setStyle(Style.builder().flexDirection(FlexDirection.COLUMN).build());
+        root.appendChild(Alert.of("配置将在下次重启后生效。").variant(Alert.Variant.WARNING).toNode());
+
+        FlexLayout.calculateLayout(root, 80);
+        VirtualScreen screen = NodeRenderer.render(root);
+        String[] lines = AnsiStringUtils.stripAnsi(screen.render()).split("\n");
+
+        assertEquals(3, lines.length);
+        assertEquals(AnsiStringUtils.visibleWidth(lines[0]), AnsiStringUtils.visibleWidth(lines[1]));
+        assertEquals(AnsiStringUtils.visibleWidth(lines[1]), AnsiStringUtils.visibleWidth(lines[2]));
+        assertTrue(lines[1].contains("!  配置将在下次重启后生效。"));
     }
 
     @Test

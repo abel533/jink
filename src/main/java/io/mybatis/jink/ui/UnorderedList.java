@@ -25,9 +25,9 @@ public class UnorderedList implements Renderable {
     private static final Color LEVEL1_COLOR = Color.ansi256(245);
     private static final Color LEVEL2_COLOR = Color.ansi256(240);
 
-    private static final String LEVEL0_SYMBOL = "●";
-    private static final String LEVEL1_SYMBOL = "○";
-    private static final String LEVEL2_SYMBOL = "▸";
+    private static final String LEVEL0_SYMBOL = "*";
+    private static final String LEVEL1_SYMBOL = "-";
+    private static final String LEVEL2_SYMBOL = ">";
 
     private final List<Item> items = new ArrayList<>();
 

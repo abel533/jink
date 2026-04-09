@@ -1,5 +1,7 @@
 package io.mybatis.jink.ansi;
 
+import io.mybatis.jink.util.StringWidth;
+
 import java.util.regex.Pattern;
 
 /**
@@ -29,14 +31,7 @@ public final class AnsiStringUtils {
      */
     public static int visibleWidth(String text) {
         if (text == null || text.isEmpty()) return 0;
-        String stripped = stripAnsi(text);
-        int width = 0;
-        for (int i = 0; i < stripped.length(); ) {
-            int cp = stripped.codePointAt(i);
-            width += isWideChar(cp) ? 2 : 1;
-            i += Character.charCount(cp);
-        }
-        return width;
+        return StringWidth.width(stripAnsi(text));
     }
 
     /**
@@ -55,25 +50,7 @@ public final class AnsiStringUtils {
      * 判断字符是否为宽字符（CJK等，占 2 列）
      */
     public static boolean isWideChar(int codePoint) {
-        // CJK 统一表意文字
-        if (codePoint >= 0x4E00 && codePoint <= 0x9FFF) return true;
-        // CJK 扩展 A
-        if (codePoint >= 0x3400 && codePoint <= 0x4DBF) return true;
-        // CJK 扩展 B
-        if (codePoint >= 0x20000 && codePoint <= 0x2A6DF) return true;
-        // CJK 兼容表意文字
-        if (codePoint >= 0xF900 && codePoint <= 0xFAFF) return true;
-        // 全角字符
-        if (codePoint >= 0xFF01 && codePoint <= 0xFF60) return true;
-        if (codePoint >= 0xFFE0 && codePoint <= 0xFFE6) return true;
-        // 日文平假名、片假名
-        if (codePoint >= 0x3040 && codePoint <= 0x309F) return true;
-        if (codePoint >= 0x30A0 && codePoint <= 0x30FF) return true;
-        // 韩文
-        if (codePoint >= 0xAC00 && codePoint <= 0xD7AF) return true;
-        // 表情符号（常见范围）
-        if (codePoint >= 0x1F300 && codePoint <= 0x1F9FF) return true;
-        return false;
+        return StringWidth.charWidth(codePoint) == 2;
     }
 
     /**
@@ -113,7 +90,7 @@ public final class AnsiStringUtils {
             }
 
             int cp = text.codePointAt(i);
-            int charWidth = isWideChar(cp) ? 2 : 1;
+            int charWidth = StringWidth.charWidth(cp);
 
             if (visiblePos >= start && visiblePos + charWidth <= end) {
                 result.appendCodePoint(cp);

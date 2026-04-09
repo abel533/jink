@@ -24,10 +24,10 @@ public class StatusMessage implements Renderable {
     }
 
     public enum Variant {
-        SUCCESS("✓", Color.ansi256(46)),
-        ERROR("✗", Color.ansi256(196)),
-        WARNING("⚠", Color.ansi256(226)),
-        INFO("ℹ", Color.ansi256(27));
+        SUCCESS("+", Color.ansi256(46)),
+        ERROR("x", Color.ansi256(196)),
+        WARNING("!", Color.ansi256(226)),
+        INFO("i", Color.ansi256(27));
 
         final String icon;
         final Color color;

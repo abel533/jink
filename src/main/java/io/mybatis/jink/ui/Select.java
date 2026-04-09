@@ -122,7 +122,7 @@ public class Select extends Component<Select.State> {
 
         // 向上滚动提示
         if (start > 0) {
-            container.add(Text.of("  ↑ ").color(C_ARROW));
+            container.add(Text.of("  ^ ").color(C_ARROW));
         }
 
         for (int i = start; i < end; i++) {
@@ -130,7 +130,7 @@ public class Select extends Component<Select.State> {
             boolean focused = (i == s.cursor);
             if (focused) {
                 container.add(Box.of(
-                        Text.of(" ❯ " + opt.label + " ")
+                        Text.of(" > " + opt.label + " ")
                                 .color(C_FOCUS_FG)
                                 .backgroundColor(C_FOCUS_BG)
                 ));
@@ -143,7 +143,7 @@ public class Select extends Component<Select.State> {
 
         // 向下滚动提示
         if (end < total) {
-            container.add(Text.of("  ↓ ").color(C_ARROW));
+            container.add(Text.of("  v ").color(C_ARROW));
         }
 
         return container;

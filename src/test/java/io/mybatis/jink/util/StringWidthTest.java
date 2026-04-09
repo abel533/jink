@@ -44,6 +44,16 @@ class StringWidthTest {
     }
 
     @Test
+    void ambiguousSymbolsDefaultToSingleWidth() {
+        assertEquals(1, StringWidth.width("✓"));
+        assertEquals(1, StringWidth.width("✗"));
+        assertEquals(1, StringWidth.width("⚠"));
+        assertEquals(1, StringWidth.width("ℹ"));
+        assertEquals(1, StringWidth.width("○"));
+        assertEquals(1, StringWidth.width("●"));
+    }
+
+    @Test
     void nullSafe() {
         assertEquals(0, StringWidth.width(null));
     }
