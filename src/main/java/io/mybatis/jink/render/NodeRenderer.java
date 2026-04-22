@@ -67,7 +67,15 @@ public class NodeRenderer {
 
         // Clipping (overflow: hidden)
         boolean clipped = isOverflowHidden(style);
-        if (clipped) {
+
+        // 滚动支持：检查滚动属性
+        Integer scrollOffset = (Integer) node.getAttribute("internal_scrollOffset");
+        Integer viewportHeight = (Integer) node.getAttribute("internal_viewportHeight");
+        Integer contentHeight = (Integer) node.getAttribute("internal_contentHeight");
+        boolean hasScroll = scrollOffset != null && viewportHeight != null && contentHeight != null
+                && contentHeight > viewportHeight;
+
+        if (clipped || hasScroll) {
             int clipX = x + (style.hasBorder() ? 1 : 0);
             int clipY = y + (style.hasBorder() ? 1 : 0);
             int clipW = w - style.horizontalBorderWidth();
@@ -80,19 +88,27 @@ public class NodeRenderer {
         BiFunction<String, Integer, String> transformFn =
                 (BiFunction<String, Integer, String>) node.getAttribute("internal_transform");
 
+        // 计算滚动偏移（如果有滚动）
+        int scrollY = hasScroll ? -scrollOffset : 0;
+
         if (transformFn != null) {
-            renderWithTransform(node, screen, x, y, w, h, transformFn);
+            renderWithTransform(node, screen, x, y + scrollY, w, h, transformFn);
         } else {
-            // 递归渲染子节点
+            // 递归渲染子节点（应用滚动偏移）
             for (Node child : node.getChildNodes()) {
                 if (child instanceof ElementNode) {
-                    renderNode((ElementNode) child, screen, x, y);
+                    renderNode((ElementNode) child, screen, x, y + scrollY);
                 }
             }
         }
 
-        if (clipped) {
+        if (clipped || hasScroll) {
             screen.popClip();
+        }
+
+        // 渲染滚动条（如果有滚动且需要显示）
+        if (hasScroll) {
+            renderScrollbar(screen, x, y, w, h, style, scrollOffset, viewportHeight, contentHeight);
         }
     }
 
@@ -446,6 +462,55 @@ public class NodeRenderer {
             if (transformed != null && !transformed.isEmpty()) {
                 screen.write(x, y + i, transformed, null);
             }
+        }
+    }
+
+    /**
+     * 渲染滚动条，使用 ▲▼ 符号在右侧指示当前位置。
+     * 滚动条显示在容器的最右侧一列。
+     */
+    private static void renderScrollbar(VirtualScreen screen, int x, int y, int w, int h,
+                                        Style style, int scrollOffset, int viewportHeight, int contentHeight) {
+        int scrollbarX = x + w - 1;
+        int contentY = y + (style.hasBorder() ? 1 : 0);
+        int contentH = h - style.verticalBorderWidth();
+
+        if (contentH <= 0) return;
+
+        Style scrollbarStyle = Style.builder()
+                .dimmed(true)
+                .build();
+
+        boolean canScrollUp = scrollOffset > 0;
+        boolean canScrollDown = scrollOffset + viewportHeight < contentHeight;
+
+        if (canScrollUp) {
+            screen.write(scrollbarX, contentY, "▲", scrollbarStyle);
+        }
+
+        if (canScrollDown) {
+            screen.write(scrollbarX, contentY + contentH - 1, "▼", scrollbarStyle);
+        }
+
+        int thumbHeight = Math.max(1, (int) Math.round((double) viewportHeight * contentH / contentHeight));
+        int thumbOffset = (int) Math.round((double) scrollOffset * (contentH - thumbHeight) / (contentHeight - viewportHeight));
+
+        Style thumbStyle = Style.builder()
+                .color(Color.WHITE)
+                .build();
+
+        int thumbStart = contentY + thumbOffset;
+        int thumbEnd = thumbStart + thumbHeight;
+
+        if (canScrollUp) {
+            thumbStart = Math.max(thumbStart, contentY + 1);
+        }
+        if (canScrollDown) {
+            thumbEnd = Math.min(thumbEnd, contentY + contentH - 1);
+        }
+
+        for (int i = thumbStart; i < thumbEnd; i++) {
+            screen.write(scrollbarX, i, "█", thumbStyle);
         }
     }
 

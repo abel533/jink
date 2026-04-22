@@ -369,6 +369,22 @@ public class Box implements Renderable {
         return this;
     }
 
+    // === 滚动 ===
+
+    /**
+     * 启用垂直滚动，返回一个 Scroll 组件包装当前 Box。
+     * Scroll 组件支持 ↑/↓ 方向键控制滚动，按 q 退出滚动模式。
+     * 滚动条用 ▲▼ 符号在右侧指示当前位置。
+     * <p>
+     * 注意：Scroll 是一个 Component，需要作为根组件或在 Component 内部使用才能处理键盘事件。
+     *
+     * @param viewportHeight 视口高度（可见区域的行数）
+     * @return Scroll 组件
+     */
+    public Scroll scroll(int viewportHeight) {
+        return Scroll.of(this).viewportHeight(viewportHeight);
+    }
+
     @Override
     public ElementNode toNode() {
         ElementNode node = ElementNode.createBox();
