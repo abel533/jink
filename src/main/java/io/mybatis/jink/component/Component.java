@@ -28,6 +28,12 @@ import io.mybatis.jink.input.Key;
  */
 public abstract class Component<S> implements Renderable {
 
+    /**
+     * 布局监听器触发期间的全局 dirty 通知器。
+     * 用于让未绑定 onStateChange 的嵌套组件（如 Scroll）的 setState 也能触发重渲染。
+     */
+    public static final ThreadLocal<Runnable> ambientDirtyNotifier = new ThreadLocal<>();
+
     private S state;
     private Runnable onStateChange;
     private Runnable onExit;
@@ -59,6 +65,12 @@ public abstract class Component<S> implements Renderable {
         this.state = newState;
         if (onStateChange != null) {
             onStateChange.run();
+        } else {
+            // 当嵌套组件未绑定 onStateChange 时，通过 ambientDirtyNotifier 通知框架重渲染
+            Runnable ambient = ambientDirtyNotifier.get();
+            if (ambient != null) {
+                ambient.run();
+            }
         }
     }
 

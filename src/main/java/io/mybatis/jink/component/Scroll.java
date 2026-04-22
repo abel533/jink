@@ -36,6 +36,7 @@ public class Scroll extends Component<Scroll.State> {
 
     private final Renderable content;
     private Integer explicitViewportHeight;
+    private boolean autoScrollToBottom = false;
 
     private Scroll(Renderable content) {
         super(new State(0, 0, 0, false));
@@ -52,6 +53,16 @@ public class Scroll extends Component<Scroll.State> {
      */
     public Scroll viewportHeight(int height) {
         this.explicitViewportHeight = height;
+        return this;
+    }
+
+    /**
+     * 设置是否启用自动滚动到底部。
+     * 开启后，每次内容高度更新（新内容追加）时自动滚动到最新行。
+     * 适用于日志输出等追加场景。
+     */
+    public Scroll autoScrollToBottom(boolean auto) {
+        this.autoScrollToBottom = auto;
         return this;
     }
 
@@ -156,7 +167,7 @@ public class Scroll extends Component<Scroll.State> {
                 .flexDirection(FlexDirection.COLUMN)
                 .height(viewportH);
 
-        return new ScrollRenderable(container, s.scrollOffset, viewportH, s.contentHeight, this);
+        return new ScrollRenderable(container, s.scrollOffset, viewportH, s.contentHeight, this, autoScrollToBottom);
     }
 
     @Override
@@ -219,14 +230,16 @@ public class Scroll extends Component<Scroll.State> {
         private final int viewportHeight;
         private final int contentHeight;
         private final Scroll scrollComponent;
+        private final boolean autoScrollToBottom;
 
         ScrollRenderable(Renderable content, int scrollOffset, int viewportHeight, int contentHeight,
-                         Scroll scrollComponent) {
+                         Scroll scrollComponent, boolean autoScrollToBottom) {
             this.content = content;
             this.scrollOffset = scrollOffset;
             this.viewportHeight = viewportHeight;
             this.contentHeight = contentHeight;
             this.scrollComponent = scrollComponent;
+            this.autoScrollToBottom = autoScrollToBottom;
         }
 
         @Override
@@ -246,7 +259,8 @@ public class Scroll extends Component<Scroll.State> {
                 if (measuredHeight > 0 && measuredHeight != current.contentHeight) {
                     int newViewportHeight = current.viewportHeight > 0 ? current.viewportHeight : viewportHeight;
                     int maxOffset = Math.max(0, measuredHeight - newViewportHeight);
-                    int newOffset = Math.min(current.scrollOffset, maxOffset);
+                    // autoScrollToBottom=true 时跟随到最新内容，否则限制不超出范围
+                    int newOffset = autoScrollToBottom ? maxOffset : Math.min(current.scrollOffset, maxOffset);
                     scrollComponent.setState(new Scroll.State(newOffset, newViewportHeight, measuredHeight, current.scrollMode));
                 }
             });

@@ -72,10 +72,12 @@ public class NodeRenderer {
         Integer scrollOffset = (Integer) node.getAttribute("internal_scrollOffset");
         Integer viewportHeight = (Integer) node.getAttribute("internal_viewportHeight");
         Integer contentHeight = (Integer) node.getAttribute("internal_contentHeight");
-        boolean hasScroll = scrollOffset != null && viewportHeight != null && contentHeight != null
-                && contentHeight > viewportHeight;
+        // hasScrollAttrs：只要设置了滚动视口属性就应该 clip（即使 contentHeight 还未测量）
+        boolean hasScrollAttrs = scrollOffset != null && viewportHeight != null && viewportHeight > 0;
+        // hasScroll：内容确实超出视口，需要应用滚动偏移和滚动条
+        boolean hasScroll = hasScrollAttrs && contentHeight != null && contentHeight > viewportHeight;
 
-        if (clipped || hasScroll) {
+        if (clipped || hasScrollAttrs) {
             int clipX = x + (style.hasBorder() ? 1 : 0);
             int clipY = y + (style.hasBorder() ? 1 : 0);
             int clipW = w - style.horizontalBorderWidth();
@@ -102,7 +104,7 @@ public class NodeRenderer {
             }
         }
 
-        if (clipped || hasScroll) {
+        if (clipped || hasScrollAttrs) {
             screen.popClip();
         }
 

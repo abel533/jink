@@ -5,6 +5,7 @@ import io.mybatis.jink.component.Focusable;
 import io.mybatis.jink.component.FocusManager;
 import io.mybatis.jink.component.Renderable;
 import io.mybatis.jink.dom.ElementNode;
+import io.mybatis.jink.dom.Node;
 import io.mybatis.jink.input.Key;
 import io.mybatis.jink.input.KeyParser;
 import io.mybatis.jink.layout.FlexLayout;
@@ -150,6 +151,9 @@ public class Ink {
 
         // 清理状态
         private volatile boolean cleaned = false;
+
+        // 防止 rerender 递归（布局 listener 回调期间）
+        private boolean inRerender = false;
 
         // 焦点管理
         private final FocusManager focusManager = new FocusManager();
@@ -341,43 +345,79 @@ public class Ink {
          * 执行渲染
          */
         public void rerender() {
-            if (!running) return;
-
-            // 通知组件当前终端尺寸
-            if (rootRenderable instanceof Component) {
-                ((Component<?>) rootRenderable).setTerminalSize(width, height);
-            }
-
-            ElementNode root = buildDomTree(rootRenderable, width);
-            VirtualScreen screen = NodeRenderer.render(root);
-            String newOutput = screen.render();
-
-            if (!newOutput.equals(lastOutput)) {
-                if (interactive && termWriter != null) {
-                    writeToTerminal(newOutput);
-                } else if (simpleWriter != null) {
-                    simpleWriter.render(newOutput);
+            if (!running || inRerender) return;
+            inRerender = true;
+            try {
+                // 通知组件当前终端尺寸
+                if (rootRenderable instanceof Component) {
+                    ((Component<?>) rootRenderable).setTerminalSize(width, height);
                 }
-                lastOutput = newOutput;
-            }
 
-            // 光标定位（每次渲染后都需要更新，即使输出没变）
-            if (interactive && termWriter != null && rootRenderable instanceof Component) {
-                Component<?> comp = (Component<?>) rootRenderable;
-                int cRow = comp.getCursorRow();
-                int cCol = comp.getCursorCol();
-                if (cRow >= 0 && cCol >= 0) {
-                    // ANSI 光标定位是 1-indexed
-                    termWriter.print("\u001B[" + (cRow + 1) + ";" + (cCol + 1) + "H");
-                    termWriter.print("\u001B[?25h"); // 显示光标
-                    termWriter.flush();
-                } else {
-                    termWriter.print("\u001B[?25l"); // 隐藏光标
-                    termWriter.flush();
+                // 构建 DOM 树并计算布局
+                ElementNode root = buildDomTree(rootRenderable, width);
+
+                // 触发布局监听器（例如 Scroll 组件测量内容高度并更新状态）
+                // 先重置 renderDirty 再触发，以便检测 listener 是否引发了状态变更
+                // 注入 ambientDirtyNotifier，使未绑定 onStateChange 的嵌套组件也能触发重渲染
+                renderDirty = false;
+                Component.ambientDirtyNotifier.set(this::markDirty);
+                try {
+                    fireLayoutListeners(root);
+                } finally {
+                    Component.ambientDirtyNotifier.remove();
+                }
+
+                // 若布局监听器触发了状态更新，重新构建 DOM 树使最新状态生效
+                if (renderDirty) {
+                    renderDirty = false;
+                    root = buildDomTree(rootRenderable, width);
+                }
+
+                VirtualScreen screen = NodeRenderer.render(root);
+                String newOutput = screen.render();
+
+                if (!newOutput.equals(lastOutput)) {
+                    if (interactive && termWriter != null) {
+                        writeToTerminal(newOutput);
+                    } else if (simpleWriter != null) {
+                        simpleWriter.render(newOutput);
+                    }
+                    lastOutput = newOutput;
+                }
+
+                // 光标定位（每次渲染后都需要更新，即使输出没变）
+                if (interactive && termWriter != null && rootRenderable instanceof Component) {
+                    Component<?> comp = (Component<?>) rootRenderable;
+                    int cRow = comp.getCursorRow();
+                    int cCol = comp.getCursorCol();
+                    if (cRow >= 0 && cCol >= 0) {
+                        // ANSI 光标定位是 1-indexed
+                        termWriter.print("\u001B[" + (cRow + 1) + ";" + (cCol + 1) + "H");
+                        termWriter.print("\u001B[?25h"); // 显示光标
+                        termWriter.flush();
+                    } else {
+                        termWriter.print("\u001B[?25l"); // 隐藏光标
+                        termWriter.flush();
+                    }
+                }
+
+                renderDirty = false;
+            } finally {
+                inRerender = false;
+            }
+        }
+
+        /**
+         * 深度优先触发 DOM 树中所有节点的布局监听器。
+         * 在布局计算完成后调用，用于通知如 Scroll 等组件其内容的实际高度。
+         */
+        private static void fireLayoutListeners(ElementNode node) {
+            node.emitLayoutListeners();
+            for (Node child : node.getChildNodes()) {
+                if (child instanceof ElementNode) {
+                    fireLayoutListeners((ElementNode) child);
                 }
             }
-
-            renderDirty = false;
         }
 
         /**
@@ -567,6 +607,9 @@ public class Ink {
             Key key = result.toKey();
             String input = result.inputText();
 
+            // 注入 ambientDirtyNotifier，使嵌套组件（如 Scroll）的 setState 也能触发重渲染
+            Component.ambientDirtyNotifier.set(this::markDirty);
+            try {
             // 内置处理：Ctrl+C 退出（可配置）
             if ("c".equals(result.name()) && result.ctrl()) {
                 if (exitOnCtrlC) {
@@ -610,6 +653,9 @@ public class Ink {
                 } else {
                     component.onInput(input, key);
                 }
+            }
+            } finally {
+                Component.ambientDirtyNotifier.remove();
             }
         }
 
